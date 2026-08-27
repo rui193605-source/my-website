@@ -7,6 +7,87 @@
 
 <title>JERRY // SYSTEM ONLINE</title>
 
+    /* =========================
+       WEATHER WIDGET
+       右上角天气信息
+       ========================= */
+
+    .weather-widget {
+        position: absolute;
+
+        top: 95px;
+        right: 7%;
+
+        width: 220px;
+
+        background: rgba(5, 7, 10, 0.78);
+
+        backdrop-filter: blur(14px);
+
+        border: 1px solid rgba(108,255,155,0.35);
+
+        border-radius: 12px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 0 30px rgba(108,255,155,0.05);
+
+        z-index: 5;
+    }
+
+    .weather-city {
+        padding: 14px 18px;
+
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 15px;
+
+        font-weight: bold;
+
+        border-bottom:
+            1px solid rgba(108,255,155,0.2);
+    }
+
+    .weather-row {
+        display: flex;
+
+        align-items: center;
+
+        gap: 12px;
+
+        padding: 11px 18px;
+
+        color: #9da8b3;
+
+        font-family: monospace;
+
+        font-size: 13px;
+
+        border-bottom:
+            1px solid rgba(255,255,255,0.06);
+    }
+
+    .weather-row:last-child {
+        border-bottom: none;
+    }
+
+    .weather-icon {
+        width: 20px;
+
+        text-align: center;
+
+        font-size: 15px;
+    }
+
+    .weather-value {
+        margin-left: auto;
+
+        color: #e8edf2;
+    }
+   
 <style>
     * {
         box-sizing: border-box;
@@ -377,6 +458,16 @@
     /* 手机 */
     @media (max-width: 700px) {
 
+           .weather-widget {
+        position: relative;
+
+        top: auto;
+        right: auto;
+
+        width: calc(100% - 12%);
+
+        margin: 90px 6% 0;
+    }
         nav {
             padding: 0 5%;
         }
@@ -423,6 +514,41 @@
         <a href="#server">SERVER</a>
     </div>
 </nav>
+   <!-- =========================
+     WEATHER WIDGET
+     ========================= -->
+
+<div class="weather-widget">
+
+    <div class="weather-city">
+        📍 <span id="weather-city">Loading...</span>
+    </div>
+
+    <div class="weather-row">
+        <span class="weather-icon">🌡</span>
+        <span>Temperature</span>
+        <span class="weather-value">
+            <span id="weather-temperature">--</span>°C
+        </span>
+    </div>
+
+    <div class="weather-row">
+        <span class="weather-icon">💧</span>
+        <span>Humidity</span>
+        <span class="weather-value">
+            <span id="weather-humidity">--</span>%
+        </span>
+    </div>
+
+    <div class="weather-row">
+        <span class="weather-icon">💨</span>
+        <span>Wind</span>
+        <span class="weather-value">
+            <span id="weather-wind">--</span> km/h
+        </span>
+    </div>
+
+</div>
 
 
 <section class="hero">
@@ -464,7 +590,7 @@
 
         <br><br>
 
-        我喜欢折腾电脑、服务器、AI、网络以及各种
+        我喜欢各种
         <span class="highlight">奇奇怪怪但有意思的东西。</span>
 
         <br><br>
@@ -645,6 +771,43 @@
         glow.style.top = event.clientY + "px";
 
     });
+
+       /* =========================
+       WEATHER API
+       ========================= */
+
+    async function loadWeather() {
+
+        try {
+
+            const response = await fetch("/api/weather");
+
+            const data = await response.json();
+
+            document.getElementById("weather-city").textContent =
+                data.city;
+
+            document.getElementById("weather-temperature").textContent =
+                data.temperature;
+
+            document.getElementById("weather-humidity").textContent =
+                data.humidity;
+
+            document.getElementById("weather-wind").textContent =
+                data.wind_speed;
+
+        } catch (error) {
+
+            console.error("Weather API error:", error);
+
+            document.getElementById("weather-city").textContent =
+                "Weather unavailable";
+
+        }
+
+    }
+
+    loadWeather();
 
 </script>
 
