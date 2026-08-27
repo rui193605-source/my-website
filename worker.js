@@ -1,43 +1,60 @@
 export default {
   async fetch(request, env, ctx) {
-
     const url = new URL(request.url);
 
-    // 只有访问 /api/weather 时才执行天气 API
+    // =========================
+    // 天气 API
+    // =========================
     if (url.pathname === "/api/weather") {
 
-      // 获取 Cloudflare 判断出来的访问者位置
+      // 获取访问者的大致地理位置
       const city = request.cf?.city || "Unknown";
       const latitude = request.cf?.latitude;
       const longitude = request.cf?.longitude;
 
-      // 如果没有定位信息
+      // 如果 Cloudflare 没有提供定位信息
       if (!latitude || !longitude) {
         return new Response(
           JSON.stringify({
-            error: "无法获取你的地理位置"
+            error: "无法获取访问者地理位置"
           }),
           {
+            status: 400,
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json; charset=utf-8"
             }
           }
         );
       }
 
-      // 请求 Open-Meteo
+      // Open-Meteo 天气 API
       const weatherURL =
-        `https://api.open-meteo.com/v1/forecast` +
+        "https://api.open-meteo.com/v1/forecast" +
         `?latitude=${latitude}` +
         `&longitude=${longitude}` +
-        `&current=temperature_2m,relative_humidity_2m,wind_speed_10m` +
-        `&timezone=auto`;
+        "&current=temperature_2m,relative_humidity_2m,wind_speed_10m" +
+        "&timezone=auto";
 
       const response = await fetch(weatherURL);
 
+      // API 请求失败
+      if (!response.ok) {
+        return new Response(
+          JSON.stringify({
+            error: "天气 API 请求失败"
+          }),
+          {
+            status: 502,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8"
+            }
+          }
+        );
+      }
+
       const weather = await response.json();
 
-      // 返回我们自己的 JSON
+      // 返回给网页的数据
       return new Response(
         JSON.stringify({
           city: city,
@@ -49,14 +66,16 @@ export default {
         }),
         {
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json; charset=utf-8",
             "Access-Control-Allow-Origin": "*"
           }
         }
       );
     }
 
-    // 其他地址
-    // 其他地址交给 Cloudflare 静态资源处理
-return env.ASSETS.fetch(request);
-
+    // =========================
+    // 普通网页请求
+    // =========================
+    return env.ASSETS.fetch(request);
+  }
+};
