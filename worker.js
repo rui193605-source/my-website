@@ -78,69 +78,40 @@ export default {
         // =========================
         // 返回给网页的数据
         // =========================
-
+        
         return new Response(
+  JSON.stringify({
+    city: city,
+    latitude: latitude,
+    longitude: longitude,
 
-          JSON.stringify({
+    temperature:
+      weather.current?.temperature_2m,
 
-            // 城市
-            city: city,
+    humidity:
+      weather.current?.relative_humidity_2m,
 
-            // Cloudflare 定位
-            latitude: latitude,
-            longitude: longitude,
+    wind_speed:
+      weather.current?.wind_speed_10m,
 
-            // 温度
-            temperature:
-              current?.temperature_2m ?? null,
+    pressure:
+      weather.current?.pressure_msl,
 
-            // 湿度
-            humidity:
-              current?.relative_humidity_2m ?? null,
+    weather_code:
+      weather.current?.weather_code,
 
-            // 风速
-            wind_speed:
-              current?.wind_speed_10m ?? null,
+    updated_at:
+      weather.current?.time
+  }),
+  {
+    headers: {
+      "Content-Type":
+        "application/json; charset=utf-8",
 
-            // 气压
-            surface_pressure:
-              current?.pressure_msl ?? null,
-
-            // WMO 天气代码
-            weather_code:
-              current?.weather_code ?? null,
-
-            // Open-Meteo 更新时间
-            updated_at:
-              current?.time ?? null
-
-          }),
-
-          {
-
-            headers: {
-
-              "Content-Type":
-                "application/json; charset=utf-8",
-
-              "Access-Control-Allow-Origin":
-                "*",
-
-              "Cache-Control":
-                "no-store"
-
-            }
-
-          }
-
-        );
-
-      } catch (error) {
-
-        console.error(
-          "Weather API error:",
-          error
-        );
+      "Access-Control-Allow-Origin": "*"
+    }
+  }
+);
 
 
         return new Response(
