@@ -102,6 +102,10 @@ export default {
             wind_speed:
               current?.wind_speed_10m ?? null,
 
+            // 气压
+            surface_pressure:
+              current?.surface_pressure ?? null,
+
             // WMO 天气代码
             weather_code:
               current?.weather_code ?? null,
