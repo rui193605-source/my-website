@@ -1,6 +1,6 @@
 name = "my-website"
 
-main = "Update worker.js"
+main = "worker.js"
 
 compatibility_date = "2026-08-27"
 
