@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>JERRY // CALCULATOR</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    background: #05070a;
+
+    color: #e8edf2;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft YaHei",
+        sans-serif;
+
+    overflow-x: hidden;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+/* =========================
+   背景网格
+   ========================= */
+
+body::before {
+
+    content: "";
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0.16;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.06) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.06) 1px,
+            transparent 1px
+        );
+
+    background-size: 45px 45px;
+
+    mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+
+    -webkit-mask-image:
+        linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+
+}
+
+
+/* =========================
+   导航
+   ========================= */
+
+nav {
+
+    height: 70px;
+
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    padding: 0 7%;
+
+    background:
+        rgba(5,7,10,0.72);
+
+    backdrop-filter:
+        blur(14px);
+
+    -webkit-backdrop-filter:
+        blur(14px);
+
+    border-bottom:
+        1px solid rgba(255,255,255,0.08);
+
+    position: relative;
+
+    z-index: 5;
+
+}
+
+
+.logo {
+
+    font-weight: 800;
+
+    letter-spacing: 4px;
+
+    font-size: 18px;
+
+}
+
+
+.logo span {
+
+    opacity: 0.45;
+
+}
+
+
+.back {
+
+    color: #aeb8c2;
+
+    text-decoration: none;
+
+    font-family: monospace;
+
+    font-size: 12px;
+
+    letter-spacing: 1px;
+
+    transition: 0.25s;
+
+}
+
+
+.back:hover {
+
+    color: #6cff9b;
+
+}
+
+
+/* =========================
+   主区域
+   ========================= */
+
+main {
+
+    flex: 1;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 80px 20px;
+
+    position: relative;
+
+}
+
+
+/* =========================
+   计算器容器
+   ========================= */
+
+.calculator-wrapper {
+
+    width: 100%;
+
+    max-width: 390px;
+
+}
+
+
+.title {
+
+    text-align: center;
+
+    margin-bottom: 25px;
+
+}
+
+
+.title-label {
+
+    color: #6cff9b;
+
+    font-family: monospace;
+
+    font-size: 11px;
+
+    letter-spacing: 3px;
+
+    margin-bottom: 10px;
+
+}
+
+
+.title h1 {
+
+    margin: 0;
+
+    font-size: 38px;
+
+    letter-spacing: -1px;
+
+}
+
+
+.status {
+
+    margin-top: 8px;
+
+    color: #56616c;
+
+    font-family: monospace;
+
+    font-size: 10px;
+
+}
+
+
+/* =========================
+   计算器
+   ========================= */
+
+.calculator {
+
+    padding: 18px;
+
+    background:
+        rgba(255,255,255,0.035);
+
+    border:
+        1px solid rgba(255,255,255,0.10);
+
+    border-radius: 18px;
+
+    box-shadow:
+        0 0 40px
+        rgba(108,255,155,0.04);
+
+    backdrop-filter:
+        blur(15px);
+
+    -webkit-backdrop-filter:
+        blur(15px);
+
+}
+
+
+/* =========================
+   显示屏
+   ========================= */
+
+.display {
+
+    min-height: 105px;
+
+    padding: 18px;
+
+    margin-bottom: 15px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(0,0,0,0.35);
+
+    border:
+        1px solid rgba(255,255,255,0.07);
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: flex-end;
+
+    align-items: flex-end;
+
+    overflow: hidden;
+
+}
+
+
+.previous {
+
+    width: 100%;
+
+    min-height: 18px;
+
+    color: #56616c;
+
+    font-family: monospace;
+
+    font-size: 12px;
+
+    text-align: right;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+.current {
+
+    width: 100%;
+
+    margin-top: 5px;
+
+    color: #e8edf2;
+
+    font-family: monospace;
+
+    font-size: 36px;
+
+    font-weight: 600;
+
+    text-align: right;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+}
+
+
+/* =========================
+   按钮网格
+   ========================= */
+
+.buttons {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 10px;
+
+}
+
+
+button {
+
+    min-height: 62px;
+
+    border: none;
+
+    border-radius: 11px;
+
+    background:
+        rgba(255,255,255,0.055);
+
+    color: #dce2e7;
+
+    font-family: monospace;
+
+    font-size: 18px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s,
+        transform 0.1s,
+        border-color 0.15s;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.06);
+
+}
+
+
+button:hover {
+
+    background:
+        rgba(255,255,255,0.10);
+
+}
+
+
+button:active {
+
+    transform: scale(0.94);
+
+}
+
+
+.operator {
+
+    color: #6cff9b;
+
+}
+
+
+.function {
+
+    color: #9da8b3;
+
+}
+
+
+.equals {
+
+    background:
+        rgba(108,255,155,0.13);
+
+    color: #6cff9b;
+
+    border-color:
+        rgba(108,255,155,0.25);
+
+}
+
+
+.equals:hover {
+
+    background:
+        rgba(108,255,155,0.20);
+
+}
+
+
+.zero {
+
+    grid-column: span 2;
+
+}
+
+
+/* =========================
+   底部状态
+   ========================= */
+
+.calculator-footer {
+
+    margin-top: 16px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #505a64;
+
+    font-family: monospace;
+
+    font-size: 9px;
+
+    letter-spacing: 0.5px;
+
+}
+
+
+/* =========================
+   手机
+   ========================= */
+
+@media (max-width: 500px) {
+
+    nav {
+
+        padding: 0 5%;
+
+    }
+
+
+    .logo {
+
+        font-size: 15px;
+
+        letter-spacing: 3px;
+
+    }
+
+
+    main {
+
+        padding:
+            50px 15px;
+
+    }
+
+
+    .title h1 {
+
+        font-size: 32px;
+
+    }
+
+
+    .calculator {
+
+        padding: 13px;
+
+    }
+
+
+    button {
+
+        min-height: 58px;
+
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<nav>
+
+    <div class="logo">
+
+        JERRY
+        <span>/ 2026</span>
+
+    </div>
+
+
+    <a
+        class="back"
+        href="/"
+    >
+        ← BACK TO HOME
+    </a>
+
+</nav>
+
+
+<main>
+
+    <div class="calculator-wrapper">
+
+
+        <div class="title">
+
+            <div class="title-label">
+                JERRY // TOOLS
+            </div>
+
+            <h1>
+                CALCULATOR
+            </h1>
+
+            <div class="status">
+                CALCULATOR SYSTEM ONLINE
+            </div>
+
+        </div>
+
+
+        <div class="calculator">
+
+
+            <!-- 显示屏 -->
+
+            <div class="display">
+
+                <div
+                    class="previous"
+                    id="previous"
+                >
+                </div>
+
+                <div
+                    class="current"
+                    id="current"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <!-- 按钮 -->
+
+            <div class="buttons">
+
+
+                <button
+                    class="function"
+                    data-action="clear"
+                >
+                    AC
+                </button>
+
+
+                <button
+                    class="function"
+                    data-action="sign"
+                >
+                    ±
+                </button>
+
+
+                <button
+                    class="function"
+                    data-action="percent"
+                >
+                    %
+                </button>
+
+
+                <button
+                    class="operator"
+                    data-operator="/"
+                >
+                    ÷
+                </button>
+
+
+                <button data-number="7">
+                    7
+                </button>
+
+
+                <button data-number="8">
+                    8
+                </button>
+
+
+                <button data-number="9">
+                    9
+                </button>
+
+
+                <button
+                    class="operator"
+                    data-operator="*"
+                >
+                    ×
+                </button>
+
+
+                <button data-number="4">
+                    4
+                </button>
+
+
+                <button data-number="5">
+                    5
+                </button>
+
+
+                <button data-number="6">
+                    6
+                </button>
+
+
+                <button
+                    class="operator"
+                    data-operator="-"
+                >
+                    −
+                </button>
+
+
+                <button data-number="1">
+                    1
+                </button>
+
+
+                <button data-number="2">
+                    2
+                </button>
+
+
+                <button data-number="3">
+                    3
+                </button>
+
+
+                <button
+                    class="operator"
+                    data-operator="+"
+                >
+                    +
+                </button>
+
+
+                <button
+                    class="zero"
+                    data-number="0"
+                >
+                    0
+                </button>
+
+
+                <button data-action="decimal">
+                    .
+                </button>
+
+
+                <button
+                    class="equals"
+                    data-action="equals"
+                >
+                    =
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+
+        <div class="calculator-footer">
+
+            <span>
+                JAVASCRIPT CALCULATOR
+            </span>
+
+            <span>
+                READY
+            </span>
+
+        </div>
+
+
+    </div>
+
+</main>
+
+
+<script>
+
+const currentDisplay =
+    document.getElementById("current");
+
+const previousDisplay =
+    document.getElementById("previous");
+
+
+let currentValue = "0";
+
+let previousValue = "";
+
+let operator = null;
+
+let waitingForNewValue = false;
+
+
+/* =========================
+   更新显示
+   ========================= */
+
+function updateDisplay() {
+
+    currentDisplay.textContent =
+        currentValue;
+
+    previousDisplay.textContent =
+        previousValue;
+
+}
+
+
+/* =========================
+   输入数字
+   ========================= */
+
+function inputNumber(number) {
+
+    if (
+        currentValue === "Error" ||
+        waitingForNewValue
+    ) {
+
+        currentValue = number;
+
+        waitingForNewValue = false;
+
+    } else {
+
+        if (
+            currentValue === "0"
+        ) {
+
+            currentValue = number;
+
+        } else {
+
+            currentValue += number;
+
+        }
+
+    }
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   小数点
+   ========================= */
+
+function inputDecimal() {
+
+    if (
+        currentValue === "Error" ||
+        waitingForNewValue
+    ) {
+
+        currentValue = "0.";
+
+        waitingForNewValue = false;
+
+    } else if (
+        !currentValue.includes(".")
+    ) {
+
+        currentValue += ".";
+
+    }
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   运算
+   ========================= */
+
+function calculate(a, b, op) {
+
+    const x = Number(a);
+
+    const y = Number(b);
+
+
+    if (op === "+") {
+
+        return x + y;
+
+    }
+
+
+    if (op === "-") {
+
+        return x - y;
+
+    }
+
+
+    if (op === "*") {
+
+        return x * y;
+
+    }
+
+
+    if (op === "/") {
+
+        if (y === 0) {
+
+            return null;
+
+        }
+
+        return x / y;
+
+    }
+
+
+    return y;
+
+}
+
+
+/* =========================
+   选择运算符
+   ========================= */
+
+function chooseOperator(nextOperator) {
+
+    if (
+        currentValue === "Error"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        operator &&
+        !waitingForNewValue
+    ) {
+
+        const result =
+            calculate(
+                previousValue,
+                currentValue,
+                operator
+            );
+
+
+        if (result === null) {
+
+            currentValue = "Error";
+
+            previousValue = "";
+
+            operator = null;
+
+            updateDisplay();
+
+            return;
+
+        }
+
+
+        currentValue =
+            formatNumber(result);
+
+    }
+
+
+    previousValue =
+        currentValue +
+        " " +
+        nextOperator;
+
+
+    operator =
+        nextOperator;
+
+    waitingForNewValue = true;
+
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   等号
+   ========================= */
+
+function equals() {
+
+    if (
+        !operator ||
+        waitingForNewValue
+    ) {
+
+        return;
+
+    }
+
+
+    const parts =
+        previousValue.split(" ");
+
+
+    const firstValue =
+        parts[0];
+
+
+    const result =
+        calculate(
+            firstValue,
+            currentValue,
+            operator
+        );
+
+
+    if (result === null) {
+
+        currentValue = "Error";
+
+        previousValue = "";
+
+        operator = null;
+
+        updateDisplay();
+
+        return;
+
+    }
+
+
+    previousValue =
+        firstValue +
+        " " +
+        operator +
+        " " +
+        currentValue +
+        " =";
+
+
+    currentValue =
+        formatNumber(result);
+
+
+    operator = null;
+
+    waitingForNewValue = true;
+
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   清除
+   ========================= */
+
+function clearCalculator() {
+
+    currentValue = "0";
+
+    previousValue = "";
+
+    operator = null;
+
+    waitingForNewValue = false;
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   正负
+   ========================= */
+
+function toggleSign() {
+
+    if (
+        currentValue === "0" ||
+        currentValue === "Error"
+    ) {
+
+        return;
+
+    }
+
+
+    currentValue =
+        String(
+            Number(currentValue) * -1
+        );
+
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   百分比
+   ========================= */
+
+function percentage() {
+
+    if (
+        currentValue === "Error"
+    ) {
+
+        return;
+
+    }
+
+
+    currentValue =
+        String(
+            Number(currentValue) / 100
+        );
+
+
+    updateDisplay();
+
+}
+
+
+/* =========================
+   数字格式
+   ========================= */
+
+function formatNumber(number) {
+
+    if (!Number.isFinite(number)) {
+
+        return "Error";
+
+    }
+
+
+    const rounded =
+        Number(
+            Number(number).toPrecision(12)
+        );
+
+
+    return String(rounded);
+
+}
+
+
+/* =========================
+   鼠标点击
+   ========================= */
+
+document
+    .querySelectorAll("[data-number]")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                inputNumber(
+                    button.dataset.number
+                );
+
+            }
+        );
+
+    });
+
+
+document
+    .querySelectorAll("[data-operator]")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                chooseOperator(
+                    button.dataset.operator
+                );
+
+            }
+        );
+
+    });
+
+
+document
+    .querySelectorAll("[data-action]")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const action =
+                    button.dataset.action;
+
+
+                if (
+                    action === "clear"
+                ) {
+
+                    clearCalculator();
+
+                }
+
+
+                if (
+                    action === "decimal"
+                ) {
+
+                    inputDecimal();
+
+                }
+
+
+                if (
+                    action === "equals"
+                ) {
+
+                    equals();
+
+                }
+
+
+                if (
+                    action === "sign"
+                ) {
+
+                    toggleSign();
+
+                }
+
+
+                if (
+                    action === "percent"
+                ) {
+
+                    percentage();
+
+                }
+
+            }
+        );
+
+    });
+
+
+/* =========================
+   键盘支持
+   ========================= */
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+        const key = event.key;
+
+
+        if (
+            key >= "0" &&
+            key <= "9"
+        ) {
+
+            inputNumber(key);
+
+            return;
+
+        }
+
+
+        if (
+            key === "."
+        ) {
+
+            inputDecimal();
+
+            return;
+
+        }
+
+
+        if (
+            ["+", "-", "*", "/"]
+            .includes(key)
+        ) {
+
+            chooseOperator(key);
+
+            return;
+
+        }
+
+
+        if (
+            key === "Enter" ||
+            key === "="
+        ) {
+
+            equals();
+
+            return;
+
+        }
+
+
+        if (
+            key === "Escape"
+        ) {
+
+            clearCalculator();
+
+        }
+
+    }
+);
+
+</script>
+
+
+</body>
+
+</html>
