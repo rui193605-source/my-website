@@ -57,11 +57,6 @@ export default {
     }
 
     // 其他地址
-    return new Response("JERRY API ONLINE", {
-      headers: {
-        "Content-Type": "text/plain"
-      }
-    });
-  }
-};
+    // 其他地址交给 Cloudflare 静态资源处理
+return env.ASSETS.fetch(request);
 
