@@ -7,87 +7,6 @@
 
 <title>JERRY // SYSTEM ONLINE</title>
 
-    /* =========================
-       WEATHER WIDGET
-       右上角天气信息
-       ========================= */
-
-    .weather-widget {
-        position: absolute;
-
-        top: 95px;
-        right: 7%;
-
-        width: 220px;
-
-        background: rgba(5, 7, 10, 0.78);
-
-        backdrop-filter: blur(14px);
-
-        border: 1px solid rgba(108,255,155,0.35);
-
-        border-radius: 12px;
-
-        overflow: hidden;
-
-        box-shadow:
-            0 0 30px rgba(108,255,155,0.05);
-
-        z-index: 5;
-    }
-
-    .weather-city {
-        padding: 14px 18px;
-
-        color: #6cff9b;
-
-        font-family: monospace;
-
-        font-size: 15px;
-
-        font-weight: bold;
-
-        border-bottom:
-            1px solid rgba(108,255,155,0.2);
-    }
-
-    .weather-row {
-        display: flex;
-
-        align-items: center;
-
-        gap: 12px;
-
-        padding: 11px 18px;
-
-        color: #9da8b3;
-
-        font-family: monospace;
-
-        font-size: 13px;
-
-        border-bottom:
-            1px solid rgba(255,255,255,0.06);
-    }
-
-    .weather-row:last-child {
-        border-bottom: none;
-    }
-
-    .weather-icon {
-        width: 20px;
-
-        text-align: center;
-
-        font-size: 15px;
-    }
-
-    .weather-value {
-        margin-left: auto;
-
-        color: #e8edf2;
-    }
-   
 <style>
     * {
         box-sizing: border-box;
@@ -110,7 +29,10 @@
         overflow-x: hidden;
     }
 
-    /* 背景网格 */
+    /* =========================
+       背景网格
+       ========================= */
+
     body::before {
         content: "";
         position: fixed;
@@ -129,9 +51,18 @@
             black,
             transparent 85%
         );
+
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
     }
 
-    /* 顶部导航 */
+    /* =========================
+       顶部导航
+       ========================= */
+
     nav {
         position: fixed;
         top: 0;
@@ -148,6 +79,7 @@
 
         background: rgba(5,7,10,0.72);
         backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
 
         border-bottom: 1px solid rgba(255,255,255,0.08);
 
@@ -177,7 +109,292 @@
         color: white;
     }
 
-    /* 主区域 */
+    /* =========================
+       WEATHER WIDGET
+       ========================= */
+
+    .weather-widget {
+        position: absolute;
+
+        top: 95px;
+        right: 7%;
+
+        width: 245px;
+
+        background: rgba(5, 7, 10, 0.82);
+
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+
+        border: 1px solid rgba(108,255,155,0.35);
+
+        border-radius: 14px;
+
+        overflow: hidden;
+
+        box-shadow:
+            0 0 30px rgba(108,255,155,0.05),
+            inset 0 0 20px rgba(108,255,155,0.015);
+
+        z-index: 5;
+
+        transition:
+            border-color 0.3s,
+            box-shadow 0.3s,
+            transform 0.3s;
+    }
+
+    .weather-widget:hover {
+        border-color: rgba(108,255,155,0.5);
+
+        box-shadow:
+            0 0 35px rgba(108,255,155,0.08),
+            inset 0 0 20px rgba(108,255,155,0.02);
+
+        transform: translateY(-2px);
+    }
+
+    .weather-header {
+        padding: 13px 16px 12px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        gap: 10px;
+
+        border-bottom:
+            1px solid rgba(108,255,155,0.16);
+    }
+
+    .weather-city {
+        min-width: 0;
+
+        display: flex;
+        align-items: center;
+
+        gap: 7px;
+
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 14px;
+
+        font-weight: bold;
+
+        letter-spacing: 0.3px;
+    }
+
+    .weather-location-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    #weather-city {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .weather-live {
+        display: flex;
+        align-items: center;
+
+        gap: 5px;
+
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 9px;
+
+        letter-spacing: 1px;
+
+        white-space: nowrap;
+
+        opacity: 0.9;
+
+        flex-shrink: 0;
+    }
+
+    .weather-live-dot {
+        width: 6px;
+        height: 6px;
+
+        border-radius: 50%;
+
+        background: #6cff9b;
+
+        box-shadow:
+            0 0 8px #6cff9b;
+
+        animation: weatherPulse 1.8s infinite;
+    }
+
+    @keyframes weatherPulse {
+        0%, 100% {
+            opacity: 0.45;
+            transform: scale(0.85);
+        }
+
+        50% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
+    /* =========================
+       天气主体
+       ========================= */
+
+    .weather-main {
+        display: flex;
+
+        align-items: center;
+
+        gap: 14px;
+
+        padding: 16px 17px 14px;
+    }
+
+    .weather-icon-large {
+        width: 50px;
+        height: 50px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 12px;
+
+        background: rgba(255,255,255,0.035);
+
+        border: 1px solid rgba(255,255,255,0.07);
+
+        font-size: 29px;
+
+        flex-shrink: 0;
+    }
+
+    .weather-temperature-large {
+        display: flex;
+        align-items: flex-start;
+
+        line-height: 1;
+    }
+
+    .weather-temperature-number {
+        color: #e8edf2;
+
+        font-family: monospace;
+
+        font-size: 31px;
+
+        font-weight: 700;
+
+        letter-spacing: -2px;
+    }
+
+    .weather-temperature-unit {
+        margin-top: 2px;
+        margin-left: 3px;
+
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 13px;
+    }
+
+    .weather-condition {
+        margin-top: 5px;
+
+        color: #7f8993;
+
+        font-family: monospace;
+
+        font-size: 11px;
+
+        white-space: nowrap;
+    }
+
+    /* =========================
+       数据
+       ========================= */
+
+    .weather-data {
+        border-top:
+            1px solid rgba(255,255,255,0.06);
+    }
+
+    .weather-row {
+        display: flex;
+
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 10px 17px;
+
+        color: #89949f;
+
+        font-family: monospace;
+
+        font-size: 12px;
+
+        border-bottom:
+            1px solid rgba(255,255,255,0.055);
+    }
+
+    .weather-row:last-child {
+        border-bottom: none;
+    }
+
+    .weather-icon {
+        width: 19px;
+
+        text-align: center;
+
+        font-size: 14px;
+
+        opacity: 0.9;
+    }
+
+    .weather-value {
+        margin-left: auto;
+
+        color: #e8edf2;
+
+        font-weight: 500;
+
+        white-space: nowrap;
+    }
+
+    /* =========================
+       更新时间
+       ========================= */
+
+    .weather-updated {
+        padding: 9px 17px 10px;
+
+        color: #505a64;
+
+        font-family: monospace;
+
+        font-size: 9px;
+
+        letter-spacing: 0.4px;
+
+        text-align: right;
+
+        background: rgba(255,255,255,0.012);
+    }
+
+    /* =========================
+       主区域
+       ========================= */
+
     .hero {
         min-height: 100vh;
 
@@ -214,7 +431,9 @@
     .status-dot {
         width: 7px;
         height: 7px;
+
         border-radius: 50%;
+
         background: #6cff9b;
 
         box-shadow:
@@ -258,7 +477,9 @@
 
     .subtitle {
         font-size: clamp(18px, 2.2vw, 28px);
+
         color: #9da8b3;
+
         margin-top: 30px;
     }
 
@@ -276,6 +497,7 @@
         color: #89949f;
 
         font-family: monospace;
+
         font-size: 14px;
 
         box-shadow:
@@ -286,7 +508,10 @@
         color: #6cff9b;
     }
 
-    /* 鼠标光晕 */
+    /* =========================
+       鼠标光晕
+       ========================= */
+
     .glow {
         position: fixed;
 
@@ -309,28 +534,42 @@
         z-index: -1;
     }
 
-    /* 内容 */
+    /* =========================
+       内容
+       ========================= */
+
     section {
         padding: 110px 8%;
+
         max-width: 1200px;
+
         margin: auto;
     }
 
     .section-label {
         color: #6cff9b;
+
         font-family: monospace;
+
         font-size: 12px;
+
         letter-spacing: 3px;
+
         margin-bottom: 15px;
     }
 
     h2 {
         font-size: 42px;
+
         margin: 0 0 45px;
+
         letter-spacing: -1px;
     }
 
-    /* 卡片 */
+    /* =========================
+       卡片
+       ========================= */
+
     .grid {
         display: grid;
 
@@ -391,18 +630,23 @@
 
     .card-number {
         color: #56616c;
+
         font-family: monospace;
+
         font-size: 12px;
     }
 
     .card h3 {
         margin: 22px 0 10px;
+
         font-size: 21px;
     }
 
     .card p {
         color: #7f8993;
+
         line-height: 1.7;
+
         font-size: 14px;
     }
 
@@ -410,6 +654,7 @@
         display: inline-block;
 
         margin-top: 12px;
+
         margin-right: 5px;
 
         padding: 5px 8px;
@@ -421,10 +666,14 @@
         color: #929da7;
 
         font-size: 11px;
+
         font-family: monospace;
     }
 
-    /* 关于 */
+    /* =========================
+       关于
+       ========================= */
+
     .about {
         max-width: 760px;
 
@@ -439,47 +688,65 @@
         color: white;
     }
 
-    /* 页脚 */
+    /* =========================
+       页脚
+       ========================= */
+
     footer {
         padding: 80px 8% 40px;
 
         color: #505a64;
 
         font-family: monospace;
+
         font-size: 12px;
 
         display: flex;
+
         justify-content: space-between;
 
         border-top:
             1px solid rgba(255,255,255,0.07);
     }
 
-    /* 手机 */
+    /* =========================
+       手机端
+       ========================= */
+
     @media (max-width: 700px) {
 
-           .weather-widget {
-        position: relative;
-
-        top: auto;
-        right: auto;
-
-        width: calc(100% - 12%);
-
-        margin: 90px 6% 0;
-    }
         nav {
             padding: 0 5%;
         }
 
         nav a {
             margin-left: 12px;
+
             font-size: 11px;
         }
 
+        .weather-widget {
+            position: relative;
+
+            top: auto;
+            right: auto;
+
+            width: calc(100% - 12%);
+
+            margin: 90px 6% 0;
+
+            z-index: 4;
+        }
+
         .hero {
+            min-height: auto;
+
+            padding-top: 65px;
+
             padding-left: 6%;
             padding-right: 6%;
+
+            padding-bottom: 100px;
         }
 
         h1 {
@@ -491,19 +758,97 @@
             padding-right: 6%;
         }
 
+        h2 {
+            font-size: 34px;
+        }
+
         footer {
             flex-direction: column;
+
             gap: 15px;
         }
     }
+
+    /* =========================
+       小屏手机
+       ========================= */
+
+    @media (max-width: 420px) {
+
+        nav .logo {
+            font-size: 15px;
+
+            letter-spacing: 3px;
+        }
+
+        nav a {
+            margin-left: 8px;
+
+            font-size: 9px;
+
+            letter-spacing: 0.5px;
+        }
+
+        .weather-widget {
+            width: calc(100% - 10%);
+
+            margin-left: 5%;
+            margin-right: 5%;
+        }
+
+        .weather-header {
+            padding-left: 13px;
+            padding-right: 13px;
+        }
+
+        .weather-main {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-row {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-updated {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-live {
+            font-size: 8px;
+        }
+
+        .hero {
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        h1 {
+            font-size: clamp(55px, 20vw, 90px);
+        }
+    }
+
 </style>
 </head>
 
+
 <body>
+
+<!-- =========================
+     鼠标光晕
+     ========================= -->
 
 <div class="glow" id="glow"></div>
 
+
+<!-- =========================
+     顶部导航
+     ========================= -->
+
 <nav>
+
     <div class="logo">
         JERRY<span> / 2026</span>
     </div>
@@ -513,62 +858,178 @@
         <a href="#projects">PROJECTS</a>
         <a href="#server">SERVER</a>
     </div>
+
 </nav>
-   <!-- =========================
+
+
+<!-- =========================
      WEATHER WIDGET
      ========================= -->
 
-<div class="weather-widget">
+<div class="weather-widget" id="weather-widget">
 
-    <div class="weather-city">
-        📍 <span id="weather-city">Loading...</span>
+    <div class="weather-header">
+
+        <div class="weather-city">
+
+            <span class="weather-location-icon">
+                📍
+            </span>
+
+            <span id="weather-city">
+                Loading...
+            </span>
+
+        </div>
+
+
+        <div class="weather-live">
+
+            <span class="weather-live-dot"></span>
+
+            LIVE WEATHER
+
+        </div>
+
     </div>
 
-    <div class="weather-row">
-        <span class="weather-icon">🌡</span>
-        <span>Temperature</span>
-        <span class="weather-value">
-            <span id="weather-temperature">--</span>°C
-        </span>
+
+    <div class="weather-main">
+
+        <div
+            class="weather-icon-large"
+            id="weather-icon"
+        >
+            ⛅
+        </div>
+
+
+        <div>
+
+            <div class="weather-temperature-large">
+
+                <span
+                    class="weather-temperature-number"
+                    id="weather-temperature"
+                >
+                    --
+                </span>
+
+                <span class="weather-temperature-unit">
+                    °C
+                </span>
+
+            </div>
+
+
+            <div
+                class="weather-condition"
+                id="weather-condition"
+            >
+                Loading weather...
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="weather-row">
-        <span class="weather-icon">💧</span>
-        <span>Humidity</span>
-        <span class="weather-value">
-            <span id="weather-humidity">--</span>%
-        </span>
+
+    <div class="weather-data">
+
+        <div class="weather-row">
+
+            <span class="weather-icon">
+                💧
+            </span>
+
+            <span>
+                Humidity
+            </span>
+
+            <span class="weather-value">
+
+                <span id="weather-humidity">
+                    --
+                </span>
+
+                %
+
+            </span>
+
+        </div>
+
+
+        <div class="weather-row">
+
+            <span class="weather-icon">
+                💨
+            </span>
+
+            <span>
+                Wind
+            </span>
+
+            <span class="weather-value">
+
+                <span id="weather-wind">
+                    --
+                </span>
+
+                km/h
+
+            </span>
+
+        </div>
+
     </div>
 
-    <div class="weather-row">
-        <span class="weather-icon">💨</span>
-        <span>Wind</span>
-        <span class="weather-value">
-            <span id="weather-wind">--</span> km/h
-        </span>
+
+    <div
+        class="weather-updated"
+        id="weather-updated"
+    >
+        UPDATED: --
+
     </div>
 
 </div>
 
+
+<!-- =========================
+     HERO
+     ========================= -->
 
 <section class="hero">
 
     <div class="hero-content">
 
         <div class="status">
+
             <span class="status-dot"></span>
+
             SYSTEM ONLINE
+
         </div>
 
-        <h1>JERRY</h1>
+
+        <h1>
+            JERRY
+        </h1>
+
 
         <div class="subtitle">
             Welcome to my little corner of the Internet.
         </div>
 
+
         <div class="terminal">
-            <strong>root@jerry:~$</strong>
+
+            <strong>
+                root@jerry:~$
+            </strong>
+
             exploring the internet...
+
         </div>
 
     </div>
@@ -576,13 +1037,21 @@
 </section>
 
 
+<!-- =========================
+     ABOUT
+     ========================= -->
+
 <section id="about">
 
     <div class="section-label">
         01 / ABOUT
     </div>
 
-    <h2>关于这里</h2>
+
+    <h2>
+        关于这里
+    </h2>
+
 
     <div class="about">
 
@@ -591,7 +1060,9 @@
         <br><br>
 
         我喜欢各种
-        <span class="highlight">奇奇怪怪但有意思的东西。</span>
+        <span class="highlight">
+            奇奇怪怪但有意思的东西。
+        </span>
 
         <br><br>
 
@@ -603,13 +1074,21 @@
 </section>
 
 
+<!-- =========================
+     PROJECTS
+     ========================= -->
+
 <section id="projects">
 
     <div class="section-label">
         02 / PROJECTS
     </div>
 
-    <h2>我的项目</h2>
+
+    <h2>
+        我的项目
+    </h2>
+
 
     <div class="grid">
 
@@ -619,16 +1098,26 @@
                 PROJECT_001
             </div>
 
-            <h3>Mac Server</h3>
+            <h3>
+                Mac Server
+            </h3>
 
             <p>
                 一台 24 小时运行的 Mac，
                 用来运行 AI、Docker、自动化以及各种服务器服务。
             </p>
 
-            <span class="tag">MACOS</span>
-            <span class="tag">DOCKER</span>
-            <span class="tag">SERVER</span>
+            <span class="tag">
+                MACOS
+            </span>
+
+            <span class="tag">
+                DOCKER
+            </span>
+
+            <span class="tag">
+                SERVER
+            </span>
 
         </div>
 
@@ -639,16 +1128,26 @@
                 PROJECT_002
             </div>
 
-            <h3>Local AI</h3>
+            <h3>
+                Local AI
+            </h3>
 
             <p>
                 在本地运行 AI 模型，
                 尝试把自己的电脑变成一个私人 AI 中心。
             </p>
 
-            <span class="tag">OLLAMA</span>
-            <span class="tag">AI</span>
-            <span class="tag">LLM</span>
+            <span class="tag">
+                OLLAMA
+            </span>
+
+            <span class="tag">
+                AI
+            </span>
+
+            <span class="tag">
+                LLM
+            </span>
 
         </div>
 
@@ -659,15 +1158,22 @@
                 PROJECT_003
             </div>
 
-            <h3>Cloud Infrastructure</h3>
+            <h3>
+                Cloud Infrastructure
+            </h3>
 
             <p>
                 使用 Cloudflare、Docker、
                 GitHub 等工具搭建自己的网络基础设施。
             </p>
 
-            <span class="tag">CLOUDFLARE</span>
-            <span class="tag">GITHUB</span>
+            <span class="tag">
+                CLOUDFLARE
+            </span>
+
+            <span class="tag">
+                GITHUB
+            </span>
 
         </div>
 
@@ -678,14 +1184,18 @@
                 PROJECT_004
             </div>
 
-            <h3>More Things</h3>
+            <h3>
+                More Things
+            </h3>
 
             <p>
                 这里以后会出现更多奇怪的项目。
                 暂时还没想好。
             </p>
 
-            <span class="tag">WIP</span>
+            <span class="tag">
+                WIP
+            </span>
 
         </div>
 
@@ -694,13 +1204,21 @@
 </section>
 
 
+<!-- =========================
+     SERVER
+     ========================= -->
+
 <section id="server">
 
     <div class="section-label">
         03 / SERVER
     </div>
 
-    <h2>我的服务器</h2>
+
+    <h2>
+        我的服务器
+    </h2>
+
 
     <div class="grid">
 
@@ -746,6 +1264,10 @@
 </section>
 
 
+<!-- =========================
+     FOOTER
+     ========================= -->
+
 <footer>
 
     <div>
@@ -761,53 +1283,496 @@
 
 <script>
 
-    /* 鼠标光晕 */
+    /* =========================
+       鼠标光晕
+       ========================= */
 
-    const glow = document.getElementById("glow");
+    const glow =
+        document.getElementById("glow");
 
-    document.addEventListener("mousemove", (event) => {
 
-        glow.style.left = event.clientX + "px";
-        glow.style.top = event.clientY + "px";
+    document.addEventListener(
+        "mousemove",
+        (event) => {
 
-    });
+            glow.style.left =
+                event.clientX + "px";
 
-       /* =========================
+            glow.style.top =
+                event.clientY + "px";
+
+        }
+    );
+
+
+    /* =========================
        WEATHER API
        ========================= */
 
     async function loadWeather() {
 
+        const cityElement =
+            document.getElementById(
+                "weather-city"
+            );
+
+        const temperatureElement =
+            document.getElementById(
+                "weather-temperature"
+            );
+
+        const humidityElement =
+            document.getElementById(
+                "weather-humidity"
+            );
+
+        const windElement =
+            document.getElementById(
+                "weather-wind"
+            );
+
+        const iconElement =
+            document.getElementById(
+                "weather-icon"
+            );
+
+        const conditionElement =
+            document.getElementById(
+                "weather-condition"
+            );
+
+        const updatedElement =
+            document.getElementById(
+                "weather-updated"
+            );
+
+
         try {
 
-            const response = await fetch("/api/weather");
+            const response =
+                await fetch(
+                    "/api/weather",
+                    {
+                        cache: "no-store"
+                    }
+                );
 
-            const data = await response.json();
 
-            document.getElementById("weather-city").textContent =
-                data.city;
+            if (!response.ok) {
 
-            document.getElementById("weather-temperature").textContent =
-                data.temperature;
+                throw new Error(
+                    "Weather API HTTP " +
+                    response.status
+                );
 
-            document.getElementById("weather-humidity").textContent =
-                data.humidity;
+            }
 
-            document.getElementById("weather-wind").textContent =
-                data.wind_speed;
 
-        } catch (error) {
+            const data =
+                await response.json();
 
-            console.error("Weather API error:", error);
 
-            document.getElementById("weather-city").textContent =
+            console.log(
+                "Weather API:",
+                data
+            );
+
+
+            /* =========================
+               API 错误
+               ========================= */
+
+            if (data.error) {
+
+                throw new Error(
+                    data.error
+                );
+
+            }
+
+
+            /* =========================
+               城市
+               ========================= */
+
+            cityElement.textContent =
+                data.city ||
+                "Unknown";
+
+
+            /* =========================
+               温度
+               ========================= */
+
+            temperatureElement.textContent =
+                data.temperature ??
+                "--";
+
+
+            /* =========================
+               湿度
+               ========================= */
+
+            humidityElement.textContent =
+                data.humidity ??
+                "--";
+
+
+            /* =========================
+               风速
+               ========================= */
+
+            windElement.textContent =
+                data.wind_speed ??
+                "--";
+
+
+            /* =========================
+               天气代码
+               ========================= */
+
+            const weatherCode =
+                data.weather_code ??
+                null;
+
+
+            /* =========================
+               天气图标
+               ========================= */
+
+            iconElement.textContent =
+                getWeatherIcon(
+                    weatherCode
+                );
+
+
+            /* =========================
+               天气文字
+               ========================= */
+
+            conditionElement.textContent =
+                getWeatherDescription(
+                    weatherCode
+                );
+
+
+            /* =========================
+               更新时间
+               ========================= */
+
+            updatedElement.textContent =
+                "UPDATED: " +
+                formatWeatherTime(
+                    data.updated_at
+                );
+
+        }
+
+
+        catch (error) {
+
+            console.error(
+                "Weather API error:",
+                error
+            );
+
+
+            cityElement.textContent =
                 "Weather unavailable";
+
+
+            temperatureElement.textContent =
+                "--";
+
+
+            humidityElement.textContent =
+                "--";
+
+
+            windElement.textContent =
+                "--";
+
+
+            iconElement.textContent =
+                "⚠️";
+
+
+            conditionElement.textContent =
+                "Unable to load weather";
+
+
+            updatedElement.textContent =
+                "UPDATED: ERROR";
 
         }
 
     }
 
+
+    /* =========================
+       WMO Weather Code
+       ========================= */
+
+    function getWeatherIcon(code) {
+
+        if (
+            code === null ||
+            code === undefined
+        ) {
+            return "⛅";
+        }
+
+
+        code = Number(code);
+
+
+        if (code === 0) {
+            return "☀️";
+        }
+
+
+        if (
+            code === 1 ||
+            code === 2
+        ) {
+            return "⛅";
+        }
+
+
+        if (code === 3) {
+            return "☁️";
+        }
+
+
+        if (
+            code === 45 ||
+            code === 48
+        ) {
+            return "🌫️";
+        }
+
+
+        if (
+            code === 51 ||
+            code === 53 ||
+            code === 55 ||
+            code === 56 ||
+            code === 57
+        ) {
+            return "🌦️";
+        }
+
+
+        if (
+            code === 61 ||
+            code === 63 ||
+            code === 65 ||
+            code === 66 ||
+            code === 67
+        ) {
+            return "🌧️";
+        }
+
+
+        if (
+            code === 71 ||
+            code === 73 ||
+            code === 75 ||
+            code === 77
+        ) {
+            return "🌨️";
+        }
+
+
+        if (
+            code === 80 ||
+            code === 81 ||
+            code === 82
+        ) {
+            return "🌦️";
+        }
+
+
+        if (
+            code === 95 ||
+            code === 96 ||
+            code === 99
+        ) {
+            return "⛈️";
+        }
+
+
+        return "⛅";
+
+    }
+
+
+    /* =========================
+       Weather Description
+       ========================= */
+
+    function getWeatherDescription(code) {
+
+        if (
+            code === null ||
+            code === undefined
+        ) {
+            return "Current weather";
+        }
+
+
+        code = Number(code);
+
+
+        const descriptions = {
+
+            0: "Clear sky",
+
+            1: "Mainly clear",
+
+            2: "Partly cloudy",
+
+            3: "Overcast",
+
+            45: "Fog",
+
+            48: "Rime fog",
+
+            51: "Light drizzle",
+
+            53: "Drizzle",
+
+            55: "Heavy drizzle",
+
+            56: "Freezing drizzle",
+
+            57: "Heavy freezing drizzle",
+
+            61: "Light rain",
+
+            63: "Rain",
+
+            65: "Heavy rain",
+
+            66: "Freezing rain",
+
+            67: "Heavy freezing rain",
+
+            71: "Light snow",
+
+            73: "Snow",
+
+            75: "Heavy snow",
+
+            77: "Snow grains",
+
+            80: "Light showers",
+
+            81: "Showers",
+
+            82: "Heavy showers",
+
+            95: "Thunderstorm",
+
+            96: "Thunderstorm + hail",
+
+            99: "Thunderstorm + heavy hail"
+
+        };
+
+
+        return descriptions[code] ||
+            "Current weather";
+
+    }
+
+
+    /* =========================
+       更新时间
+       ========================= */
+
+    function formatWeatherTime(value) {
+
+        if (!value) {
+
+            return "--";
+
+        }
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return String(value);
+
+        }
+
+
+        const year =
+            date.getFullYear();
+
+
+        const month =
+            String(
+                date.getMonth() + 1
+            ).padStart(2, "0");
+
+
+        const day =
+            String(
+                date.getDate()
+            ).padStart(2, "0");
+
+
+        const hours =
+            String(
+                date.getHours()
+            ).padStart(2, "0");
+
+
+        const minutes =
+            String(
+                date.getMinutes()
+            ).padStart(2, "0");
+
+
+        return (
+            year +
+            "-" +
+            month +
+            "-" +
+            day +
+            " " +
+            hours +
+            ":" +
+            minutes
+        );
+
+    }
+
+
+    /* =========================
+       启动天气
+       ========================= */
+
     loadWeather();
+
+
+    /* =========================
+       每 10 分钟刷新一次
+       ========================= */
+
+    setInterval(
+        loadWeather,
+        10 * 60 * 1000
+    );
 
 </script>
 
