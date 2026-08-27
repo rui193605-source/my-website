@@ -104,7 +104,7 @@ export default {
 
             // 气压
             surface_pressure:
-              current?.surface_pressure ?? null,
+              current?.pressure_msl ?? null,
 
             // WMO 天气代码
             weather_code:
