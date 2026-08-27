@@ -830,6 +830,38 @@
         }
     }
 
+   /* =========================
+   可点击项目卡片
+   ========================= */
+
+.project-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.project-link::before {
+    content: "OPEN →";
+
+    position: absolute;
+    top: 28px;
+    right: 28px;
+
+    color: #6cff9b;
+
+    font-family: monospace;
+    font-size: 10px;
+
+    opacity: 0;
+
+    transition: 0.3s;
+}
+
+.project-link:hover::before {
+    opacity: 1;
+}
+
 </style>
 </head>
 
@@ -1117,35 +1149,29 @@
     </h2>
 
 
-    <div class="grid">
+    <a href="calculator.html" class="card project-link">
 
-        <div class="card">
+    <div class="card-number">
+        PROJECT_001
+    </div>
 
-            <div class="card-number">
-                PROJECT_001
-            </div>
+    <h3>
+        Calculator
+    </h3>
 
-            <h3>
-                Server
-            </h3>
+    <p>
+        一个支持科学计算、历史记录的计算器。
+    </p>
 
-            <p>
-                用来运行自动化以及各种服务器服务。
-            </p>
+    <span class="tag">
+        CALCULATOR
+    </span>
 
-            <span class="tag">
-                MACOS
-            </span>
+    <span class="tag">
+        SCIENTIFIC
+    </span>
 
-            <span class="tag">
-                DOCKER
-            </span>
-
-            <span class="tag">
-                SERVER
-            </span>
-
-        </div>
+</a>
 
 
         <div class="card">
