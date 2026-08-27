@@ -1382,7 +1382,12 @@
             document.getElementById(
                 "weather-wind"
             );
-
+       
+        const pressureElement =
+            document.getElementById(
+               "weather-pressure"
+            );
+       
         const iconElement =
             document.getElementById(
                 "weather-icon"
@@ -1477,6 +1482,14 @@
             windElement.textContent =
                 data.wind_speed ??
                 "--";
+            /* =========================
+               气压
+               ========================= */
+            pressureElement.textContent =
+                data.pressure ?? "--";
+
+
+           
 
 
             /* =========================
