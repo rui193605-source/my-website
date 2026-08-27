@@ -253,24 +253,24 @@
 
         align-items: center;
 
-        gap: 14px;
+        gap: 18px;
 
         padding: 16px 17px 14px;
     }
 
     .weather-icon-large {
-        width: 50px;
+        width: 70px;
         height: 50px;
 
         display: flex;
         align-items: center;
         justify-content: center;
 
-        border-radius: 12px;
+        border-radius: 15px;
 
         background: rgba(255,255,255,0.035);
 
-        border: 1px solid rgba(255,255,255,0.07);
+        border: 10px solid rgba(255,255,255,0.07);
 
         font-size: 29px;
 
@@ -289,7 +289,7 @@
 
         font-family: monospace;
 
-        font-size: 31px;
+        font-size: 40px;
 
         font-weight: 700;
 
@@ -981,6 +981,30 @@
 
         </div>
 
+       <div class="weather-data">
+
+        <div class="weather-row">
+
+            <span class="weather-icon">
+                💨
+            </span>
+
+            <span>
+                气压
+            </span>
+
+            <span class="weather-value">
+
+                <span id="weather-humidity">
+                    --
+                </span>
+
+                hPa
+
+            </span>
+
+        </div>
+
     </div>
 
 
@@ -988,7 +1012,7 @@
         class="weather-updated"
         id="weather-updated"
     >
-        UPDATED: --
+        更新时间：
 
     </div>
 
