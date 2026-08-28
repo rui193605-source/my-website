@@ -291,6 +291,8 @@ html
         color: white;
     }
 
+
+
     /* =========================页脚========================= */
 
     footer {
@@ -326,19 +328,6 @@ html
             font-size: 11px;
         }
 
-        .weather-widget {
-            position: relative;
-
-            top: auto;
-            right: auto;
-
-            width: calc(100% - 12%);
-
-            margin: 90px 6% 0;
-
-            z-index: 4;
-        }
-
         .hero {
             min-height: auto;
 
@@ -368,6 +357,14 @@ html
 
             gap: 15px;
         }
+
+        @media (max-width: 700px) {
+
+        .image-grid {                        /*手机端图片适配*/
+        grid-template-columns: 1fr;
+        }
+
+            }
     }
 
     /* =========================小屏手机========================= */
@@ -388,37 +385,7 @@ html
             letter-spacing: 0.5px;
         }
 
-        .weather-widget {
-            width: calc(100% - 10%);
-
-            margin-left: 5%;
-            margin-right: 5%;
-        }
-
-        .weather-header {
-            padding-left: 13px;
-            padding-right: 13px;
-        }
-
-        .weather-main {
-            padding-left: 14px;
-            padding-right: 14px;
-        }
-
-        .weather-row {
-            padding-left: 14px;
-            padding-right: 14px;
-        }
-
-        .weather-updated {
-            padding-left: 14px;
-            padding-right: 14px;
-        }
-
-        .weather-live {
-            font-size: 8px;
-        }
-
+        
         .hero {
             padding-left: 5%;
             padding-right: 5%;
@@ -428,7 +395,38 @@ html
             font-size: clamp(55px, 20vw, 90px);
         }
     }
+                                                      /*多个图片动态分布，调整图片参数*/
+    .image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
 
+    margin-top: 40px;
+    }
+
+    .image-grid img {
+    width: 100%;
+    height: auto;
+    display: block;
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(255,255,255,0.1);
+
+    transition:
+        transform 0.3s,
+        border-color 0.3s,
+        box-shadow 0.3s;
+    }
+
+    .image-grid img:hover {
+    transform: translateY(-4px);
+
+    border-color: rgba(108,255,155,0.4);
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,0.3);
+    }
    
 </style>
 </head>
@@ -447,9 +445,69 @@ html
 
     <div>
         <a href="index.html">返回</a>
-        <a href="index.html#项目与展示">项目与展示</a>
     </div>
 </nav>
+
+<!-- =========================项目内容========================= -->
+<section>
+
+    <div class="section-label">
+        
+    </div>
+
+    <h1>
+        海鸥                                  <!--标题-->
+    </h1>
+
+    <div class="about">
+
+        这是一个海鸥                           <!--描述-->
+
+        <br><br>
+        人生的意义是什么？                     <!--爱写什么写什么-->
+        去码头整点薯条。
+        薯条。
+        薯条。
+        <br><br>
+    </div>
+
+
+    <!--放图片-->
+    <div class="image-grid">
+
+    <img src="IMG_0427.JPG" alt="Local AI">
+
+    <img src="IMG_0424.JPG" alt="AI 图片 2">
+
+    <img src="IMG_0425.JPG" alt="AI 图片 3">
+
+    <img src="IMG_0393.JPG" alt="AI 图片 4">
+
+    </div>
+
+
+    <h2 style="margin-top: 60px;">
+    <!--第二个标题-->
+    </h2>
+
+    <div class="about">                             <!--爱写什么写什么-->
+        海鸥，是鸥科、鸥属、普通海鸥的指名亚种。体重394-586克；体长451-510毫米。
+     寿命24年。成鸟夏羽：头、颈白色，背、肩石板灰色；翅上覆羽亦为石板灰色，与背同色；腰、尾上覆羽和尾羽均为纯白色。
+     初级飞羽羽尖白色，具大块的白色翼镜。
+     冬季头及颈散见褐色细纹，有时嘴尖有黑色。
+     虹膜黄色；嘴、脚和趾浅绿黄色。
+    <br><br>
+        海鸥是候鸟。繁殖期主要栖息于北极苔原、森林苔原、荒漠、草地的河流、湖泊、水塘和沼泽中，冬季主要栖息于海岸、河口和港湾。
+    成对或成小群活动或在空中飞翔。在海边和海港，成群的漂浮在水面上，游泳和觅食。
+    海鸥以海滨小鱼、昆虫、软体动物、甲壳类以及耕地里的蠕虫和蛴螬为食。
+    该亚种分布于冰岛和不列颠群岛至白海；冬季到北非。
+    <br><br>
+        筑巢于淡水或咸水湖泊、沼泽、河岸、海边小岛以及地面、芦苇堆及土丘山坡。
+    是最常见的海鸟，成对或成小群活动，在空中飞翔，低空掠过水面，或在水面游荡。
+    在海边、海港，在盛产鱼虾的渔场上，成群的漂浮在水面上，游泳和觅食，低空飞翔，喜欢群集于食物丰盛的海域。
+    海鸥以鱼和虾、其他甲壳类、软体动物、昆虫等水生无脊椎动物为食；也捕食岸边小鱼，拾取岸边及船上丢弃的剩饭残羹。
+    有时也掠食其他鸟（包括其同类）的卵和幼雏。
+</section>                                       <!--到这里结束-->
 
 
 <!-- ========================页脚========================= -->
@@ -464,6 +522,7 @@ html
     </div>
 
 </footer>
+
 
 <!-- =========================鼠标光晕========================= -->
 <script>
