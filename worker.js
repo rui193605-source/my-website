@@ -141,6 +141,137 @@ export default {
       }
     }
 
+
+    // =========================
+    // IP 信息 API
+    // =========================
+    if (url.pathname === "/api/ip") {
+      try {
+        // =========================
+        // 获取访问者 IP
+        // =========================
+
+      const ip =
+        request.headers.get("CF-Connecting-IP") ||
+        request.headers.get("X-Forwarded-For")?.split(",")[0].trim() ||
+        "Unknown";
+
+
+        // =========================
+        // Cloudflare 地理 / 网络信息
+        // =========================
+
+        const cf = request.cf || {};
+
+
+        const data = {
+          // IP 地址
+          ip: ip,
+
+          // 国家
+          country:
+            cf.country || "Unknown",
+
+          // 城市
+          city:
+            cf.city || "Unknown",
+
+          // 地区
+          region:
+            cf.region || "Unknown",
+
+          // 国家 / 地区代码
+          region_code:
+            cf.regionCode || "Unknown",
+
+          // 时区
+          timezone:
+            cf.timezone || "Unknown",
+
+          // 经纬度
+          latitude:
+            cf.latitude ?? null,
+
+          longitude:
+            cf.longitude ?? null,
+
+          // ASN
+          asn:
+            cf.asn ?? null,
+
+          // 网络组织
+          organization:
+            cf.asOrganization || "Unknown",
+
+          // Cloudflare 数据中心
+          colo:
+            cf.colo || "Unknown",
+
+          // HTTP 协议
+          http_protocol:
+            cf.httpProtocol || "Unknown",
+
+          // TLS 版本
+          tls_version:
+            cf.tlsVersion || "Unknown",
+
+          // 请求方法
+          method:
+            request.method
+        };
+
+
+        // =========================
+        // 返回 JSON
+        // =========================
+
+        return new Response(
+          JSON.stringify(data),
+          {
+            status: 200,
+
+            headers: {
+              "Content-Type":
+                "application/json; charset=utf-8",
+
+              "Access-Control-Allow-Origin": "*",
+
+              "Cache-Control":
+                "no-store, no-cache, must-revalidate"
+            }
+          }
+        );
+
+      } catch (error) {
+
+        console.error(
+          "IP API error:",
+          error
+        );
+
+        return new Response(
+          JSON.stringify({
+            error: "IP 信息获取失败",
+
+            message:
+              error?.message ||
+              "Unknown error"
+          }),
+          {
+            status: 500,
+
+            headers: {
+              "Content-Type":
+                "application/json; charset=utf-8",
+
+              "Access-Control-Allow-Origin": "*"
+            }
+          }
+        );
+      }
+    }
+
+
     // =========================
     // 普通网页请求
     // =========================
