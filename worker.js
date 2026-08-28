@@ -142,140 +142,75 @@ export default {
     }
 
 
-    // =========================
-    // IP 信息 API
-    // =========================
+      // =========================
+      // IP 信息 API
+      // =========================
     if (url.pathname === "/api/ip") {
-      try {
-        // =========================
-        // 获取访问者 IP
-        // =========================
 
       const ip =
         request.headers.get("CF-Connecting-IP") ||
         request.headers.get("X-Forwarded-For")?.split(",")[0].trim() ||
         "Unknown";
 
+      const city =
+        request.cf?.city || "Unknown";
 
-        // =========================
-        // Cloudflare 地理 / 网络信息
-        // =========================
+      const region =
+        request.cf?.region || "Unknown";
 
-        const cf = request.cf || {};
+      const country =
+        request.cf?.country || "Unknown";
 
+      const countryCode =
+        request.cf?.regionCode || "Unknown";
 
-        const data = {
-          // IP 地址
-          ip: ip,
+      const timezone =
+        request.cf?.timezone || "Unknown";
 
-          // 国家
-          country:
-            cf.country || "Unknown",
+      const latitude =
+        request.cf?.latitude ?? null;
 
-          // 城市
-          city:
-            cf.city || "Unknown",
+      const longitude =
+        request.cf?.longitude ?? null;
 
-          // 地区
-          region:
-            cf.region || "Unknown",
+      const asn =
+        request.cf?.asn ?? null;
 
-          // 国家 / 地区代码
-          region_code:
-            cf.regionCode || "Unknown",
+      const colo =
+        request.cf?.colo || "Unknown";
 
-          // 时区
-          timezone:
-            cf.timezone || "Unknown",
-
-          // 经纬度
-          latitude:
-            cf.latitude ?? null,
-
-          longitude:
-            cf.longitude ?? null,
-
-          // ASN
-          asn:
-            cf.asn ?? null,
-
-          // 网络组织
-          organization:
-            cf.asOrganization || "Unknown",
-
-          // Cloudflare 数据中心
-          colo:
-            cf.colo || "Unknown",
-
-          // HTTP 协议
-          http_protocol:
-            cf.httpProtocol || "Unknown",
-
-          // TLS 版本
-          tls_version:
-            cf.tlsVersion || "Unknown",
-
-          // 请求方法
-          method:
-            request.method
-        };
-
-
-        // =========================
-        // 返回 JSON
-        // =========================
-
-        return new Response(
-          JSON.stringify(data),
-          {
+      return new Response(
+        JSON.stringify({
+            ip: ip,
+            city: city,
+            region: region,
+            country: country,
+            country_code: countryCode,
+            timezone: timezone,
+            latitude: latitude,
+            longitude: longitude,
+            asn: asn,
+            cloudflare_colocation: colo
+        }),
+        {
             status: 200,
 
             headers: {
-              "Content-Type":
-                "application/json; charset=utf-8",
+                "Content-Type":
+                    "application/json; charset=utf-8",
 
-              "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Origin": "*",
 
-              "Cache-Control":
-                "no-store, no-cache, must-revalidate"
-            }
-          }
-        );
-
-      } catch (error) {
-
-        console.error(
-          "IP API error:",
-          error
-        );
-
-        return new Response(
-          JSON.stringify({
-            error: "IP 信息获取失败",
-
-            message:
-              error?.message ||
-              "Unknown error"
-          }),
-          {
-            status: 500,
-
-            headers: {
-              "Content-Type":
-                "application/json; charset=utf-8",
-
-              "Access-Control-Allow-Origin": "*"
-            }
-          }
-        );
-      }
-    }
-
-
+                "Cache-Control":
+                    "no-store, no-cache, must-revalidate"
+                  }
+                }
+              );
+      } 
     // =========================
     // 普通网页请求
     // =========================
 
-    return env.ASSETS.fetch(request);
+return env.ASSETS.fetch(request);
   }
-};
+}
