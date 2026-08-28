@@ -573,11 +573,8 @@ html
     .grid {
         display: grid;
 
-        grid-template-columns:
-            repeat(auto-fit, minmax(110px, 1fr));            .card {
-                width: 110px;
-            }
-
+        grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));            
+        
         gap: 18px;
     }
 
@@ -587,6 +584,8 @@ html
         padding: 28px;
 
         min-height: 190px;
+
+        width: 250px;
 
         background: rgba(255,255,255,0.035);
 
@@ -1150,7 +1149,7 @@ html
         我的项目
     </h2>
 
-
+    <div class="grid">
     <a href="calculator.html" class="card project-link">
 
     <div class="card-number">
@@ -1847,4 +1846,3 @@ html
 
 </body>
 </html>
-
