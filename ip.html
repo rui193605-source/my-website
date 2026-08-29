@@ -1271,7 +1271,6 @@
                 city: raw.city ?? raw.CITY ?? "Unknown",
                 region: raw.region ?? raw.REGION ?? "Unknown",
                 country: raw.country ?? raw.COUNTRY ?? "Unknown",
-                country_code: raw.country_code ?? raw.countryCode ?? raw["country-code"] ?? "Unknown",
                 timezone: raw.timezone ?? raw.TIMEZONE ?? "Unknown",
                 latitude: raw.latitude ?? raw.LATITUDE ?? "Unknown",
                 longitude: raw.longitude ?? raw.LONGITUDE ?? "Unknown",
@@ -1285,7 +1284,6 @@
                 city: document.getElementById("city"),
                 region: document.getElementById("region"),
                 country: document.getElementById("country"),
-                "country-code": document.getElementById("country-code"),
                 timezone: document.getElementById("timezone"),
                 latitude: document.getElementById("latitude"),
                 longitude: document.getElementById("longitude"),
@@ -1297,7 +1295,6 @@
             if (map.city) map.city.textContent = data.city || "Unknown";
             if (map.region) map.region.textContent = data.region || "Unknown";
             if (map.country) map.country.textContent = formatCountry(data.country);
-            if (map["country-code"]) map["country-code"].textContent = data.country_code || "Unknown";
             if (map.timezone) map.timezone.textContent = formatTimezone(data.timezone);
             if (map.latitude) map.latitude.textContent = formatLatitude(data.latitude);
             if (map.longitude) map.longitude.textContent = formatLongitude(data.longitude);
@@ -1312,7 +1309,6 @@
                 "city",
                 "region",
                 "country",
-                "country-code",
                 "timezone",
                 "latitude",
                 "longitude",
@@ -1402,29 +1398,30 @@
 
     /* =========================国家名称换算函数========================= */
     function formatCountry(country) {
-    if (!country || country === "Unknown") {
-        return "Unknown";
-    }
+        if (!country || country === "Unknown") {
+            return "Unknown";
+        }
 
-    try {
-        const displayNames = new Intl.DisplayNames(
-            ["zh-CN"],
-            {
-                type: "region"
-            }
-        );
+        const normalized = String(country).trim();
 
-        return displayNames.of(country.toUpperCase()) || country;
+        if (normalized.toUpperCase() === "TW") {
+            return "中国";
+        }
 
-    } 
-    catch (error) {
-        console.error("Country format error:", error);
-        return country;
+        try {
+            const displayNames = new Intl.DisplayNames(
+                ["zh-CN"],
+                {
+                    type: "region"
+                }
+            );
+
+            return displayNames.of(normalized.toUpperCase()) || normalized;
+        } catch (error) {
+            console.error("Country format error:", error);
+            return normalized;
         }
     }
-
-    /* =========================国家名称换算========================= */
-    if (country.toUpperCase() === "TW") {return "中国";}
 
     loadIPInfo();
 </script>
