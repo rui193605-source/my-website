@@ -964,17 +964,12 @@
     font-size: 12px;
 }
 
-
-
 </style>
-
 </head>
+
 <body>
-
-
 <!-- =========================鼠标光晕========================= -->
 <div class="glow" id="glow"></div>
-
 
 <!-- =========================顶部导航========================= -->
 <nav>
@@ -1015,7 +1010,7 @@
                 当前的IP地址
                 </div>
 
-                <div class="ip-address">
+                <div class="ip-address" id="ip">
                     103.151.172.86
                 </div>
             </div>
@@ -1038,7 +1033,7 @@
                 地区
                 </span>
 
-                <span class="info-value">
+                <span class="info-value" id="city">
                 香港
                 </span>
             </div>
@@ -1049,7 +1044,7 @@
                 国家/省份
                 </span>
 
-                <span class="info-value">
+                <span class="info-value" id="region">
                 🇭🇰 HK
                 </span>
             </div>
@@ -1060,7 +1055,7 @@
                 时区
                 </span>
 
-                <span class="info-value">
+                <span class="info-value" id="timezone">
                 Asia/Hong_Kong
                 </span>
             </div>
@@ -1094,7 +1089,7 @@
                     纬度
                     </span>
 
-                    <strong>
+                    <strong id="latitude">
                     22.27832
                     </strong>
                 </div>
@@ -1105,7 +1100,7 @@
                     经度
                     </span>
 
-                    <strong>
+                    <strong id="longitude">
                     114.17469
                     </strong>
                 </div>
@@ -1127,7 +1122,7 @@
             ASN
             </h2>
 
-            <div class="big-value">
+            <div class="big-value" id="asn">
             AS134972
             </div>
 
@@ -1150,7 +1145,7 @@
                 Edge Network
             </h2>
 
-            <div class="big-value">
+            <div class="big-value" id="cloudflare-colocation">
                 HKG
             </div>
 
@@ -1169,7 +1164,7 @@
                 04 / 地区
             </div>
 
-            <h2>
+            <h2 id="country">
                 Hong Kong
             </h2>
 
@@ -1259,24 +1254,140 @@
 </footer>
 
 
+<script>
+    /* =========================IP 信息 API========================= */
+
+    async function loadIPInfo() {
+        try {
+            const response = await fetch("/api/ip", { cache: "no-store" });
+
+            if (!response.ok) {
+                throw new Error("IP API HTTP " + response.status);
+            }
+
+            const raw = await response.json();
+            const data = {
+                ip: raw.ip ?? raw.IP ?? raw.ip_address ?? "Unknown",
+                city: raw.city ?? raw.CITY ?? "Unknown",
+                region: raw.region ?? raw.REGION ?? "Unknown",
+                country: raw.country ?? raw.COUNTRY ?? "Unknown",
+                country_code: raw.country_code ?? raw.countryCode ?? raw["country-code"] ?? "Unknown",
+                timezone: raw.timezone ?? raw.TIMEZONE ?? "Unknown",
+                latitude: raw.latitude ?? raw.LATITUDE ?? "Unknown",
+                longitude: raw.longitude ?? raw.LONGITUDE ?? "Unknown",
+                asn: raw.asn ?? raw.ASN ?? "Unknown",
+                cloudflare_colocation: raw.cloudflare_colocation ?? raw.cloudflareColocation ?? raw["cloudflare-colocation"] ?? "Unknown"
+            };
+            console.log("IP API:", data);
+
+            const map = {
+                ip: document.getElementById("ip"),
+                city: document.getElementById("city"),
+                region: document.getElementById("region"),
+                country: document.getElementById("country"),
+                "country-code": document.getElementById("country-code"),
+                timezone: document.getElementById("timezone"),
+                latitude: document.getElementById("latitude"),
+                longitude: document.getElementById("longitude"),
+                asn: document.getElementById("asn"),
+                "cloudflare-colocation": document.getElementById("cloudflare-colocation")
+            };
+
+            if (map.ip) map.ip.textContent = data.ip || "Unknown";
+            if (map.city) map.city.textContent = data.city || "Unknown";
+            if (map.region) map.region.textContent = data.region || "Unknown";
+            if (map.country) map.country.textContent = data.country || "Unknown";
+            if (map["country-code"]) map["country-code"].textContent = data.country_code || "Unknown";
+            if (map.timezone) map.timezone.textContent = formatTimezone(data.timezone);
+            if (map.latitude) map.latitude.textContent = data.latitude || "Unknown";
+            if (map.longitude) map.longitude.textContent = data.longitude || "Unknown";
+            if (map.asn) map.asn.textContent = data.asn ? "AS" + data.asn : "Unknown";
+            if (map["cloudflare-colocation"]) map["cloudflare-colocation"].textContent = data.cloudflare_colocation || "Unknown";
+        } catch (error) {
+            console.error("IP API error:", error);
+
+            const elements = [
+                "ip",
+                "city",
+                "region",
+                "country",
+                "country-code",
+                "timezone",
+                "latitude",
+                "longitude",
+                "asn",
+                "cloudflare-colocation"
+            ];
+
+            elements.forEach(function (id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = "Unavailable";
+                }
+            });
+        }
+    }
+
+    function formatTimezone(timezone) {
+        if (!timezone) return "Unknown";
+
+        const parts = timezone.split("/");
+        if (parts.length < 2) return timezone;
+
+        const continent = parts[0];
+
+        try {
+            const now = new Date();
+            const formatter = new Intl.DateTimeFormat("en-US", {
+                timeZone: timezone,
+                timeZoneName: "longOffset"
+            });
+
+            const formatted = formatter.formatToParts(now);
+            const offsetPart = formatted.find(function (part) {
+                return part.type === "timeZoneName";
+            });
+
+            if (!offsetPart) return timezone;
+
+            let offset = offsetPart.value.replace("GMT", "");
+            if (offset === "") return continent + " / 0";
+
+            const match = offset.match(/([+-])(\d{2}):?(\d{2})?/);
+            if (!match) return timezone;
+
+            const sign = match[1];
+            const hours = Number(match[2]);
+            const minutes = match[3] ? Number(match[3]) : 0;
+
+            let offsetText;
+
+            if (minutes === 0) {
+                offsetText = sign === "+" ? "+" + hours + "E" : "-" + hours + "W";
+            } else {
+                offsetText = sign === "+"
+                    ? "+" + hours + ":" + String(minutes).padStart(2, "0") + "E"
+                    : "-" + hours + ":" + String(minutes).padStart(2, "0") + "W";
+            }
+
+            return continent + " / " + offsetText;
+        } catch (error) {
+            console.error("Timezone format error:", error);
+            return timezone;
+        }
+    }
+
+    loadIPInfo();
+</script>
+
 <!-- =========================鼠标光晕========================= -->
 <script>
-    const glow =
-        document.getElementById("glow");
+    const glow = document.getElementById("glow");
 
-
-    document.addEventListener(
-        "mousemove",
-        (event) => {
-
-            glow.style.left =
-                event.clientX + "px";
-
-            glow.style.top =
-                event.clientY + "px";
-
-        }
-    );
+    document.addEventListener("mousemove", (event) => {
+        glow.style.left = event.clientX + "px";
+        glow.style.top = event.clientY + "px";
+    });
 </script>
 
 </body>
