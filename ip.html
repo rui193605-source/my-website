@@ -265,7 +265,7 @@
     }
 
     h2 {
-        font-size: 42px;
+        font-size: 50px;
 
         margin: 0 0 45px;
 
@@ -987,7 +987,7 @@
 <main class="ip-page">
 
     <div class="page-label">
-    Network＆Infoemation
+    Network＆Information
     </div>
 
     <h1>
@@ -1011,7 +1011,7 @@
                 </div>
 
                 <div class="ip-address" id="ip">
-                    103.151.172.86
+                    
                 </div>
             </div>
 
@@ -1034,18 +1034,18 @@
                 </span>
 
                 <span class="info-value" id="city">
-                香港
+                
                 </span>
             </div>
 
 
             <div>
                 <span class="info-label">
-                国家/省份
+                省份
                 </span>
 
                 <span class="info-value" id="region">
-                🇭🇰 HK
+                
                 </span>
             </div>
 
@@ -1056,7 +1056,7 @@
                 </span>
 
                 <span class="info-value" id="timezone">
-                Asia/Hong_Kong
+                
                 </span>
             </div>
 
@@ -1090,7 +1090,7 @@
                     </span>
 
                     <strong id="latitude">
-                    22.27832
+                    
                     </strong>
                 </div>
 
@@ -1101,7 +1101,7 @@
                     </span>
 
                     <strong id="longitude">
-                    114.17469
+                    
                     </strong>
                 </div>
 
@@ -1119,11 +1119,11 @@
             </div>
 
             <h2>
-            ASN
+            
             </h2>
 
             <div class="big-value" id="asn">
-            AS134972
+            
             </div>
 
             <p>
@@ -1146,7 +1146,7 @@
             </h2>
 
             <div class="big-value" id="cloudflare-colocation">
-                HKG
+                
             </div>
 
             <p>
@@ -1165,7 +1165,7 @@
             </div>
 
             <h2 id="country">
-                Hong Kong
+                
             </h2>
 
             <p class="description">
@@ -1258,6 +1258,10 @@
     /* =========================IP 信息 API========================= */
 
     async function loadIPInfo() {
+
+        /* =========================国家名称换算========================= */
+        if (country.toUpperCase() === "TW") {return "中国";}
+
         try {
             const response = await fetch("/api/ip", { cache: "no-store" });
 
