@@ -450,64 +450,63 @@
 </nav>
 
 
-
 <body>
 
-    <h2>✈ AIRCRAFT TEST</h2>
+<h2>✈ ADS-B API Test</h2>
 
-    <button onclick="getAircraft()">获取飞机</button>
+<button onclick="test()">测试 API</button>
 
-    <p id="status">等待请求...</p>
+<pre id="output">等待测试...</pre>
 
-    <pre id="output"></pre>
+<script>
 
-    <script>
-        async function getAircraft() {
+async function test() {
 
-            const status = document.getElementById("status");
-            const output = document.getElementById("output");
+    const output = document.getElementById("output");
 
-            status.textContent = "正在获取...";
-            output.textContent = "";
+    const url =
+        "https://opendata.adsb.fi/api/v3/lat/35.6895/lon/139.6917/dist/25";
 
-            // 东京
-            const lat = 35.6895;
-            const lon = 139.6917;
+    output.textContent =
+        "正在请求：\n" + url + "\n\n";
 
-            // 25 海里
-            const dist = 25;
+    try {
 
-            const url =
-                `https://opendata.adsb.fi/api/v3/lat/${lat}/lon/${lon}/dist/${dist}`;
+        const response = await fetch(url);
 
-            try {
+        output.textContent +=
+            "HTTP 状态：" + response.status + "\n" +
+            "HTTP OK：" + response.ok + "\n\n";
 
-                const response = await fetch(url);
+        const text = await response.text();
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+        output.textContent +=
+            "服务器返回：\n\n" +
+            text;
 
-                const data = await response.json();
+    } catch (error) {
 
-                status.textContent =
-                    `获取成功：${data.ac?.length ?? 0} 架飞机`;
+        output.textContent +=
+            "========== 请求失败 ==========\n\n" +
+            "Name:\n" +
+            error.name + "\n\n" +
 
-                output.textContent =
-                    JSON.stringify(data, null, 2);
+            "Message:\n" +
+            error.message + "\n\n" +
 
-            } catch (error) {
+            "String:\n" +
+            error.toString();
 
-                status.textContent = "获取失败";
+        console.error(error);
 
-                output.textContent = error.toString();
+    }
 
-                console.error(error);
-            }
-        }
-    </script>
+}
+
+</script>
 
 </body>
+
 
 
 
