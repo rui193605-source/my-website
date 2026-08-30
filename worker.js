@@ -132,15 +132,39 @@ export default {
       );
     }
 
-    // =========================// ADS-B API// =========================
-  if (url.pathname === "/api/adsb") {
-    try {
-      const adsbUrl =
-        "https://opendata.adsb.fi/api/v3/lat/35.6895/lon/139.6917/dist/25";
+    // ========================// ADS-B API// =========================
+if (url.pathname === "/api/adsb") {
+  try {
+    // 获取访问者的大致位置
+    const latitude = request.cf?.latitude;
+    const longitude = request.cf?.longitude;
 
-      const response = await fetch(adsbUrl);
+    if (latitude === undefined || longitude === undefined) {
+      return new Response(
+        JSON.stringify({
+          error: "无法获取访问者地理位置"
+        }),
+        {
+          status: 400,
+          headers: {
+            "Content-Type": "application/json; charset=utf-8",
+            "Access-Control-Allow-Origin": "*"
+          }
+        }
+      );
+    }
 
-      const data = await response.text();
+    // 查询半径，单位：NM
+    const dist = 25;
+
+    const adsbUrl =
+      `https://opendata.adsb.fi/api/v3/lat/${encodeURIComponent(latitude)}` +
+      `/lon/${encodeURIComponent(longitude)}` +
+      `/dist/${dist}`;
+
+    const response = await fetch(adsbUrl);
+
+    const data = await response.text();
 
     if (!response.ok) {
       return new Response(
@@ -165,11 +189,12 @@ export default {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
         "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-store"
+        "Cache-Control": "no-store, no-cache, must-revalidate"
       }
     });
 
   } catch (error) {
+    console.error("ADS-B API error:", error);
 
     return new Response(
       JSON.stringify({
@@ -182,10 +207,10 @@ export default {
           "Content-Type": "application/json; charset=utf-8",
           "Access-Control-Allow-Origin": "*"
         }
-        }
-      );
-    }
+      }
+    );
   }
+}
 
     // =========================// 普通网页请求// =========================
     return env.ASSETS.fetch(request);
