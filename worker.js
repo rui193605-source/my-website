@@ -132,11 +132,14 @@ export default {
       );
     }
 
-    // =========================// ADS-B / Airplanes.live TEST// =========================
-if (url.pathname === "/api/adsb") {
+    if (url.pathname === "/api/adsb") {
   try {
+    const lat = 35.6895;
+    const lon = 139.6917;
+    const dist = 25;
+
     const adsbUrl =
-      "https://api.airplanes.live/v2/point/35.6895/139.6917/25";
+      `https://api.adsb.one/v2/point/${lat}/${lon}/${dist}`;
 
     const response = await fetch(adsbUrl, {
       method: "GET",
@@ -150,7 +153,7 @@ if (url.pathname === "/api/adsb") {
     if (!response.ok) {
       return new Response(
         JSON.stringify({
-          error: "Airplanes.live 请求失败",
+          error: "ADSB One 请求失败",
           status: response.status,
           statusText: response.statusText,
           response: data
@@ -177,7 +180,7 @@ if (url.pathname === "/api/adsb") {
   } catch (error) {
     return new Response(
       JSON.stringify({
-        error: "Worker 请求 Airplanes.live 时发生异常",
+        error: "Worker 请求 ADSB One 时发生异常",
         message: error?.message || "Unknown error"
       }),
       {
