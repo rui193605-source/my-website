@@ -132,23 +132,13 @@ export default {
       );
     }
 
-    // =========================// ADS-B / OpenSky API TEST// =========================
+    // =========================// ADS-B / Airplanes.live TEST// =========================
 if (url.pathname === "/api/adsb") {
   try {
-    // 东京附近
-    const lamin = 35.2;
-    const lamax = 36.2;
-    const lomin = 139.0;
-    const lomax = 140.2;
+    const adsbUrl =
+      "https://api.airplanes.live/v2/point/35.6895/139.6917/25";
 
-    const openskyURL =
-      `https://opensky-network.org/api/states/all` +
-      `?lamin=${lamin}` +
-      `&lomin=${lomin}` +
-      `&lamax=${lamax}` +
-      `&lomax=${lomax}`;
-
-    const response = await fetch(openskyURL, {
+    const response = await fetch(adsbUrl, {
       method: "GET",
       headers: {
         "Accept": "application/json"
@@ -160,7 +150,7 @@ if (url.pathname === "/api/adsb") {
     if (!response.ok) {
       return new Response(
         JSON.stringify({
-          error: "OpenSky 请求失败",
+          error: "Airplanes.live 请求失败",
           status: response.status,
           statusText: response.statusText,
           response: data
@@ -185,11 +175,9 @@ if (url.pathname === "/api/adsb") {
     });
 
   } catch (error) {
-    console.error("OpenSky API error:", error);
-
     return new Response(
       JSON.stringify({
-        error: "Worker 请求 OpenSky 时发生异常",
+        error: "Worker 请求 Airplanes.live 时发生异常",
         message: error?.message || "Unknown error"
       }),
       {
