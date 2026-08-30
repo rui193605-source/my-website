@@ -132,70 +132,50 @@ export default {
       );
     }
 
-    // ========================// ADS-B API// =========================
-if (url.pathname === "/api/adsb") {
+    // =========================// ADS-B API// =========================
+  if (url.pathname === "/api/adsb") {
   try {
-    // 获取访问者的大致位置
-    const latitude = request.cf?.latitude;
-    const longitude = request.cf?.longitude;
-
-    if (latitude === undefined || longitude === undefined) {
-      return new Response(
-        JSON.stringify({
-          error: "无法获取访问者地理位置"
-        }),
-        {
-          status: 400,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*"
-          }
-        }
-      );
-    }
-
-    // 查询半径，单位：NM
+    const latitude = request.cf?.latitude ?? 35.6895;
+    const longitude = request.cf?.longitude ?? 139.6917;
     const dist = 25;
 
     const adsbUrl =
-      `https://opendata.adsb.fi/api/v3/lat/${encodeURIComponent(latitude)}` +
-      `/lon/${encodeURIComponent(longitude)}` +
-      `/dist/${dist}`;
+      `https://opendata.adsb.fi/api/v3/lat/${latitude}` +
+      `/lon/${longitude}/dist/${dist}`;
 
-    const response = await fetch(adsbUrl);
-
-    const data = await response.text();
-
-    if (!response.ok) {
-      return new Response(
-        JSON.stringify({
-          error: "ADS-B 请求失败",
-          status: response.status,
-          statusText: response.statusText,
-          response: data
-        }),
-        {
-          status: 502,
-          headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*"
-          }
-        }
-      );
-    }
-
-    return new Response(data, {
-      status: 200,
+    const adsbRequest = new Request(adsbUrl, {
+      method: "GET",
       headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-store, no-cache, must-revalidate"
+        "Accept": "application/json",
+        "User-Agent": "JERRY-ADS-B/1.0"
       }
     });
 
-  } catch (error) {
-    console.error("ADS-B API error:", error);
+    const response = await fetch(adsbRequest);
 
+    const data = await response.text();
+
+    return new Response(
+      JSON.stringify({
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        contentType: response.headers.get("content-type"),
+        server: response.headers.get("server"),
+        cfRay: response.headers.get("cf-ray"),
+        data: data
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-store"
+        }
+      }
+    );
+
+  } catch (error) {
     return new Response(
       JSON.stringify({
         error: "Worker 请求 ADS-B 时发生异常",
@@ -206,11 +186,11 @@ if (url.pathname === "/api/adsb") {
         headers: {
           "Content-Type": "application/json; charset=utf-8",
           "Access-Control-Allow-Origin": "*"
+          }
         }
-      }
-    );
+      );
+    }
   }
-}
 
     // =========================// 普通网页请求// =========================
     return env.ASSETS.fetch(request);
