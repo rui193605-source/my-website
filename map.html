@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>位置查看</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        margin: 0;
+        background: #05070a;
+        color: #e8edf2;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* =========================
+       背景网格
+    ========================= */
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.16;
+
+        background-image:
+            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+
+        background-size: 45px 45px;
+
+        mask-image: linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+    }
+
+    /* =========================
+       顶部导航
+    ========================= */
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 70px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 7%;
+
+        background: rgba(5,7,10,0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+
+        z-index: 10;
+    }
+
+    .logo {
+        font-weight: 800;
+        letter-spacing: 4px;
+        font-size: 18px;
+    }
+
+    .logo span {
+        opacity: 0.45;
+    }
+
+    nav a {
+        color: #aeb8c2;
+        text-decoration: none;
+        margin-left: 28px;
+        font-size: 13px;
+        letter-spacing: 1px;
+        transition: 0.25s;
+    }
+
+    nav a:hover {
+        color: white;
+    }
+
+    /* =========================
+       主区域
+    ========================= */
+
+    .hero {
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+
+        padding: 120px 8% 100px;
+
+        position: relative;
+    }
+
+    .hero-content {
+        width: 100%;
+        max-width: 1000px;
+        margin: auto;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+
+        padding: 8px 13px;
+
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 999px;
+
+        background: rgba(255,255,255,0.035);
+
+        color: #9ca7b2;
+
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: #6cff9b;
+
+        box-shadow:
+            0 0 10px #6cff9b;
+
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%,100% {
+            opacity: 0.45;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    h1 {
+        margin: 25px 0 10px;
+
+        font-size: clamp(55px, 10vw, 120px);
+
+        line-height: 0.9;
+
+        letter-spacing: -6px;
+
+        font-weight: 900;
+
+        background: linear-gradient(
+            120deg,
+            #ffffff,
+            #9aa6b2
+        );
+
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        color: transparent;
+    }
+
+    .subtitle {
+        font-size: clamp(17px, 2vw, 25px);
+
+        color: #9da8b3;
+
+        margin-top: 30px;
+
+        margin-bottom: 45px;
+    }
+
+    /* =========================
+       查询面板
+    ========================= */
+
+    .lookup-panel {
+        width: 100%;
+
+        border: 1px solid rgba(255,255,255,0.10);
+
+        background: rgba(255,255,255,0.035);
+
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+
+        padding: 28px;
+
+        box-shadow:
+            0 0 40px rgba(108,255,155,0.025);
+    }
+
+    .panel-label {
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 12px;
+
+        letter-spacing: 2px;
+
+        margin-bottom: 12px;
+    }
+
+    .search-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-input {
+        flex: 1;
+
+        min-width: 0;
+
+        height: 52px;
+
+        padding: 0 17px;
+
+        border: 1px solid rgba(255,255,255,0.10);
+
+        background: rgba(0,0,0,0.25);
+
+        color: white;
+
+        outline: none;
+
+        font-size: 15px;
+
+        font-family: inherit;
+
+        transition: 0.25s;
+    }
+
+    .search-input:focus {
+        border-color: rgba(108,255,155,0.55);
+
+        box-shadow:
+            0 0 20px rgba(108,255,155,0.06);
+    }
+
+    .search-input::placeholder {
+        color: #66717c;
+    }
+
+    .search-button {
+        height: 52px;
+
+        padding: 0 24px;
+
+        border: 1px solid rgba(108,255,155,0.35);
+
+        background: rgba(108,255,155,0.08);
+
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-weight: 700;
+
+        letter-spacing: 1px;
+
+        cursor: pointer;
+
+        transition: 0.25s;
+    }
+
+    .search-button:hover {
+        background: rgba(108,255,155,0.16);
+
+        border-color: #6cff9b;
+    }
+
+    .search-button:disabled {
+        opacity: 0.45;
+
+        cursor: wait;
+    }
+
+    /* =========================
+       查询结果
+    ========================= */
+
+    .results {
+        margin-top: 22px;
+
+        display: none;
+    }
+
+    .result-card {
+        border-top: 1px solid rgba(255,255,255,0.08);
+
+        padding-top: 22px;
+    }
+
+    .result-name {
+        font-size: 22px;
+
+        font-weight: 700;
+
+        color: white;
+
+        margin-bottom: 7px;
+    }
+
+    .result-address {
+        color: #77828d;
+
+        font-size: 13px;
+
+        line-height: 1.7;
+
+        margin-bottom: 25px;
+    }
+
+    .data-grid {
+        display: grid;
+
+        grid-template-columns:
+            repeat(4, 1fr);
+
+        gap: 10px;
+    }
+
+    .data-box {
+        border: 1px solid rgba(255,255,255,0.07);
+
+        background: rgba(0,0,0,0.18);
+
+        padding: 17px;
+    }
+
+    .data-label {
+        color: #68737e;
+
+        font-family: monospace;
+
+        font-size: 10px;
+
+        letter-spacing: 1.5px;
+
+        margin-bottom: 9px;
+    }
+
+    .data-value {
+        color: #e8edf2;
+
+        font-family: monospace;
+
+        font-size: 15px;
+
+        word-break: break-word;
+    }
+
+    .coordinates {
+        color: #6cff9b;
+    }
+
+    /* =========================
+       反向解析
+    ========================= */
+
+    .reverse-section {
+        margin-top: 18px;
+
+        padding-top: 22px;
+
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .reverse-title {
+        color: #89949f;
+
+        font-family: monospace;
+
+        font-size: 12px;
+
+        letter-spacing: 1.5px;
+
+        margin-bottom: 12px;
+    }
+
+    .reverse-row {
+        display: flex;
+
+        gap: 10px;
+    }
+
+    .coordinate-input {
+        width: 100%;
+
+        height: 46px;
+
+        padding: 0 14px;
+
+        border: 1px solid rgba(255,255,255,0.08);
+
+        background: rgba(0,0,0,0.25);
+
+        color: white;
+
+        outline: none;
+
+        font-family: monospace;
+
+        font-size: 13px;
+    }
+
+    .reverse-button {
+        flex-shrink: 0;
+
+        height: 46px;
+
+        padding: 0 18px;
+
+        border: 1px solid rgba(255,255,255,0.12);
+
+        background: rgba(255,255,255,0.04);
+
+        color: #b9c3cc;
+
+        cursor: pointer;
+
+        font-family: monospace;
+
+        transition: 0.25s;
+    }
+
+    .reverse-button:hover {
+        color: white;
+
+        border-color: rgba(255,255,255,0.3);
+
+        background: rgba(255,255,255,0.08);
+    }
+
+    /* =========================
+       状态信息
+    ========================= */
+
+    .message {
+        margin-top: 18px;
+
+        color: #77828d;
+
+        font-family: monospace;
+
+        font-size: 12px;
+
+        display: none;
+    }
+
+    .message.error {
+        color: #ff7f7f;
+    }
+
+    /* =========================
+       页脚
+    ========================= */
+
+    footer {
+        padding: 80px 8% 40px;
+
+        color: #ffffff;
+
+        font-family: monospace;
+
+        font-size: 17px;
+
+        font-weight: 700;
+
+        display: flex;
+
+        justify-content: space-between;
+
+        border-top:
+            1px solid rgb(255,255,255);
+    }
+
+    /* =========================
+       手机端
+    ========================= */
+
+    @media (max-width: 700px) {
+
+        nav {
+            padding: 0 5%;
+        }
+
+        nav a {
+            margin-left: 12px;
+
+            font-size: 11px;
+        }
+
+        .hero {
+            min-height: auto;
+
+            padding:
+                110px 6% 90px;
+        }
+
+        h1 {
+            letter-spacing: -4px;
+        }
+
+        .lookup-panel {
+            padding: 20px;
+        }
+
+        .search-row {
+            flex-direction: column;
+        }
+
+        .search-button {
+            width: 100%;
+        }
+
+        .data-grid {
+            grid-template-columns:
+                repeat(2, 1fr);
+        }
+
+        .reverse-row {
+            flex-direction: column;
+        }
+
+        .reverse-button {
+            width: 100%;
+        }
+
+        footer {
+            flex-direction: column;
+
+            gap: 15px;
+        }
+    }
+
+    /* =========================
+       小屏手机
+    ========================= */
+
+    @media (max-width: 420px) {
+
+        nav .logo {
+            font-size: 15px;
+
+            letter-spacing: 3px;
+        }
+
+        nav a {
+            margin-left: 8px;
+
+            font-size: 9px;
+
+            letter-spacing: 0.5px;
+        }
+
+        .hero {
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        h1 {
+            font-size: clamp(
+                48px,
+                18vw,
+                80px
+            );
+        }
+
+        .lookup-panel {
+            padding: 16px;
+        }
+
+        .data-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- =========================
+     鼠标光晕
+========================= -->
+
+<div class="glow" id="glow"></div>
+
+
+<!-- =========================
+     顶部导航
+========================= -->
+
+<nav>
+    <div class="logo">
+        JERRY<span> / 2026</span>
+    </div>
+
+    <div>
+        <a href="index.html">返回</a>
+    </div>
+</nav>
+
+
+<!-- =========================
+     主区域
+========================= -->
+
+<main class="hero">
+
+    <div class="hero-content">
+
+        <div class="status">
+            <span class="status-dot"></span>
+            COORDINATE SYSTEM ONLINE
+        </div>
+
+        <h1>
+            COORDINATE
+        </h1>
+
+        <div class="subtitle">
+            Location &amp; Geographic Data Lookup
+        </div>
+
+
+        <!-- =========================
+             地点查询
+        ========================= -->
+
+        <div class="lookup-panel">
+
+            <div class="panel-label">
+                LOCATION SEARCH
+            </div>
+
+            <div class="search-row">
+
+                <input
+                    id="searchInput"
+                    class="search-input"
+                    type="text"
+                    placeholder="输入地点，例如 Tokyo Tower"
+                    autocomplete="off"
+                >
+
+                <button
+                    id="searchButton"
+                    class="search-button"
+                    type="button"
+                >
+                    SEARCH
+                </button>
+
+            </div>
+
+
+            <div
+                id="message"
+                class="message"
+            ></div>
+
+
+            <!-- =========================
+                 查询结果
+            ========================= -->
+
+            <div
+                id="results"
+                class="results"
+            >
+
+                <div class="result-card">
+
+                    <div
+                        id="resultName"
+                        class="result-name"
+                    ></div>
+
+                    <div
+                        id="resultAddress"
+                        class="result-address"
+                    ></div>
+
+
+                    <div class="data-grid">
+
+                        <div class="data-box">
+                            <div class="data-label">
+                                LATITUDE
+                            </div>
+
+                            <div
+                                id="latitude"
+                                class="data-value coordinates"
+                            ></div>
+                        </div>
+
+
+                        <div class="data-box">
+                            <div class="data-label">
+                                LONGITUDE
+                            </div>
+
+                            <div
+                                id="longitude"
+                                class="data-value coordinates"
+                            ></div>
+                        </div>
+
+
+                        <div class="data-box">
+                            <div class="data-label">
+                                ELEVATION
+                            </div>
+
+                            <div
+                                id="elevation"
+                                class="data-value"
+                            ></div>
+                        </div>
+
+
+                        <div class="data-box">
+                            <div class="data-label">
+                                TIMEZONE
+                            </div>
+
+                            <div
+                                id="timezone"
+                                class="data-value"
+                            ></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =========================
+                     反向解析
+                ========================= -->
+
+                <div class="reverse-section">
+
+                    <div class="reverse-title">
+                        REVERSE GEOCODING
+                    </div>
+
+                    <div class="reverse-row">
+
+                        <input
+                            id="coordinateInput"
+                            class="coordinate-input"
+                            type="text"
+                            placeholder="例如 35.6584491, 139.745536"
+                        >
+
+                        <button
+                            id="reverseButton"
+                            class="reverse-button"
+                            type="button"
+                        >
+                            RESOLVE
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- =========================
+     页脚
+========================= -->
+
+<footer>
+
+    <div>
+        Jerry // Personal system
+    </div>
+
+    <div>
+        Powered by Cloudflare
+    </div>
+
+</footer>
+
+
+<script>
+
+    /* =========================
+       鼠标光晕
+    ========================= */
+
+    const glow =
+        document.getElementById("glow");
+
+    document.addEventListener(
+        "mousemove",
+        (event) => {
+
+            glow.style.left =
+                event.clientX + "px";
+
+            glow.style.top =
+                event.clientY + "px";
+
+        }
+    );
+
+
+    /* =========================
+       DOM
+    ========================= */
+
+    const searchInput =
+        document.getElementById("searchInput");
+
+    const searchButton =
+        document.getElementById("searchButton");
+
+    const reverseButton =
+        document.getElementById("reverseButton");
+
+    const coordinateInput =
+        document.getElementById("coordinateInput");
+
+    const results =
+        document.getElementById("results");
+
+    const message =
+        document.getElementById("message");
+
+    const resultName =
+        document.getElementById("resultName");
+
+    const resultAddress =
+        document.getElementById("resultAddress");
+
+    const latitude =
+        document.getElementById("latitude");
+
+    const longitude =
+        document.getElementById("longitude");
+
+    const elevation =
+        document.getElementById("elevation");
+
+    const timezone =
+        document.getElementById("timezone");
+
+
+    /* =========================
+       消息
+    ========================= */
+
+    function showMessage(text, error = false) {
+
+        message.textContent = text;
+
+        message.className =
+            error
+                ? "message error"
+                : "message";
+
+        message.style.display = "block";
+    }
+
+
+    function hideMessage() {
+
+        message.style.display = "none";
+
+    }
+
+
+    /* =========================
+       显示结果
+    ========================= */
+
+    function displayResult(place) {
+
+        resultName.textContent =
+            place.name || "Unknown location";
+
+        resultAddress.textContent =
+            place.display_name || "No address information";
+
+
+        latitude.textContent =
+            place.latitude ?? "—";
+
+        longitude.textContent =
+            place.longitude ?? "—";
+
+        elevation.textContent =
+            place.elevation !== null &&
+            place.elevation !== undefined
+                ? `${place.elevation} m`
+                : "—";
+
+        timezone.textContent =
+            place.timezone || "—";
+
+
+        coordinateInput.value =
+            `${place.latitude}, ${place.longitude}`;
+
+
+        results.style.display =
+            "block";
+
+    }
+
+
+    /* =========================
+       地点查询
+    ========================= */
+
+    async function searchLocation() {
+
+        const query =
+            searchInput.value.trim();
+
+        if (!query) {
+
+            showMessage(
+                "请输入地点名称",
+                true
+            );
+
+            return;
+        }
+
+
+        searchButton.disabled = true;
+
+        searchButton.textContent =
+            "SEARCHING...";
+
+        hideMessage();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/geocode?q=${encodeURIComponent(query)}`
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            if (
+                !data.results ||
+                data.results.length === 0
+            ) {
+
+                results.style.display =
+                    "none";
+
+                showMessage(
+                    "没有找到相关地点",
+                    true
+                );
+
+                return;
+            }
+
+
+            // 第一版直接显示最佳匹配
+            displayResult(
+                data.results[0]
+            );
+
+
+            showMessage(
+                `FOUND ${data.results.length} RESULT${data.results.length > 1 ? "S" : ""}`
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "查询失败，请稍后再试",
+                true
+            );
+
+        } finally {
+
+            searchButton.disabled =
+                false;
+
+            searchButton.textContent =
+                "SEARCH";
+
+        }
+    }
+
+
+    /* =========================
+       反向地理编码
+    ========================= */
+
+    async function reverseLocation() {
+
+        const value =
+            coordinateInput.value.trim();
+
+
+        const parts =
+            value.split(",");
+
+
+        if (parts.length !== 2) {
+
+            showMessage(
+                "请输入：纬度, 经度",
+                true
+            );
+
+            return;
+        }
+
+
+        const lat =
+            Number(parts[0].trim());
+
+        const lon =
+            Number(parts[1].trim());
+
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon)
+        ) {
+
+            showMessage(
+                "坐标格式无效",
+                true
+            );
+
+            return;
+        }
+
+
+        reverseButton.disabled =
+            true;
+
+        reverseButton.textContent =
+            "RESOLVING...";
+
+        hideMessage();
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `HTTP ${response.status}`
+                );
+
+            }
+
+
+            const data =
+                await response.json();
+
+
+            displayResult(data);
+
+
+            showMessage(
+                "COORDINATE RESOLVED"
+            );
+
+        } catch (error) {
+
+            console.error(error);
+
+            showMessage(
+                "坐标解析失败，请稍后再试",
+                true
+            );
+
+        } finally {
+
+            reverseButton.disabled =
+                false;
+
+            reverseButton.textContent =
+                "RESOLVE";
+
+        }
+
+    }
+
+
+    /* =========================
+       按钮
+    ========================= */
+
+    searchButton.addEventListener(
+        "click",
+        searchLocation
+    );
+
+    reverseButton.addEventListener(
+        "click",
+        reverseLocation
+    );
+
+
+    /* =========================
+       Enter 搜索
+    ========================= */
+
+    searchInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key === "Enter") {
+
+                searchLocation();
+
+            }
+
+        }
+    );
+
+
+    coordinateInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key === "Enter") {
+
+                reverseLocation();
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
