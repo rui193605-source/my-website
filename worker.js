@@ -555,6 +555,177 @@ if (url.pathname === "/api/geocode") {
 }
 
 
+
+// =========================
+// 坐标详细信息 API
+//
+// /api/location?lat=35.6584491&lon=139.745536
+//
+// 用于：
+// 已经选择地点后
+// 查询海拔 + 时区
+//
+// Open-Meteo
+// =========================
+
+if (url.pathname === "/api/location") {
+
+  try {
+
+    // =========================
+    // 获取坐标
+    // =========================
+
+    const lat =
+      Number(
+        url.searchParams.get("lat")
+      );
+
+    const lon =
+      Number(
+        url.searchParams.get("lon")
+      );
+
+
+    // =========================
+    // 坐标验证
+    // =========================
+
+    if (
+
+      !Number.isFinite(lat) ||
+
+      !Number.isFinite(lon) ||
+
+      lat < -90 ||
+
+      lat > 90 ||
+
+      lon < -180 ||
+
+      lon > 180
+
+    ) {
+
+      return jsonResponse(
+        {
+          error: "无效的经纬度"
+        },
+
+        400
+      );
+
+    }
+
+
+    // =========================
+    // Open-Meteo
+    // =========================
+
+    const geoURL =
+
+      "https://api.open-meteo.com/v1/forecast" +
+
+      `?latitude=${encodeURIComponent(lat)}` +
+
+      `&longitude=${encodeURIComponent(lon)}` +
+
+      "&current=temperature_2m" +
+
+      "&timezone=auto";
+
+
+    const response =
+      await fetch(geoURL);
+
+
+    // =========================
+    // Open-Meteo 请求失败
+    // =========================
+
+    if (!response.ok) {
+
+      return jsonResponse(
+        {
+          error:
+            "Open-Meteo 地理信息请求失败",
+
+          status:
+            response.status,
+
+          latitude: lat,
+
+          longitude: lon
+        },
+
+        502
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    // =========================
+    // 返回
+    // =========================
+
+    return jsonResponse(
+
+      {
+
+        latitude: lat,
+
+        longitude: lon,
+
+        elevation:
+          data.elevation ??
+          null,
+
+        timezone:
+          data.timezone ??
+          null
+
+      },
+
+      200,
+
+      "public, max-age=300"
+
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Location API error:",
+      error
+    );
+
+
+    return jsonResponse(
+
+      {
+
+        error:
+          "地理信息查询失败",
+
+        message:
+          error?.message ||
+          "Unknown error"
+
+      },
+
+      500
+
+    );
+
+  }
+
+}
+
     // =========================
     // 4. 坐标 → 地点
     //
