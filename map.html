@@ -1004,16 +1004,13 @@
 
     }
 
-
     const searchResults = [];
 
     let currentResultIndex = 0;
 
-
     /* =========================
        结果导航
     ========================= */
-
     function updateResultNavigation() {
 
         const total = searchResults.length;
@@ -1030,7 +1027,6 @@
             total <= 1 || currentResultIndex === total - 1;
 
     }
-
 
     function showResultAtIndex(index) {
 
@@ -1072,32 +1068,170 @@
 
     }
 
+    /* =========================
+   地点详细信息缓存
+========================= */
+const placeDetailsCache = new Map();
 
-    async function loadPlaceDetails(place) {
+/* =========================
+   加载地点详细信息
+========================= */
 
-    try {
+async function loadPlaceDetails(place) {
 
-        const detailResponse =
-            await fetch(
-                `/api/reverse?lat=${encodeURIComponent(place.latitude)}&lon=${encodeURIComponent(place.longitude)}`,
-                {
-                    cache: "no-store"
-                }
+    const lat =
+        Number(place.latitude);
+
+    const lon =
+        Number(place.longitude);
+
+
+    if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon)
+    ) {
+
+        return;
+
+    }
+
+    /* =========================
+       使用坐标作为缓存 Key
+    ========================= */
+
+    const cacheKey =
+        `${lat},${lon}`;
+
+    /* =========================
+       如果已经请求过
+       直接使用缓存
+    ========================= */
+
+    if (
+        placeDetailsCache.has(cacheKey)
+    ) {
+
+        const detail =
+            placeDetailsCache.get(cacheKey);
+
+        elevation.textContent =
+            detail.elevation !== null &&
+            detail.elevation !== undefined
+                ? `${detail.elevation} m`
+                : "—";
+
+        timezone.textContent =
+            formatTimezone(
+                detail.timezone
             );
 
-        if (!detailResponse.ok) {
+        return;
+
+    }
+
+    /* =========================
+       防止相同请求同时发送
+    ========================= */
+
+    const pendingKey =
+        `${cacheKey}:pending`;
+
+
+    if (
+        placeDetailsCache.has(
+            pendingKey
+        )
+    ) {
+
+        try {
+
+            const detail =
+                await placeDetailsCache.get(
+                    pendingKey
+                );
+
+            elevation.textContent =
+                detail.elevation !== null &&
+                detail.elevation !== undefined
+                    ? `${detail.elevation} m`
+                    : "—";
+
+            timezone.textContent =
+                formatTimezone(
+                    detail.timezone
+                );
+
+        } catch (error) {
 
             console.error(
-                "Reverse detail HTTP error:",
-                detailResponse.status
+                "Location detail error:",
+                error
             );
-
-            return;
 
         }
 
+        return;
+
+    }
+
+    /* =========================
+       创建请求 Promise
+       放进缓存
+       ========================= */
+
+    const requestPromise =
+        fetch(
+            `/api/location?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
+            {
+                cache: "no-store"
+            }
+        )
+        .then(
+            async (response) => {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        `HTTP ${response.status}`
+                    );
+
+                }
+
+                return await response.json();
+
+            }
+        );
+
+    placeDetailsCache.set(
+        pendingKey,
+        requestPromise
+    );
+
+    try {
+
         const detail =
-            await detailResponse.json();
+            await requestPromise;
+
+        /* =========================
+           保存最终结果
+        ========================= */
+
+        placeDetailsCache.set(
+            cacheKey,
+            detail
+        );
+
+        /* =========================
+           删除 pending
+        ========================= */
+
+        placeDetailsCache.delete(
+            pendingKey
+        );
+
+        /* =========================
+           更新当前显示
+        ========================= */
 
         elevation.textContent =
             detail.elevation !== null &&
@@ -1112,12 +1246,16 @@
 
     } catch (detailError) {
 
+        placeDetailsCache.delete(
+            pendingKey
+        );
+
         console.error(
             "Location detail error:",
             detailError
-            );
-        }
+        );
     }
+}
 
 
     /* =========================
