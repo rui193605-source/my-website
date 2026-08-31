@@ -1215,7 +1215,7 @@ async function loadPlaceDetails(place) {
         !Number.isFinite(lon)
     ) 
         return;
-    }
+    
 
     /* =========================
        使用坐标作为缓存 Key
@@ -1295,7 +1295,7 @@ async function loadPlaceDetails(place) {
         return;
 
     }
-
+}
     /* =========================
        创建请求 Promise
        放进缓存
@@ -1377,7 +1377,7 @@ async function loadPlaceDetails(place) {
             detailError
         );
     }
-
+    
 
 
     /* =========================
@@ -2297,7 +2297,7 @@ function parseCoordinates(input) {
 
         }
     );
-    
+
 </script>
 
 </body>
