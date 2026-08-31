@@ -825,7 +825,6 @@
 
 </footer>
 
-
 <script>
 
     /* =========================
@@ -835,18 +834,22 @@
     const glow =
         document.getElementById("glow");
 
-    document.addEventListener(
-        "mousemove",
-        (event) => {
+    if (glow) {
 
-            glow.style.left =
-                event.clientX + "px";
+        document.addEventListener(
+            "mousemove",
+            (event) => {
 
-            glow.style.top =
-                event.clientY + "px";
+                glow.style.left =
+                    event.clientX + "px";
 
-        }
-    );
+                glow.style.top =
+                    event.clientY + "px";
+
+            }
+        );
+
+    }
 
 
     /* =========================
@@ -858,12 +861,6 @@
 
     const searchButton =
         document.getElementById("searchButton");
-
-    const reverseButton =
-        document.getElementById("reverseButton");
-
-    const coordinateInput =
-        document.getElementById("coordinateInput");
 
     const results =
         document.getElementById("results");
@@ -894,7 +891,10 @@
        消息
     ========================= */
 
-    function showMessage(text, error = false) {
+    function showMessage(
+        text,
+        error = false
+    ) {
 
         message.textContent = text;
 
@@ -903,13 +903,78 @@
                 ? "message error"
                 : "message";
 
-        message.style.display = "block";
+        message.style.display =
+            "block";
+
     }
 
 
     function hideMessage() {
 
-        message.style.display = "none";
+        message.style.display =
+            "none";
+
+    }
+
+
+    /* =========================
+       坐标显示
+    ========================= */
+
+    function formatLatitude(value) {
+
+        const lat =
+            Number(value);
+
+        if (
+            !Number.isFinite(lat) ||
+            lat < -90 ||
+            lat > 90
+        ) {
+
+            return "—";
+
+        }
+
+        const direction =
+            lat >= 0
+                ? "N"
+                : "S";
+
+        return (
+            Math.abs(lat).toFixed(5) +
+            "° " +
+            direction
+        );
+
+    }
+
+
+    function formatLongitude(value) {
+
+        const lon =
+            Number(value);
+
+        if (
+            !Number.isFinite(lon) ||
+            lon < -180 ||
+            lon > 180
+        ) {
+
+            return "—";
+
+        }
+
+        const direction =
+            lon >= 0
+                ? "E"
+                : "W";
+
+        return (
+            Math.abs(lon).toFixed(5) +
+            "° " +
+            direction
+        );
 
     }
 
@@ -921,10 +986,14 @@
     function displayResult(place) {
 
         resultName.textContent =
-            place.name || "Unknown location";
+            place.name ||
+            "Unknown location";
+
 
         resultAddress.textContent =
-            place.display_name || "No address information";
+            place.display_name ||
+            "No address information";
+
 
         const latValue =
             Number(place.latitude);
@@ -934,14 +1003,12 @@
 
 
         latitude.textContent =
-            Number.isFinite(latValue)
-                ? latValue
-                : "—";
+            formatLatitude(latValue);
+
 
         longitude.textContent =
-            Number.isFinite(lonValue)
-                ? lonValue
-                : "—";
+            formatLongitude(lonValue);
+
 
         elevation.textContent =
             place.elevation !== null &&
@@ -949,15 +1016,12 @@
                 ? `${place.elevation} m`
                 : "—";
 
-        timezone.textContent =
-            formatTimezone(place.timezone) || "—";
 
-        if (Number.isFinite(latValue) && Number.isFinite(lonValue)) {
-            coordinateInput.value =
-                `${latValue}, ${lonValue}`;
-        } else {
-            coordinateInput.value = "";
-        }
+        timezone.textContent =
+            formatTimezone(
+                place.timezone
+            );
+
 
         results.style.display =
             "block";
@@ -966,26 +1030,158 @@
 
 
     /* =========================
-       地点查询
+       判断十进制度坐标
+       
+       支持：
+
+       35.6584491, 139.745536
+
+       35.6584491 139.745536
+
+       -35.6584491, -139.745536
+
+       35.6584491，139.745536
     ========================= */
 
-    async function searchLocation() {
+    function parseDecimalCoordinates(
+        input
+    ) {
 
-        const query =
+        const normalized =
+            input
+                .trim()
+                .replace(
+                    /[，]/g,
+                    ","
+                );
+
+
+        const match =
+            normalized.match(
+                /^\s*([+-]?\d+(?:\.\d+)?)\s*(?:,|\s)\s*([+-]?\d+(?:\.\d+)?)\s*$/
+            );
+
+
+        if (!match) {
+
+            return null;
+
+        }
+
+
+        const lat =
+            Number(match[1]);
+
+        const lon =
+            Number(match[2]);
+
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon)
+        ) {
+
+            return null;
+
+        }
+
+
+        if (
+            lat < -90 ||
+            lat > 90
+        ) {
+
+            return null;
+
+        }
+
+
+        if (
+            lon < -180 ||
+            lon > 180
+        ) {
+
+            return null;
+
+        }
+
+
+        return {
+
+            latitude: lat,
+
+            longitude: lon
+
+        };
+
+    }
+
+
+    /* =========================
+       统一搜索
+    ========================= */
+
+    async function handleSearch() {
+
+        const input =
             searchInput.value.trim();
 
-        if (!query) {
+
+        if (!input) {
 
             showMessage(
-                "请输入地点名称",
+                "请输入地点或经纬度",
                 true
             );
 
             return;
+
         }
 
 
-        searchButton.disabled = true;
+        // =========================
+        // 尝试识别坐标
+        // =========================
+
+        const coordinates =
+            parseDecimalCoordinates(
+                input
+            );
+
+
+        if (coordinates) {
+
+            await reverseLocation(
+                coordinates.latitude,
+                coordinates.longitude
+            );
+
+            return;
+
+        }
+
+
+        // =========================
+        // 否则认为是地点
+        // =========================
+
+        await searchLocation(
+            input
+        );
+
+    }
+
+
+    /* =========================
+       地点 → 坐标
+    ========================= */
+
+    async function searchLocation(
+        query
+    ) {
+
+        searchButton.disabled =
+            true;
 
         searchButton.textContent =
             "SEARCHING...";
@@ -997,7 +1193,10 @@
 
             const response =
                 await fetch(
-                    `/api/geocode?q=${encodeURIComponent(query)}`
+                    `/api/geocode?q=${encodeURIComponent(query)}`,
+                    {
+                        cache: "no-store"
+                    }
                 );
 
 
@@ -1028,27 +1227,115 @@
                 );
 
                 return;
+
             }
 
 
-            // 第一版直接显示最佳匹配
+            // =========================
+            // 暂时显示第一项
+            //
+            // 下一步再改成：
+            // 多结果左右切换
+            // =========================
+
+            const place =
+                data.results[0];
+
+
+            // 地点搜索结果目前
+            // 只有坐标，没有海拔和时区
+            //
+            // 因此先显示基础信息
+
             displayResult(
-                data.results[0]
+                place
             );
+
+
+            // =========================
+            // 查询选中地点的
+            // 海拔 + 时区
+            //
+            // 当前暂时默认第一项
+            // 下一步改成用户选择
+            // =========================
+
+            if (
+                Number.isFinite(
+                    Number(place.latitude)
+                ) &&
+                Number.isFinite(
+                    Number(place.longitude)
+                )
+            ) {
+
+                try {
+
+                    const detailResponse =
+                        await fetch(
+                            `/api/location?lat=${encodeURIComponent(place.latitude)}&lon=${encodeURIComponent(place.longitude)}`,
+                            {
+                                cache: "no-store"
+                            }
+                        );
+
+
+                    if (
+                        detailResponse.ok
+                    ) {
+
+                        const detail =
+                            await detailResponse.json();
+
+
+                        elevation.textContent =
+                            detail.elevation !== null &&
+                            detail.elevation !== undefined
+                                ? `${detail.elevation} m`
+                                : "—";
+
+
+                        timezone.textContent =
+                            formatTimezone(
+                                detail.timezone
+                            );
+
+                    }
+
+                } catch (detailError) {
+
+                    console.error(
+                        "Location detail error:",
+                        detailError
+                    );
+
+                }
+
+            }
 
 
             showMessage(
-                `FOUND ${data.results.length} RESULT${data.results.length > 1 ? "S" : ""}`
+                `FOUND ${data.count ?? data.results.length} RESULT${(data.count ?? data.results.length) > 1 ? "S" : ""}`
             );
+
 
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Geocode error:",
+                error
+            );
+
+
+            results.style.display =
+                "none";
+
 
             showMessage(
                 "查询失败，请稍后再试",
                 true
             );
+
 
         } finally {
 
@@ -1059,65 +1346,21 @@
                 "SEARCH";
 
         }
+
     }
 
 
-    /* =========================
-       反向地理编码
-    ========================= */
+    /* =========================坐标 → 地点========================= */
 
-    async function reverseLocation() {
+    async function reverseLocation(
+        lat,
+        lon
+    ) {
 
-        const value =
-            coordinateInput.value.trim();
-
-        const normalized =
-            value.replace(/[，;]/g, ",");
-
-        const parts =
-            normalized.split(",").map((item) => item.trim());
-
-
-        if (parts.length !== 2 || !parts[0] || !parts[1]) {
-
-            showMessage(
-                "请输入：纬度, 经度",
-                true
-            );
-
-            return;
-        }
-
-
-        const lat =
-            Number(parts[0]);
-
-        const lon =
-            Number(parts[1]);
-
-
-        if (
-            !Number.isFinite(lat) ||
-            !Number.isFinite(lon) ||
-            lat < -90 ||
-            lat > 90 ||
-            lon < -180 ||
-            lon > 180
-        ) {
-
-            showMessage(
-                "坐标格式无效或超出范围",
-                true
-            );
-
-            return;
-        }
-
-
-        reverseButton.disabled =
+        searchButton.disabled =
             true;
 
-        reverseButton.textContent =
+        searchButton.textContent =
             "RESOLVING...";
 
         hideMessage();
@@ -1127,7 +1370,10 @@
 
             const response =
                 await fetch(
-                    `/api/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`
+                    `/api/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`,
+                    {
+                        cache: "no-store"
+                    }
                 );
 
 
@@ -1144,206 +1390,236 @@
                 await response.json();
 
 
-            displayResult(data);
+            displayResult(
+                data
+            );
 
 
             showMessage(
                 "COORDINATE RESOLVED"
             );
 
+
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Reverse geocode error:",
+                error
+            );
+
+
+            results.style.display =
+                "none";
+
 
             showMessage(
                 "坐标解析失败，请稍后再试",
                 true
             );
 
+
         } finally {
 
-            reverseButton.disabled =
+            searchButton.disabled =
                 false;
 
-            reverseButton.textContent =
-                "RESOLVE";
+            searchButton.textContent =
+                "SEARCH";
 
         }
 
     }
-
 
 
     /* =========================时区格式化========================= */
-    function formatTimezone(timezone) {
 
-    if (!timezone) {
-        return "Unknown";
-    }
+    function formatTimezone(
+        timezone
+    ) {
 
-    try {
+        if (!timezone) {
 
-        const parts = timezone.split("/");
+            return "Unknown";
 
-        // 例如 Etc/UTC
-        if (parts.length < 2) {
+        }
+
+
+        try {
+
+            const parts =
+                timezone.split("/");
+
 
             if (
-                timezone === "UTC" ||
-                timezone === "Etc/UTC"
+                parts.length < 2
             ) {
-                return "UTC/0";
+
+                if (
+                    timezone === "UTC" ||
+                    timezone === "Etc/UTC"
+                ) {
+
+                    return "UTC/0";
+
+                }
+
+                return timezone;
+
             }
 
-            return timezone;
-        }
+
+            const continent =
+                parts[0];
 
 
-        // 大洲
-        const continent =
-            parts[0];
+            const now =
+                new Date();
 
 
-        // 获取当前时区 UTC 偏移
-        const now = new Date();
+            const formatter =
+                new Intl.DateTimeFormat(
+                    "en-US",
+                    {
+                        timeZone:
+                            timezone,
 
-        const formatter =
-            new Intl.DateTimeFormat(
-                "en-US",
-                {
-                    timeZone: timezone,
-                    timeZoneName: "longOffset"
-                }
-            );
-
-
-        const formatted =
-            formatter.formatToParts(now);
+                        timeZoneName:
+                            "longOffset"
+                    }
+                );
 
 
-        const offsetPart =
-            formatted.find(
-                function (part) {
-                    return part.type === "timeZoneName";
-                }
-            );
+            const formatted =
+                formatter.formatToParts(
+                    now
+                );
 
 
-        if (!offsetPart) {
-            return timezone;
-        }
+            const offsetPart =
+                formatted.find(
+                    function (part) {
+
+                        return (
+                            part.type ===
+                            "timeZoneName"
+                        );
+
+                    }
+                );
 
 
-        let offset =
-            offsetPart.value.replace(
-                "GMT",
-                ""
-            );
+            if (!offsetPart) {
+
+                return timezone;
+
+            }
 
 
-        // UTC+0
-        if (
-            offset === "" ||
-            offset === "+00:00" ||
-            offset === "-00:00"
-        ) {
-
-            return continent + "/0";
-        }
+            let offset =
+                offsetPart.value.replace(
+                    "GMT",
+                    ""
+                );
 
 
-        // =========================
-        // 解析 UTC 偏移
-        // =========================
+            if (
+                offset === "" ||
+                offset === "+00:00" ||
+                offset === "-00:00"
+            ) {
 
-        const match =
-            offset.match(
-                /([+-])(\d{2}):?(\d{2})?/
-            );
+                return (
+                    continent +
+                    "/0"
+                );
 
-
-        if (!match) {
-            return timezone;
-        }
-
-
-        const sign =
-            match[1];
-
-        const hours =
-            Number(match[2]);
-
-        const minutes =
-            match[3]
-                ? Number(match[3])
-                : 0;
+            }
 
 
-        // =========================
-        // 东 / 西
-        // =========================
-
-        const direction =
-            sign === "+"
-                ? "E"
-                : "W";
+            const match =
+                offset.match(
+                    /([+-])(\d{2}):?(\d{2})?/
+                );
 
 
-        // =========================
-        // 整点
-        // =========================
+            if (!match) {
 
-        if (minutes === 0) {
+                return timezone;
+
+            }
+
+
+            const sign =
+                match[1];
+
+
+            const hours =
+                Number(match[2]);
+
+
+            const minutes =
+                match[3]
+                    ? Number(match[3])
+                    : 0;
+
+
+            const direction =
+                sign === "+"
+                    ? "E"
+                    : "W";
+
+
+            if (
+                minutes === 0
+            ) {
+
+                return (
+                    continent +
+                    "/" +
+                    sign +
+                    hours +
+                    direction
+                );
+
+            }
+
 
             return (
                 continent +
                 "/" +
                 sign +
                 hours +
+                ":" +
+                String(minutes)
+                    .padStart(
+                        2,
+                        "0"
+                    ) +
                 direction
             );
 
+
+        } catch (error) {
+
+            console.error(
+                "Timezone format error:",
+                error
+            );
+
+            return timezone;
+
         }
 
-
-        // =========================
-        // 半小时 / 45分钟
-        // =========================
-
-        return (
-            continent +
-            "/" +
-            sign +
-            hours +
-            ":" +
-            String(minutes).padStart(2, "0") +
-            direction
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Timezone format error:",
-            error
-        );
-
-        return timezone;
     }
-}
 
 
     /* =========================
-       按钮
+       SEARCH 按钮
     ========================= */
 
     searchButton.addEventListener(
         "click",
-        searchLocation
-    );
-
-    reverseButton.addEventListener(
-        "click",
-        reverseLocation
+        handleSearch
     );
 
 
@@ -1355,23 +1631,11 @@
         "keydown",
         (event) => {
 
-            if (event.key === "Enter") {
+            if (
+                event.key === "Enter"
+            ) {
 
-                searchLocation();
-
-            }
-
-        }
-    );
-
-
-    coordinateInput.addEventListener(
-        "keydown",
-        (event) => {
-
-            if (event.key === "Enter") {
-
-                reverseLocation();
+                handleSearch();
 
             }
 
