@@ -1448,52 +1448,50 @@ async function loadPlaceDetails(place) {
 
     function displayResult(place) {
 
-        resultName.textContent =
-            place.name ||
-            "Unknown location";
+    resultName.textContent =
+        place.name ||
+        "Unknown location";
 
+    resultAddress.textContent =
+        place.display_name ||
+        "No address information";
 
-        resultAddress.textContent =
-            place.display_name ||
-            "No address information";
+    const latValue =
+        Number(place.latitude);
 
+    const lonValue =
+        Number(place.longitude);
 
-        const latValue =
-            Number(place.latitude);
+    latitude.textContent =
+        formatLatitude(latValue);
 
-        const lonValue =
-            Number(place.longitude);
-        
-        updateMap(
+    longitude.textContent =
+        formatLongitude(lonValue);
+
+    elevation.textContent =
+        place.elevation !== null &&
+        place.elevation !== undefined
+            ? `${place.elevation} m`
+            : "—";
+
+    timezone.textContent =
+        formatTimezone(
+            place.timezone
+        );
+
+    results.style.display =
+        "block";
+
+    /* 地图 */
+    if (!map) {
+        initMap();
+    }
+
+    updateMap(
         latValue,
         lonValue
-        );
-        
-        latitude.textContent =
-            formatLatitude(latValue);
-
-
-        longitude.textContent =
-            formatLongitude(lonValue);
-
-
-        elevation.textContent =
-            place.elevation !== null &&
-            place.elevation !== undefined
-                ? `${place.elevation} m`
-                : "—";
-
-
-        timezone.textContent =
-            formatTimezone(
-                place.timezone
-            );
-
-
-        results.style.display =
-            "block";
-
-    }
+    );
+}
 
     /* =========================
    通用坐标解析
@@ -2299,12 +2297,7 @@ function parseCoordinates(input) {
 
         }
     );
-
-/* =========================
-   启动地图
-========================= */
-
-initMap();
+    
 </script>
 
 </body>
