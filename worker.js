@@ -303,266 +303,256 @@ if (url.pathname === "/api/ip") {
 
 }
 
+// =========================
+// 地点 → 坐标 API
+// =========================
+
+if (url.pathname === "/api/geocode") {
+
+  try {
+
+    const query =
+      url.searchParams.get("q")?.trim();
 
 
     // =========================
-    // 3. 地点 → 坐标
-    //
-    // /api/geocode?q=Tokyo Tower
-    //
-    // Nominatim / OpenStreetMap
-    // +
-    // Open-Meteo 海拔 / 时区
+    // 检查搜索内容
     // =========================
 
-    if (url.pathname === "/api/geocode") {
-
-      try {
-
-        const query =
-          url.searchParams
-            .get("q")
-            ?.trim();
-
-
-        if (!query) {
-
-          return jsonResponse(
-            {
-              error:
-                "请输入地点名称"
-            },
-
-            400
-          );
-
-        }
-
-
-        // =================
-        // Nominatim
-        // =================
-
-        const nominatimURL =
-
-          "https://nominatim.openstreetmap.org/search" +
-
-          `?q=${encodeURIComponent(query)}` +
-
-          "&format=jsonv2" +
-
-          "&addressdetails=1" +
-
-          "&limit=5" +
-
-          "&accept-language=zh,en";
-
-
-        const response =
-          await fetch(
-            nominatimURL,
-            {
-              headers: {
-
-                // Nominatim 要求识别客户端
-                "User-Agent":
-                  "JERRY-SYSTEM-ONLINE/1.0"
-
-              }
-            }
-          );
-
-
-        if (!response.ok) {
-
-          return jsonResponse(
-            {
-              error:
-                "OpenStreetMap 地理编码请求失败",
-
-              status:
-                response.status
-            },
-
-            502
-          );
-
-        }
-
-
-        const results =
-          await response.json();
-
-
-        if (
-          !Array.isArray(results) ||
-          results.length === 0
-        ) {
-
-          return jsonResponse(
-            {
-              query,
-
-              results: []
-            }
-          );
-
-        }
-
-
-        // =================
-        // 获取海拔 + 时区
-        // =================
-
-        const detailedResults =
-          await Promise.all(
-
-            results.map(
-              async (place) => {
-
-                const latitude =
-                  Number(place.lat);
-
-                const longitude =
-                  Number(place.lon);
-
-
-                let elevation =
-                  null;
-
-                let timezone =
-                  null;
-
-
-                try {
-
-                  const geoURL =
-
-                    "https://api.open-meteo.com/v1/forecast" +
-
-                    `?latitude=${latitude}` +
-
-                    `&longitude=${longitude}` +
-
-                    "&current=temperature_2m" +
-
-                    "&timezone=auto";
-
-
-                  const geoResponse =
-                    await fetch(
-                      geoURL
-                    );
-
-
-                  if (
-                    geoResponse.ok
-                  ) {
-
-                    const geoData =
-                      await geoResponse.json();
-
-
-                    elevation =
-                      geoData.elevation ??
-                      null;
-
-
-                    timezone =
-                      geoData.timezone ??
-                      null;
-
-                  }
-
-
-                } catch (error) {
-
-                  console.error(
-                    "Elevation / timezone error:",
-                    error
-                  );
-
-                }
-
-
-                return {
-
-                  name:
-                    place.name ??
-                    null,
-
-                  display_name:
-                    place.display_name ??
-                    null,
-
-                  latitude,
-
-                  longitude,
-
-                  elevation,
-
-                  timezone,
-
-                  type:
-                    place.type ??
-                    null,
-
-                  category:
-                    place.category ??
-                    null,
-
-                  address:
-                    place.address ??
-                    {}
-
-                };
-
-              }
-            )
-
-          );
-
-
-        return jsonResponse(
-          {
-            query,
-
-            results:
-              detailedResults
-
-          },
-
-          200,
-
-          // 缓存 5 分钟
-          "public, max-age=300"
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Geocode API error:",
-          error
-        );
-
-
-        return jsonResponse(
-          {
-            error:
-              "地点查询失败",
-
-            message:
-              error?.message ||
-              "Unknown error"
-          },
-
-          500
-        );
-
-      }
+    if (!query) {
+
+      return jsonResponse(
+        {
+          query: "",
+          count: 0,
+          results: [],
+          error: "请输入地点名称"
+        },
+        400
+      );
 
     }
+
+
+    // =========================
+    // Nominatim
+    // =========================
+
+    const nominatimURL =
+      "https://nominatim.openstreetmap.org/search" +
+
+      `?q=${encodeURIComponent(query)}` +
+
+      "&format=jsonv2" +
+
+      "&addressdetails=1" +
+
+      "&limit=5" +
+
+      "&accept-language=zh,en";
+
+
+    const response =
+      await fetch(
+        nominatimURL,
+        {
+          headers: {
+            "User-Agent":
+              "JERRY-SYSTEM-ONLINE/1.0"
+          }
+        }
+      );
+
+
+    if (!response.ok) {
+
+      return jsonResponse(
+        {
+          query,
+          count: 0,
+          results: [],
+
+          error:
+            "OpenStreetMap 地理编码请求失败",
+
+          status:
+            response.status
+        },
+        502
+      );
+
+    }
+
+
+    const places =
+      await response.json();
+
+
+    // =========================
+    // 没有结果
+    // =========================
+
+    if (
+      !Array.isArray(places) ||
+      places.length === 0
+    ) {
+
+      return jsonResponse(
+        {
+          query,
+          count: 0,
+          results: []
+        },
+        200,
+        "public, max-age=60"
+      );
+
+    }
+
+
+    // =========================
+    // 整理 Nominatim 数据
+    //
+    // 这一阶段暂时不请求
+    // Open-Meteo
+    //
+    // 后面会统一优化海拔 / 时区
+    // =========================
+
+    const results =
+      places.map(
+        (place) => {
+
+          const latitude =
+            Number(place.lat);
+
+          const longitude =
+            Number(place.lon);
+
+
+          return {
+
+            // =================
+            // 基本名称
+            // =================
+
+            name:
+              place.name ??
+              null,
+
+            display_name:
+              place.display_name ??
+              null,
+
+
+            // =================
+            // 坐标
+            // =================
+
+            latitude:
+              Number.isFinite(latitude)
+                ? latitude
+                : null,
+
+            longitude:
+              Number.isFinite(longitude)
+                ? longitude
+                : null,
+
+
+            // =================
+            // 类型
+            // =================
+
+            type:
+              place.type ??
+              null,
+
+            category:
+              place.category ??
+              null,
+
+
+            // =================
+            // OSM 信息
+            // =================
+
+            osm_type:
+              place.osm_type ??
+              null,
+
+            osm_id:
+              place.osm_id ??
+              null,
+
+
+            // =================
+            // 地址
+            // =================
+
+            address:
+              place.address ??
+              {}
+
+          };
+
+        }
+      );
+
+
+    // =========================
+    // 返回
+    // =========================
+
+    return jsonResponse(
+      {
+        query,
+
+        count:
+          results.length,
+
+        results
+      },
+
+      200,
+
+      // 缓存 5 分钟
+      "public, max-age=300"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Geocode API error:",
+      error
+    );
+
+
+    return jsonResponse(
+      {
+        query:
+          url.searchParams.get("q") ??
+          "",
+
+        count: 0,
+
+        results: [],
+
+        error:
+          "地点查询失败",
+
+        message:
+          error?.message ||
+          "Unknown error"
+      },
+
+      500
+    );
+
+  }
+
+}
 
 
     // =========================
