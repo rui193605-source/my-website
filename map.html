@@ -346,6 +346,48 @@
         padding-top: 22px;
     }
 
+    .result-navigation {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 18px;
+        padding-top: 18px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .result-nav-button {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.04);
+        color: #e8edf2;
+        font-size: 18px;
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .result-nav-button:hover:not(:disabled) {
+        border-color: rgba(108,255,155,0.5);
+        background: rgba(108,255,155,0.08);
+        color: #6cff9b;
+    }
+
+    .result-nav-button:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+    }
+
+    .result-counter {
+        min-width: 80px;
+        text-align: center;
+        color: #b9c3cc;
+        font-family: monospace;
+        font-size: 13px;
+        letter-spacing: 1px;
+    }
+
     .result-name {
         font-size: 22px;
 
@@ -739,6 +781,40 @@
             ></div>
 
 
+            <div
+                id="resultNavigation"
+                class="result-navigation"
+                aria-label="Search result navigation"
+            >
+
+                <button
+                    id="previousResult"
+                    class="result-nav-button"
+                    type="button"
+                    aria-label="Previous result"
+                >
+                    ←
+                </button>
+
+                <div
+                    id="resultCounter"
+                    class="result-counter"
+                >
+                    1 / 1
+                </div>
+
+                <button
+                    id="nextResult"
+                    class="result-nav-button"
+                    type="button"
+                    aria-label="Next result"
+                >
+                    →
+                </button>
+
+            </div>
+
+
             <div class="data-grid">
 
                 <div class="data-box">
@@ -874,6 +950,18 @@
     const resultAddress =
         document.getElementById("resultAddress");
 
+    const resultNavigation =
+        document.getElementById("resultNavigation");
+
+    const resultCounter =
+        document.getElementById("resultCounter");
+
+    const previousResult =
+        document.getElementById("previousResult");
+
+    const nextResult =
+        document.getElementById("nextResult");
+
     const latitude =
         document.getElementById("latitude");
 
@@ -914,6 +1002,121 @@
         message.style.display =
             "none";
 
+    }
+
+
+    const searchResults = [];
+
+    let currentResultIndex = 0;
+
+
+    /* =========================
+       结果导航
+    ========================= */
+
+    function updateResultNavigation() {
+
+        const total = searchResults.length;
+
+        resultNavigation.style.display = "flex";
+
+        resultCounter.textContent =
+            `${currentResultIndex + 1} / ${total}`;
+
+        previousResult.disabled =
+            total <= 1 || currentResultIndex === 0;
+
+        nextResult.disabled =
+            total <= 1 || currentResultIndex === total - 1;
+
+    }
+
+
+    function showResultAtIndex(index) {
+
+        if (
+            searchResults.length === 0
+        ) {
+
+            return;
+
+        }
+
+        const boundedIndex =
+            Math.min(
+                Math.max(index, 0),
+                searchResults.length - 1
+            );
+
+        currentResultIndex = boundedIndex;
+
+        const place =
+            searchResults[boundedIndex];
+
+        displayResult(place);
+
+        updateResultNavigation();
+
+        if (
+            Number.isFinite(
+                Number(place.latitude)
+            ) &&
+            Number.isFinite(
+                Number(place.longitude)
+            )
+        ) {
+
+            loadPlaceDetails(place);
+
+        }
+
+    }
+
+
+    async function loadPlaceDetails(place) {
+
+    try {
+
+        const detailResponse =
+            await fetch(
+                `/api/reverse?lat=${encodeURIComponent(place.latitude)}&lon=${encodeURIComponent(place.longitude)}`,
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!detailResponse.ok) {
+
+            console.error(
+                "Reverse detail HTTP error:",
+                detailResponse.status
+            );
+
+            return;
+
+        }
+
+        const detail =
+            await detailResponse.json();
+
+        elevation.textContent =
+            detail.elevation !== null &&
+            detail.elevation !== undefined
+                ? `${detail.elevation} m`
+                : "—";
+
+        timezone.textContent =
+            formatTimezone(
+                detail.timezone
+            );
+
+    } catch (detailError) {
+
+        console.error(
+            "Location detail error:",
+            detailError
+            );
+        }
     }
 
 
@@ -1218,8 +1421,10 @@
                 data.results.length === 0
             ) {
 
-                results.style.display =
-                    "none";
+                searchResults.length = 0;
+                currentResultIndex = 0;
+                resultNavigation.style.display = "none";
+                results.style.display = "none";
 
                 showMessage(
                     "没有找到相关地点",
@@ -1230,89 +1435,11 @@
 
             }
 
+            searchResults.length = 0;
+            searchResults.push(...data.results);
+            currentResultIndex = 0;
 
-            // =========================
-            // 暂时显示第一项
-            //
-            // 下一步再改成：
-            // 多结果左右切换
-            // =========================
-
-            const place =
-                data.results[0];
-
-
-            // 地点搜索结果目前
-            // 只有坐标，没有海拔和时区
-            //
-            // 因此先显示基础信息
-
-            displayResult(
-                place
-            );
-
-
-            // =========================
-            // 查询选中地点的
-            // 海拔 + 时区
-            //
-            // 当前暂时默认第一项
-            // 下一步改成用户选择
-            // =========================
-
-            if (
-                Number.isFinite(
-                    Number(place.latitude)
-                ) &&
-                Number.isFinite(
-                    Number(place.longitude)
-                )
-            ) {
-
-                try {
-
-                    const detailResponse =
-                        await fetch(
-                            `/api/location?lat=${encodeURIComponent(place.latitude)}&lon=${encodeURIComponent(place.longitude)}`,
-                            {
-                                cache: "no-store"
-                            }
-                        );
-
-
-                    if (
-                        detailResponse.ok
-                    ) {
-
-                        const detail =
-                            await detailResponse.json();
-
-
-                        elevation.textContent =
-                            detail.elevation !== null &&
-                            detail.elevation !== undefined
-                                ? `${detail.elevation} m`
-                                : "—";
-
-
-                        timezone.textContent =
-                            formatTimezone(
-                                detail.timezone
-                            );
-
-                    }
-
-                } catch (detailError) {
-
-                    console.error(
-                        "Location detail error:",
-                        detailError
-                    );
-
-                }
-
-            }
-
+            showResultAtIndex(0);
 
             showMessage(
                 `FOUND ${data.count ?? data.results.length} RESULT${(data.count ?? data.results.length) > 1 ? "S" : ""}`
@@ -1616,6 +1743,43 @@
     /* =========================
        SEARCH 按钮
     ========================= */
+
+    previousResult.addEventListener(
+        "click",
+        () => {
+
+            if (
+                currentResultIndex > 0
+            ) {
+
+                showResultAtIndex(
+                    currentResultIndex - 1
+                );
+
+            }
+
+        }
+    );
+
+
+    nextResult.addEventListener(
+        "click",
+        () => {
+
+            if (
+                currentResultIndex <
+                searchResults.length - 1
+            ) {
+
+                showResultAtIndex(
+                    currentResultIndex + 1
+                );
+
+            }
+
+        }
+    );
+
 
     searchButton.addEventListener(
         "click",
