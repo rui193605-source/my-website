@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        margin: 0;
+        background: #05070a;
+        color: #e8edf2;
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+        overflow-x: hidden;
+    }
+
+    /* =========================背景网格========================= */
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.16;
+
+        background-image:
+            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+
+        background-size: 45px 45px;
+
+        mask-image: linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+
+        -webkit-mask-image: linear-gradient(
+            to bottom,
+            black,
+            transparent 85%
+        );
+    }
+
+    /* =========================顶部导航========================= */
+
+    nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 70px;
+
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        padding: 0 7%;
+
+        background: rgba(5,7,10,0.72);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+
+        z-index: 10;
+    }
+
+    .logo {
+        font-weight: 800;
+        letter-spacing: 4px;
+        font-size: 18px;
+    }
+
+    .logo span {
+        opacity: 0.45;
+    }
+
+    nav a {
+        color: #aeb8c2;
+        text-decoration: none;
+        margin-left: 28px;
+        font-size: 13px;
+        letter-spacing: 1px;
+        transition: 0.25s;
+    }
+
+    nav a:hover {
+        color: white;
+    }
+
+    
+    /* =========================主区域========================= */
+
+    .hero {
+        min-height: 100vh;
+
+        display: flex;
+        align-items: center;
+
+        padding: 100px 8% 60px;
+
+        position: relative;
+    }
+
+    .hero-content {
+        max-width: 850px;
+    }
+
+    .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+
+        padding: 8px 13px;
+
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 999px;
+
+        background: rgba(255,255,255,0.035);
+
+        color: #9ca7b2;
+
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    .status-dot {
+        width: 7px;
+        height: 7px;
+
+        border-radius: 50%;
+
+        background: #6cff9b;
+
+        box-shadow:
+            0 0 10px #6cff9b;
+
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%,100% {
+            opacity: 0.45;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    h1 {
+        margin: 25px 0 10px;
+
+        font-size: clamp(60px, 11vw, 150px);
+
+        line-height: 0.9;
+
+        letter-spacing: -7px;
+
+        font-weight: 900;
+
+        background: linear-gradient(
+            120deg,
+            #ffffff,
+            #9aa6b2
+        );
+
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        color: transparent;
+    }
+
+    .subtitle {
+        font-size: clamp(18px, 2.2vw, 28px);
+
+        color: #9da8b3;
+
+        margin-top: 30px;
+    }
+
+    .terminal {
+        margin-top: 38px;
+
+        display: inline-block;
+
+        padding: 18px 22px;
+
+        border-left: 2px solid #6cff9b;
+
+        background: rgba(255,255,255,0.035);
+
+        color: #89949f;
+
+        font-family: monospace;
+
+        font-size: 14px;
+
+        box-shadow:
+            0 0 30px rgba(108,255,155,0.04);
+    }
+
+    .terminal strong {
+        color: #6cff9b;
+    }
+
+    /* =========================鼠标光晕========================= */
+
+    .glow {
+        position: fixed;
+
+        width: 500px;
+        height: 500px;
+
+        border-radius: 50%;
+
+        pointer-events: none;
+
+        background:
+            radial-gradient(
+                circle,
+                rgba(120,150,255,0.10),
+                transparent 65%
+            );
+
+        transform: translate(-50%, -50%);
+
+        z-index: -1;
+    }
+
+    /* =========================内容========================= */
+
+    section {
+        padding: 110px 8%;
+
+        max-width: 1200px;
+
+        margin: auto;
+    }
+
+    .section-label {
+        color: #6cff9b;
+
+        font-family: monospace;
+
+        font-size: 15px;
+
+        letter-spacing: 3px;
+
+        margin-bottom: 15px;
+    }
+
+    h2 {
+        font-size: 42px;
+
+        margin: 0 0 45px;
+
+        letter-spacing: -1px;
+    }
+
+    
+
+    /* =========================关于========================= */
+
+    .about {
+        max-width: 760px;
+
+        color: #89949e;
+
+        font-size: 17px;
+
+        line-height: 2;
+    }
+
+    .highlight {
+        color: white;
+    }
+
+    /* =========================页脚========================= */
+
+    footer {
+        padding: 80px 8% 40px;
+
+        color: #ffffff;
+
+        font-family: monospace;
+
+        font-size: 17px;
+
+        font-weight: 700;
+
+        display: flex;
+
+        justify-content: space-between;
+
+        border-top:
+            1px solid rgb(255, 255, 255);
+    }
+
+    /* =========================手机端========================= */
+
+    @media (max-width: 700px) {
+
+        nav {
+            padding: 0 5%;
+        }
+
+        nav a {
+            margin-left: 12px;
+
+            font-size: 11px;
+        }
+
+        .weather-widget {
+            position: relative;
+
+            top: auto;
+            right: auto;
+
+            width: calc(100% - 12%);
+
+            margin: 90px 6% 0;
+
+            z-index: 4;
+        }
+
+        .hero {
+            min-height: auto;
+
+            padding-top: 65px;
+
+            padding-left: 6%;
+            padding-right: 6%;
+
+            padding-bottom: 100px;
+        }
+
+        h1 {
+            letter-spacing: -4px;
+        }
+
+        section {
+            padding-left: 6%;
+            padding-right: 6%;
+        }
+
+        h2 {
+            font-size: 34px;
+        }
+
+        footer {
+            flex-direction: column;
+
+            gap: 15px;
+        }
+    }
+
+    /* =========================小屏手机========================= */
+
+    @media (max-width: 420px) {
+
+        nav .logo {
+            font-size: 15px;
+
+            letter-spacing: 3px;
+        }
+
+        nav a {
+            margin-left: 8px;
+
+            font-size: 9px;
+
+            letter-spacing: 0.5px;
+        }
+
+        .weather-widget {
+            width: calc(100% - 10%);
+
+            margin-left: 5%;
+            margin-right: 5%;
+        }
+
+        .weather-header {
+            padding-left: 13px;
+            padding-right: 13px;
+        }
+
+        .weather-main {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-row {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-updated {
+            padding-left: 14px;
+            padding-right: 14px;
+        }
+
+        .weather-live {
+            font-size: 8px;
+        }
+
+        .hero {
+            padding-left: 5%;
+            padding-right: 5%;
+        }
+
+        h1 {
+            font-size: clamp(55px, 20vw, 90px);
+        }
+    }
+
+   
+</style>
+</head>
+
+
+<body>
+
+    
+<!-- =========================鼠标光晕========================= -->
+<div class="glow" id="glow"></div>
+
+
+<!-- =========================顶部导航========================= -->
+<nav>
+    <div class="logo">
+        JERRY<span> / 2026</span>
+    </div>
+
+    <div>
+        <a href="index.html">返回</a>
+    </div>
+</nav>
+
+
+<!-- ========================页脚========================= -->
+<footer>
+
+    <div>
+        Jerry // Personal system
+    </div>
+
+    <div>
+        Powered by Cloudflare
+    </div>
+
+</footer>
+
+
+<!-- =========================鼠标光晕========================= -->
+<script>
+    const glow =
+        document.getElementById("glow");
+
+
+    document.addEventListener(
+        "mousemove",
+        (event) => {
+
+            glow.style.left =
+                event.clientX + "px";
+
+            glow.style.top =
+                event.clientY + "px";
+
+        }
+    );
+</script>
+
+</body>
+</html>
