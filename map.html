@@ -28,6 +28,26 @@
         overflow-x: hidden;
     }
 
+    .glow {
+        position: fixed;
+        width: 380px;
+        height: 380px;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        pointer-events: none;
+        background: radial-gradient(
+            circle,
+            rgba(108, 255, 155, 0.12),
+            rgba(108, 255, 155, 0.04) 28%,
+            transparent 72%
+        );
+        filter: blur(30px);
+        opacity: 0.9;
+        z-index: 0;
+    }
+
     /* =========================
        背景网格
     ========================= */
@@ -659,147 +679,122 @@
         </div>
 
 
-        <!-- =========================
-             地点查询
-        ========================= -->
+        ```html
+<!-- =========================
+     地点查询
+========================= -->
 
-        <div class="lookup-panel">
+<div class="lookup-panel">
 
-            <div class="panel-label">
-                LOCATION SEARCH
-            </div>
+    <div class="panel-label">
+        LOCATION / COORDINATE SEARCH
+    </div>
 
-            <div class="search-row">
 
-                <input
-                    id="searchInput"
-                    class="search-input"
-                    type="text"
-                    placeholder="输入地点，例如 Tokyo Tower"
-                    autocomplete="off"
-                >
+    <div class="search-row">
 
-                <button
-                    id="searchButton"
-                    class="search-button"
-                    type="button"
-                >
-                    SEARCH
-                </button>
+        <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            placeholder="输入地点或经纬度，例如 Tokyo Tower / 35.6584491, 139.745536"
+            autocomplete="off"
+        >
 
-            </div>
+        <button
+            id="searchButton"
+            class="search-button"
+            type="button"
+        >
+            SEARCH
+        </button>
 
+    </div>
+
+
+    <div
+        id="message"
+        class="message"
+    ></div>
+
+
+    <!-- =========================
+         查询结果
+    ========================= -->
+
+    <div
+        id="results"
+        class="results"
+    >
+
+        <div class="result-card">
 
             <div
-                id="message"
-                class="message"
+                id="resultName"
+                class="result-name"
             ></div>
 
 
-            <!-- =========================
-                 查询结果
-            ========================= -->
-
             <div
-                id="results"
-                class="results"
-            >
-
-                <div class="result-card">
-
-                    <div
-                        id="resultName"
-                        class="result-name"
-                    ></div>
-
-                    <div
-                        id="resultAddress"
-                        class="result-address"
-                    ></div>
+                id="resultAddress"
+                class="result-address"
+            ></div>
 
 
-                    <div class="data-grid">
+            <div class="data-grid">
 
-                        <div class="data-box">
-                            <div class="data-label">
-                                LATITUDE
-                            </div>
+                <div class="data-box">
 
-                            <div
-                                id="latitude"
-                                class="data-value coordinates"
-                            ></div>
-                        </div>
-
-
-                        <div class="data-box">
-                            <div class="data-label">
-                                LONGITUDE
-                            </div>
-
-                            <div
-                                id="longitude"
-                                class="data-value coordinates"
-                            ></div>
-                        </div>
-
-
-                        <div class="data-box">
-                            <div class="data-label">
-                                ELEVATION
-                            </div>
-
-                            <div
-                                id="elevation"
-                                class="data-value"
-                            ></div>
-                        </div>
-
-
-                        <div class="data-box">
-                            <div class="data-label">
-                                TIMEZONE
-                            </div>
-
-                            <div
-                                id="timezone"
-                                class="data-value"
-                            ></div>
-                        </div>
-
+                    <div class="data-label">
+                        LATITUDE
                     </div>
+
+                    <div
+                        id="latitude"
+                        class="data-value coordinates"
+                    ></div>
 
                 </div>
 
 
-                <!-- =========================
-                     反向解析
-                ========================= -->
+                <div class="data-box">
 
-                <div class="reverse-section">
-
-                    <div class="reverse-title">
-                        REVERSE GEOCODING
+                    <div class="data-label">
+                        LONGITUDE
                     </div>
 
-                    <div class="reverse-row">
+                    <div
+                        id="longitude"
+                        class="data-value coordinates"
+                    ></div>
 
-                        <input
-                            id="coordinateInput"
-                            class="coordinate-input"
-                            type="text"
-                            placeholder="例如 35.6584491, 139.745536"
-                        >
+                </div>
 
-                        <button
-                            id="reverseButton"
-                            class="reverse-button"
-                            type="button"
-                        >
-                            RESOLVE
-                        </button>
 
+                <div class="data-box">
+
+                    <div class="data-label">
+                        ELEVATION
                     </div>
+
+                    <div
+                        id="elevation"
+                        class="data-value"
+                    ></div>
+
+                </div>
+
+
+                <div class="data-box">
+
+                    <div class="data-label">
+                        TIMEZONE
+                    </div>
+
+                    <div
+                        id="timezone"
+                        class="data-value"
+                    ></div>
 
                 </div>
 
@@ -808,6 +803,10 @@
         </div>
 
     </div>
+
+</div>
+
+</div>
 
 </main>
 
@@ -929,12 +928,22 @@
         resultAddress.textContent =
             place.display_name || "No address information";
 
+        const latValue =
+            Number(place.latitude);
+
+        const lonValue =
+            Number(place.longitude);
+
 
         latitude.textContent =
-            place.latitude ?? "—";
+            Number.isFinite(latValue)
+                ? latValue
+                : "—";
 
         longitude.textContent =
-            place.longitude ?? "—";
+            Number.isFinite(lonValue)
+                ? lonValue
+                : "—";
 
         elevation.textContent =
             place.elevation !== null &&
@@ -943,12 +952,14 @@
                 : "—";
 
         timezone.textContent =
-            place.timezone || "—";
+            formatTimezone(place.timezone) || "—";
 
-
-        coordinateInput.value =
-            `${place.latitude}, ${place.longitude}`;
-
+        if (Number.isFinite(latValue) && Number.isFinite(lonValue)) {
+            coordinateInput.value =
+                `${latValue}, ${lonValue}`;
+        } else {
+            coordinateInput.value = "";
+        }
 
         results.style.display =
             "block";
@@ -1062,12 +1073,14 @@
         const value =
             coordinateInput.value.trim();
 
+        const normalized =
+            value.replace(/[，;]/g, ",");
 
         const parts =
-            value.split(",");
+            normalized.split(",").map((item) => item.trim());
 
 
-        if (parts.length !== 2) {
+        if (parts.length !== 2 || !parts[0] || !parts[1]) {
 
             showMessage(
                 "请输入：纬度, 经度",
@@ -1079,19 +1092,23 @@
 
 
         const lat =
-            Number(parts[0].trim());
+            Number(parts[0]);
 
         const lon =
-            Number(parts[1].trim());
+            Number(parts[1]);
 
 
         if (
             !Number.isFinite(lat) ||
-            !Number.isFinite(lon)
+            !Number.isFinite(lon) ||
+            lat < -90 ||
+            lat > 90 ||
+            lon < -180 ||
+            lon > 180
         ) {
 
             showMessage(
-                "坐标格式无效",
+                "坐标格式无效或超出范围",
                 true
             );
 
@@ -1156,6 +1173,165 @@
         }
 
     }
+
+
+
+    /* =========================时区格式化========================= */
+    function formatTimezone(timezone) {
+
+    if (!timezone) {
+        return "Unknown";
+    }
+
+    try {
+
+        const parts = timezone.split("/");
+
+        // 例如 Etc/UTC
+        if (parts.length < 2) {
+
+            if (
+                timezone === "UTC" ||
+                timezone === "Etc/UTC"
+            ) {
+                return "UTC/0";
+            }
+
+            return timezone;
+        }
+
+
+        // 大洲
+        const continent =
+            parts[0];
+
+
+        // 获取当前时区 UTC 偏移
+        const now = new Date();
+
+        const formatter =
+            new Intl.DateTimeFormat(
+                "en-US",
+                {
+                    timeZone: timezone,
+                    timeZoneName: "longOffset"
+                }
+            );
+
+
+        const formatted =
+            formatter.formatToParts(now);
+
+
+        const offsetPart =
+            formatted.find(
+                function (part) {
+                    return part.type === "timeZoneName";
+                }
+            );
+
+
+        if (!offsetPart) {
+            return timezone;
+        }
+
+
+        let offset =
+            offsetPart.value.replace(
+                "GMT",
+                ""
+            );
+
+
+        // UTC+0
+        if (
+            offset === "" ||
+            offset === "+00:00" ||
+            offset === "-00:00"
+        ) {
+
+            return continent + "/0";
+        }
+
+
+        // =========================
+        // 解析 UTC 偏移
+        // =========================
+
+        const match =
+            offset.match(
+                /([+-])(\d{2}):?(\d{2})?/
+            );
+
+
+        if (!match) {
+            return timezone;
+        }
+
+
+        const sign =
+            match[1];
+
+        const hours =
+            Number(match[2]);
+
+        const minutes =
+            match[3]
+                ? Number(match[3])
+                : 0;
+
+
+        // =========================
+        // 东 / 西
+        // =========================
+
+        const direction =
+            sign === "+"
+                ? "E"
+                : "W";
+
+
+        // =========================
+        // 整点
+        // =========================
+
+        if (minutes === 0) {
+
+            return (
+                continent +
+                "/" +
+                sign +
+                hours +
+                direction
+            );
+
+        }
+
+
+        // =========================
+        // 半小时 / 45分钟
+        // =========================
+
+        return (
+            continent +
+            "/" +
+            sign +
+            hours +
+            ":" +
+            String(minutes).padStart(2, "0") +
+            direction
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Timezone format error:",
+            error
+        );
+
+        return timezone;
+    }
+}
 
 
     /* =========================
