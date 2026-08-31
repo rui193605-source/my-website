@@ -970,14 +970,256 @@ if (url.pathname === "/api/location") {
 
     }
 
+    // ==============================
+    // CORS
+    // ==============================
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders()
+      });
+    }
 
-    // =========================
-    // 普通网页请求
-    // =========================
+    // ==============================
+    // PING
+    // GET /api/speed/ping
+    // ==============================
+    if (
+      url.pathname === "/api/speed/ping" &&
+      request.method === "GET"
+    ) {
+      return new Response("pong", {
+        status: 200,
+        headers: {
+          ...corsHeaders(),
+          "Content-Type": "text/plain",
+          "Cache-Control": "no-store, no-cache, must-revalidate"
+        }
+      });
+    }
 
-    return env.ASSETS.fetch(
-      request
-    );
+    // ==============================
+    // DOWNLOAD
+    // GET /api/speed/download
+    // ==============================
+    if (
+      url.pathname === "/api/speed/download" &&
+      request.method === "GET"
+    ) {
+      return createDownloadResponse();
+    }
 
+    // ==============================
+    // UPLOAD
+    // POST /api/speed/upload
+    // ==============================
+    if (
+      url.pathname === "/api/speed/upload" &&
+      request.method === "POST"
+    ) {
+      return await handleUpload(request);
+    }
+
+    // ==============================
+    // 404
+    // ==============================
+    return new Response("Not Found", {
+      status: 404,
+      headers: corsHeaders()
+    });
   }
 };
+
+
+// ============================================================
+// DOWNLOAD TEST
+// ============================================================
+
+function createDownloadResponse() {
+
+  // 256 KB 固定数据块
+  // 不使用 crypto.getRandomValues()
+  // 避免 CPU 成为测速瓶颈
+  const CHUNK_SIZE = 256 * 1024;
+
+  const chunk = new Uint8Array(CHUNK_SIZE);
+
+  // 填充固定二进制数据
+  for (let i = 0; i < CHUNK_SIZE; i++) {
+    chunk[i] = i & 0xff;
+  }
+
+  const stream = new ReadableStream({
+
+    start(controller) {
+
+      let stopped = false;
+
+      function push() {
+
+        if (stopped) return;
+
+        try {
+          controller.enqueue(chunk);
+
+          // 立即继续发送
+          queueMicrotask(push);
+
+        } catch (error) {
+          stopped = true;
+        }
+      }
+
+      push();
+
+      // 安全限制：
+      // 单连接最多持续 30 秒
+      setTimeout(() => {
+
+        if (stopped) return;
+
+        stopped = true;
+
+        try {
+          controller.close();
+        } catch (error) {}
+
+      }, 30000);
+    },
+
+    cancel() {
+      // 浏览器主动 abort 时触发
+    }
+  });
+
+  return new Response(stream, {
+
+    status: 200,
+
+    headers: {
+
+      ...corsHeaders(),
+
+      "Content-Type":
+        "application/octet-stream",
+
+      "Cache-Control":
+        "no-store, no-cache, must-revalidate",
+
+      "Pragma":
+        "no-cache",
+
+      "Expires":
+        "0",
+
+      // 禁止压缩测速数据
+      "Content-Encoding":
+        "identity",
+
+      "X-Speed-Test":
+        "download"
+    }
+  });
+}
+
+
+// ============================================================
+// UPLOAD TEST
+// ============================================================
+
+async function handleUpload(request) {
+
+  let totalBytes = 0;
+
+  // 没有 body
+  if (!request.body) {
+
+    return new Response(
+      JSON.stringify({
+        success: false,
+        bytes: 0
+      }),
+      {
+        status: 400,
+        headers: {
+          ...corsHeaders(),
+          "Content-Type":
+            "application/json",
+          "Cache-Control":
+            "no-store"
+        }
+      }
+    );
+  }
+
+  const reader =
+    request.body.getReader();
+
+  try {
+
+    while (true) {
+
+      const { value, done } =
+        await reader.read();
+
+      if (done) break;
+
+      if (value) {
+        totalBytes +=
+          value.byteLength;
+      }
+    }
+
+  } catch (error) {
+
+    // 浏览器 10 秒后 AbortController
+    // 主动终止上传时，这里可能进入
+    // catch，这是正常情况。
+
+  }
+
+  return new Response(
+
+    JSON.stringify({
+      success: true,
+      bytes: totalBytes
+    }),
+
+    {
+      status: 200,
+
+      headers: {
+        ...corsHeaders(),
+
+        "Content-Type":
+          "application/json",
+
+        "Cache-Control":
+          "no-store, no-cache"
+      }
+    }
+  );
+}
+
+
+// ============================================================
+// CORS
+// ============================================================
+
+function corsHeaders() {
+
+  return {
+
+    "Access-Control-Allow-Origin":
+      "*",
+
+    "Access-Control-Allow-Methods":
+      "GET, POST, OPTIONS",
+
+    "Access-Control-Allow-Headers":
+      "*",
+
+    "Access-Control-Expose-Headers":
+      "*"
+  };
+}
