@@ -1246,31 +1246,301 @@
        35.6584491，139.745536
     ========================= */
 
-    function parseDecimalCoordinates(
-        input
-    ) {
+    /* =========================
+   通用坐标解析
 
-        const normalized =
-            input
-                .trim()
-                .replace(
-                    /[，]/g,
-                    ","
-                );
+   支持：
+
+   1. 十进制度
+   35.6584491, 139.745536
+   35.6584491 139.745536
+   -35.6584491, -139.745536
+
+   2. N/S/E/W
+   35.6584491 N, 139.745536 E
+   35.6584491N 139.745536E
+   N35.6584491 E139.745536
+
+   3. DMS
+   35°39'30.42"N 139°44'43.93"E
+
+   4. DMS 空格形式
+   35 39 30.42 N, 139 44 43.93 E
+========================= */
+
+function parseCoordinates(input) {
+
+    if (!input) {
+        return null;
+    }
+
+    let value = String(input)
+        .trim()
+        .replace(/[，]/g, ",")
+        .replace(/[；;]/g, ",")
+        .replace(/[“”″]/g, '"')
+        .replace(/[‘’′]/g, "'")
+        .replace(/º/g, "°");
+
+    if (!value) {
+        return null;
+    }
 
 
-        const match =
-            normalized.match(
-                /^\s*([+-]?\d+(?:\.\d+)?)\s*(?:,|\s)\s*([+-]?\d+(?:\.\d+)?)\s*$/
-            );
+    /* =========================
+       辅助函数
+    ========================= */
 
+    function validate(lat, lon) {
 
-        if (!match) {
-
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lon)
+        ) {
             return null;
-
         }
 
+        if (
+            lat < -90 ||
+            lat > 90 ||
+            lon < -180 ||
+            lon > 180
+        ) {
+            return null;
+        }
+
+        return {
+            latitude: lat,
+            longitude: lon
+        };
+    }
+
+
+    function convertDMS(
+        degrees,
+        minutes,
+        seconds,
+        direction
+    ) {
+
+        degrees = Number(degrees);
+        minutes = Number(minutes || 0);
+        seconds = Number(seconds || 0);
+
+        if (
+            !Number.isFinite(degrees) ||
+            !Number.isFinite(minutes) ||
+            !Number.isFinite(seconds)
+        ) {
+            return null;
+        }
+
+        if (
+            minutes < 0 ||
+            minutes >= 60 ||
+            seconds < 0 ||
+            seconds >= 60
+        ) {
+            return null;
+        }
+
+        let decimal =
+            Math.abs(degrees) +
+            minutes / 60 +
+            seconds / 3600;
+
+        const dir =
+            String(direction || "")
+                .toUpperCase();
+
+        if (
+            dir === "S" ||
+            dir === "W"
+        ) {
+            decimal = -decimal;
+        }
+
+        return decimal;
+    }
+
+
+    /* =========================
+       ① DMS
+
+       35°39'30.42"N
+       139°44'43.93"E
+    ========================= */
+
+    const dmsPattern =
+        /^\s*(?:([NS])\s*)?(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*['′]?\s*(\d+(?:\.\d+)?)?\s*["″]?\s*([NS])?\s*(?:,|\s)+\s*(?:([EW])\s*)?(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*['′]?\s*(\d+(?:\.\d+)?)?\s*["″]?\s*([EW])?\s*$/i;
+
+
+    let match =
+        value.match(dmsPattern);
+
+
+    if (match) {
+
+        const latDirection =
+            match[1] || match[5] || "";
+
+        const lonDirection =
+            match[6] || match[10] || "";
+
+        const lat =
+            convertDMS(
+                match[2],
+                match[3],
+                match[4],
+                latDirection
+            );
+
+        const lon =
+            convertDMS(
+                match[7],
+                match[8],
+                match[9],
+                lonDirection
+            );
+
+        const result =
+            validate(lat, lon);
+
+        if (result) {
+            return result;
+        }
+    }
+
+
+    /* =========================
+       ② DMS 空格格式
+
+       35 39 30.42 N
+       139 44 43.93 E
+    ========================= */
+
+    const dmsSpacePattern =
+        /^\s*(?:([NS])\s*)?(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*([NS])?\s*(?:,|\s)+\s*(?:([EW])\s*)?(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)\s*([EW])?\s*$/i;
+
+
+    match =
+        value.match(dmsSpacePattern);
+
+
+    if (match) {
+
+        const latDirection =
+            match[1] || match[5] || "";
+
+        const lonDirection =
+            match[6] || match[10] || "";
+
+        const lat =
+            convertDMS(
+                match[2],
+                match[3],
+                match[4],
+                latDirection
+            );
+
+        const lon =
+            convertDMS(
+                match[7],
+                match[8],
+                match[9],
+                lonDirection
+            );
+
+        const result =
+            validate(lat, lon);
+
+        if (result) {
+            return result;
+        }
+    }
+
+
+    /* =========================
+       ③ 十进制度 + N/S/E/W
+
+       35.6584491 N, 139.745536 E
+       35.6584491N 139.745536E
+       N35.6584491 E139.745536
+    ========================= */
+
+    const decimalDirectionPattern =
+        /^\s*(?:([NS])\s*)?([+-]?\d+(?:\.\d+)?)\s*([NS])?\s*(?:,|\s)+\s*(?:([EW])\s*)?([+-]?\d+(?:\.\d+)?)\s*([EW])?\s*$/i;
+
+
+    match =
+        value.match(
+            decimalDirectionPattern
+        );
+
+
+    if (match) {
+
+        const latDirection =
+            match[1] || match[3] || "";
+
+        const lonDirection =
+            match[4] || match[6] || "";
+
+        let lat =
+            Number(match[2]);
+
+        let lon =
+            Number(match[5]);
+
+
+        if (
+            latDirection.toUpperCase() === "S"
+        ) {
+            lat = -Math.abs(lat);
+        } else if (
+            latDirection.toUpperCase() === "N"
+        ) {
+            lat = Math.abs(lat);
+        }
+
+
+        if (
+            lonDirection.toUpperCase() === "W"
+        ) {
+            lon = -Math.abs(lon);
+        } else if (
+            lonDirection.toUpperCase() === "E"
+        ) {
+            lon = Math.abs(lon);
+        }
+
+
+        const result =
+            validate(lat, lon);
+
+        if (result) {
+            return result;
+        }
+    }
+
+
+    /* =========================
+       ④ 最普通的十进制度
+
+       35.6584491, 139.745536
+       35.6584491 139.745536
+       -35.6584491 -139.745536
+    ========================= */
+
+    const decimalPattern =
+        /^\s*([+-]?\d+(?:\.\d+)?)\s*(?:,|\s)\s*([+-]?\d+(?:\.\d+)?)\s*$/;
+
+
+    match =
+        value.match(decimalPattern);
+
+
+    if (match) {
 
         const lat =
             Number(match[1]);
@@ -1278,46 +1548,21 @@
         const lon =
             Number(match[2]);
 
+        const result =
+            validate(lat, lon);
 
-        if (
-            !Number.isFinite(lat) ||
-            !Number.isFinite(lon)
-        ) {
-
-            return null;
-
+        if (result) {
+            return result;
         }
-
-
-        if (
-            lat < -90 ||
-            lat > 90
-        ) {
-
-            return null;
-
-        }
-
-
-        if (
-            lon < -180 ||
-            lon > 180
-        ) {
-
-            return null;
-
-        }
-
-
-        return {
-
-            latitude: lat,
-
-            longitude: lon
-
-        };
-
     }
+
+
+    /* =========================
+       ⑤ 无法识别
+    ========================= */
+
+    return null;
+}
 
 
     /* =========================
@@ -1347,9 +1592,9 @@
         // =========================
 
         const coordinates =
-            parseDecimalCoordinates(
-                input
-            );
+            parseCoordinates(
+            input
+        );
 
 
         if (coordinates) {
