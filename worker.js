@@ -1035,6 +1035,14 @@ if (url.pathname === "/api/location") {
 // DOWNLOAD TEST
 // ============================================================
 
+/**
+ * 构建下载测速响应
+ *
+ * 关键点：用 pull() 提供数据，而不是在微任务里死循环 enqueue。
+ *  - pull() 只在响应流需要数据时触发，天然形成背压，内存占用恒定；
+ *  - 旧写法（queueMicrotask 循环）无视背压，数据会全部堆在内存里，
+ *    高带宽下容易撞上 Worker 的内存上限。
+ */
 function createDownloadResponse() {
 
   // 256 KB 固定数据块
@@ -1049,48 +1057,49 @@ function createDownloadResponse() {
     chunk[i] = i & 0xff;
   }
 
+  // 单连接最长持续时间，避免连接泄漏
+  const MAX_DURATION = 20000;
+
+  let closed = false;
+  let controllerRef = null;
+
   const stream = new ReadableStream({
 
     start(controller) {
+      controllerRef = controller;
+    },
 
-      let stopped = false;
+    // 下游消费掉一块后会继续索要，形成稳定的持续输出
+    pull(controller) {
 
-      function push() {
+      if (closed) return;
 
-        if (stopped) return;
+      try {
+        controller.enqueue(chunk);
 
-        try {
-          controller.enqueue(chunk);
-
-          // 立即继续发送
-          queueMicrotask(push);
-
-        } catch (error) {
-          stopped = true;
-        }
+      } catch (error) {
+        closed = true;
       }
-
-      push();
-
-      // 安全限制：
-      // 单连接最多持续 30 秒
-      setTimeout(() => {
-
-        if (stopped) return;
-
-        stopped = true;
-
-        try {
-          controller.close();
-        } catch (error) {}
-
-      }, 30000);
     },
 
     cancel() {
       // 浏览器主动 abort 时触发
+      closed = true;
     }
   });
+
+  // 安全限制：单连接最多持续 MAX_DURATION
+  setTimeout(() => {
+
+    if (closed) return;
+
+    closed = true;
+
+    try {
+      if (controllerRef) controllerRef.close();
+    } catch (error) {}
+
+  }, MAX_DURATION);
 
   return new Response(stream, {
 
@@ -1112,9 +1121,10 @@ function createDownloadResponse() {
       "Expires":
         "0",
 
-      // 禁止压缩测速数据
-      "Content-Encoding":
-        "identity",
+      // 注意：不要再设置 Content-Encoding。
+      // 这里的 body 并没有真的编码，声明 identity 只会给中间层
+      // 和浏览器带来解析风险；application/octet-stream
+      // 本身也不会被 Cloudflare 压缩。
 
       "X-Speed-Test":
         "download"
@@ -1127,54 +1137,45 @@ function createDownloadResponse() {
 // UPLOAD TEST
 // ============================================================
 
+/**
+ * 读取并丢弃上传数据，返回实际接收到的字节数
+ */
 async function handleUpload(request) {
 
-  let totalBytes = 0;
+  const headers = {
+    ...corsHeaders(),
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store, no-cache"
+  };
 
   // 没有 body
   if (!request.body) {
 
     return new Response(
+
       JSON.stringify({
         success: false,
         bytes: 0
       }),
-      {
-        status: 400,
-        headers: {
-          ...corsHeaders(),
-          "Content-Type":
-            "application/json",
-          "Cache-Control":
-            "no-store"
-        }
-      }
+
+      { status: 400, headers }
     );
   }
 
-  const reader =
-    request.body.getReader();
+  let totalBytes = 0;
 
   try {
 
-    while (true) {
-
-      const { value, done } =
-        await reader.read();
-
-      if (done) break;
-
-      if (value) {
-        totalBytes +=
-          value.byteLength;
-      }
+    // request.body 是 ReadableStream，可以直接异步迭代：
+    // 比手动 getReader() 更简洁，流结束时循环自动退出
+    for await (const chunk of request.body) {
+      totalBytes += chunk.byteLength;
     }
 
   } catch (error) {
 
-    // 浏览器 10 秒后 AbortController
-    // 主动终止上传时，这里可能进入
-    // catch，这是正常情况。
+    // 浏览器测速结束时会用 AbortController 主动断开，
+    // 这里进入 catch 属于正常情况，已收到的字节数依然有效。
 
   }
 
@@ -1185,19 +1186,7 @@ async function handleUpload(request) {
       bytes: totalBytes
     }),
 
-    {
-      status: 200,
-
-      headers: {
-        ...corsHeaders(),
-
-        "Content-Type":
-          "application/json",
-
-        "Cache-Control":
-          "no-store, no-cache"
-      }
-    }
+    { status: 200, headers }
   );
 }
 
