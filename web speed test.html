@@ -103,7 +103,9 @@
         margin-left: 28px;
         font-size: 13px;
         letter-spacing: 1px;
-        transition: 0.25s;
+
+        /* 只过渡实际会变的属性：transition: all 会让浏览器监听更多属性 */
+        transition: color 0.25s;
     }
 
     nav a:hover {
@@ -412,7 +414,11 @@
 
         cursor: pointer;
 
-        transition: 0.25s;
+        /* 同上：只过渡实际变化的属性 */
+        transition:
+            border-color 0.25s,
+            color 0.25s,
+            background-color 0.25s;
     }
 
     .speed-button:hover {
@@ -1010,6 +1016,8 @@ function median(values) {
  * @param {string} text
  */
 function setStatus(text) {
+    /* 内容相同时不写 DOM，减少无谓的样式重算 */
+    if (dom.speedStatus.textContent === text) return;
     dom.speedStatus.textContent = text;
 }
 
@@ -1020,7 +1028,11 @@ function setStatus(text) {
  */
 function setProgress(element, ratio) {
     const clamped = Math.min(1, Math.max(0, ratio));
-    element.style.width = (clamped * 100).toFixed(1) + "%";
+    const width = (clamped * 100).toFixed(1) + "%";
+
+    /* 宽度没变化就跳过赋值，避免触发样式失效 */
+    if (element.style.width === width) return;
+    element.style.width = width;
 }
 
 /**
@@ -1135,72 +1147,120 @@ async function testPing() {
 
 
 /* ============================================================
- * 6. 下载测试
+ * 6. 测速通用流程
+ *    下载与上传的「置忙 → 定时刷新界面 → 并发连接 → 汇总结果」完全一致，
+ *    抽成一份，两个测试只负责提供数据来源与连接方式
  * ============================================================ */
 
 /**
- * 并发若干条连接，统计测试时长内读到的总字节数
+ * 执行一次测速
+ *
+ * @param {object} options
+ * @param {HTMLButtonElement} options.button          触发的按钮
+ * @param {HTMLElement} options.valueElement          数值元素
+ * @param {HTMLElement} options.progressElement       进度条元素
+ * @param {string} options.idleText                   按钮空闲文案
+ * @param {string} options.label                      状态栏前缀（DOWNLOAD / UPLOAD）
+ * @param {number} options.duration                   测试时长（ms）
+ * @param {string} options.emptyMessage               没有数据时的提示
+ * @param {() => number} options.measure              读取当前累计字节数
+ * @param {(signal: AbortSignal) => Promise<unknown>[]} options.start 启动全部连接
+ */
+async function runSpeedTest(options) {
+
+    const {
+        button, valueElement, progressElement,
+        idleText, label, duration, emptyMessage,
+        measure, start
+    } = options;
+
+    setBusy(button, true, idleText);
+    valueElement.textContent = "0.0";
+    setProgress(progressElement, 0);
+    setStatus(label + " // INITIALIZING");
+
+    const controller = new AbortController();
+    const startedAt = performance.now();
+
+    /* 到时间统一中止：一个 AbortController 可以同时终止所有并发请求 */
+    const stopTimer = setTimeout(() => controller.abort(), duration);
+
+    /* 界面刷新交给定时器，与网络读取解耦 */
+    const uiTimer = setInterval(() => {
+        const elapsed = (performance.now() - startedAt) / 1000;
+        const mbps = toMbps(measure(), elapsed).toFixed(1);
+
+        valueElement.textContent = mbps;
+        setProgress(progressElement, (elapsed * 1000) / duration);
+        setStatus(label + " // " + mbps + " Mbps");
+    }, CONFIG.uiInterval);
+
+    /* 用 allSettled：被 abort 的连接会 reject，属于预期情况 */
+    const results = await Promise.allSettled(start(controller.signal));
+
+    clearTimeout(stopTimer);
+    clearInterval(uiTimer);
+
+    const elapsed = (performance.now() - startedAt) / 1000;
+    const bytes = measure();
+    const mbps = toMbps(bytes, elapsed);
+
+    setBusy(button, false, idleText);
+
+    if (bytes > 0) {
+        valueElement.textContent = mbps.toFixed(1);
+        setProgress(progressElement, 1);
+        setStatus(label + " // COMPLETE // " + mbps.toFixed(1) + " Mbps");
+    } else {
+        setStatus(label + " // ERROR // " + emptyMessage);
+        reportFailure(results, label.toLowerCase());
+    }
+}
+
+
+/* ============================================================
+ * 7. 下载测试
+ * ============================================================ */
+
+/**
+ * 下载测速：并发若干条连接，统计测试时长内读到的总字节数
  */
 async function testDownload() {
 
     if (running.download) return;
     running.download = true;
 
-    setBusy(dom.downloadButton, true, "TEST DOWNLOAD");
-    dom.downloadValue.textContent = "0.0";
-    setProgress(dom.downloadProgress, 0);
-    setStatus("DOWNLOAD // INITIALIZING");
-
-    const controller = new AbortController();
-    const startedAt = performance.now();
-
+    /* 所有连接共享的总字节数，由 downloadStream 的回调累加 */
     let bytes = 0;
 
-    /* 到时间统一中止：一个 AbortController 可以同时终止所有并发请求 */
-    const stopTimer = setTimeout(
-        () => controller.abort(),
-        CONFIG.download.duration
-    );
+    await runSpeedTest({
+        button: dom.downloadButton,
+        valueElement: dom.downloadValue,
+        progressElement: dom.downloadProgress,
+        idleText: "TEST DOWNLOAD",
+        label: "DOWNLOAD",
+        duration: CONFIG.download.duration,
+        emptyMessage: "未收到数据",
 
-    /* 界面刷新交给定时器，与网络读取解耦 */
-    const uiTimer = setInterval(() => {
-        const elapsed = (performance.now() - startedAt) / 1000;
-        const mbps = toMbps(bytes, elapsed).toFixed(1);
+        measure: () => bytes,
 
-        dom.downloadValue.textContent = mbps;
-        setProgress(dom.downloadProgress, (elapsed * 1000) / CONFIG.download.duration);
-        setStatus("DOWNLOAD // " + mbps + " Mbps");
-    }, CONFIG.uiInterval);
+        /* 启动并发连接，等待与中止都交给通用流程 */
+        start: (signal) => {
+            const connections = [];
 
-    const connections = [];
-    for (let i = 0; i < CONFIG.download.concurrency; i++) {
-        connections.push(
-            downloadStream(controller.signal, (chunkBytes) => {
-                bytes += chunkBytes;
-            })
-        );
-    }
+            for (let i = 0; i < CONFIG.download.concurrency; i++) {
+                connections.push(
+                    downloadStream(signal, (chunkBytes) => {
+                        bytes += chunkBytes;
+                    })
+                );
+            }
 
-    /* 用 allSettled：被 abort 的连接会 reject，属于预期情况 */
-    const results = await Promise.allSettled(connections);
-
-    clearTimeout(stopTimer);
-    clearInterval(uiTimer);
-
-    const elapsed = (performance.now() - startedAt) / 1000;
-    const mbps = toMbps(bytes, elapsed);
+            return connections;
+        }
+    });
 
     running.download = false;
-    setBusy(dom.downloadButton, false, "TEST DOWNLOAD");
-
-    if (bytes > 0) {
-        dom.downloadValue.textContent = mbps.toFixed(1);
-        setProgress(dom.downloadProgress, 1);
-        setStatus("DOWNLOAD // COMPLETE // " + mbps.toFixed(1) + " Mbps");
-    } else {
-        setStatus("DOWNLOAD // ERROR // 未收到数据");
-        reportFailure(results, "download");
-    }
 
     /* 下载结束后重测一次延迟：带宽被占满时延迟会明显变化 */
     await testPing();
@@ -1243,11 +1303,11 @@ async function downloadStream(signal, onBytes) {
 
 
 /* ============================================================
- * 7. 上传测试
+ * 8. 上传测试
  * ============================================================ */
 
 /**
- * 并发若干条流式上传连接，统计测试时长内被网络层取走的数据量
+ * 上传测速：并发若干条流式上传连接，统计测试时长内被网络层取走的数据量
  *
  * 说明：浏览器没有「已发送字节数」的公开接口，这里统计的是流被消费的字节数。
  *      ReadableStream 默认队列策略的缓冲上限是 1 块，因此 pull() 被调用即说明
@@ -1257,14 +1317,6 @@ async function testUpload() {
 
     if (running.upload) return;
     running.upload = true;
-
-    setBusy(dom.uploadButton, true, "TEST UPLOAD");
-    dom.uploadValue.textContent = "0.0";
-    setProgress(dom.uploadProgress, 0);
-    setStatus("UPLOAD // INITIALIZING");
-
-    const controller = new AbortController();
-    const startedAt = performance.now();
 
     /* 所有连接复用同一块只读数据，避免反复分配内存 */
     const chunk = new Uint8Array(CONFIG.upload.chunkSize);
@@ -1278,44 +1330,24 @@ async function testUpload() {
     const totalBytes = () =>
         channels.reduce((sum, channel) => sum + channel.bytes, 0);
 
-    /* 到时间统一中止所有上传连接 */
-    const stopTimer = setTimeout(
-        () => controller.abort(),
-        CONFIG.upload.duration
-    );
+    await runSpeedTest({
+        button: dom.uploadButton,
+        valueElement: dom.uploadValue,
+        progressElement: dom.uploadProgress,
+        idleText: "TEST UPLOAD",
+        label: "UPLOAD",
+        duration: CONFIG.upload.duration,
+        emptyMessage: "未发送数据",
 
-    const uiTimer = setInterval(() => {
-        const elapsed = (performance.now() - startedAt) / 1000;
-        const mbps = toMbps(totalBytes(), elapsed).toFixed(1);
+        measure: totalBytes,
 
-        dom.uploadValue.textContent = mbps;
-        setProgress(dom.uploadProgress, (elapsed * 1000) / CONFIG.upload.duration);
-        setStatus("UPLOAD // " + mbps + " Mbps");
-    }, CONFIG.uiInterval);
-
-    const connections = channels.map((channel) =>
-        uploadStream(channel, chunk, controller.signal)
-    );
-
-    await Promise.allSettled(connections);
-
-    clearTimeout(stopTimer);
-    clearInterval(uiTimer);
-
-    const elapsed = (performance.now() - startedAt) / 1000;
-    const bytes = totalBytes();
-    const mbps = toMbps(bytes, elapsed);
+        /* 启动并发连接，等待与中止都交给通用流程 */
+        start: (signal) => channels.map((channel) =>
+            uploadStream(channel, chunk, signal)
+        )
+    });
 
     running.upload = false;
-    setBusy(dom.uploadButton, false, "TEST UPLOAD");
-
-    if (bytes > 0) {
-        dom.uploadValue.textContent = mbps.toFixed(1);
-        setProgress(dom.uploadProgress, 1);
-        setStatus("UPLOAD // COMPLETE // " + mbps.toFixed(1) + " Mbps");
-    } else {
-        setStatus("UPLOAD // ERROR // 未发送数据");
-    }
 
     await testPing();
 }
@@ -1375,7 +1407,7 @@ async function uploadStream(channel, chunk, signal) {
 
 
 /* ============================================================
- * 8. 鼠标光晕
+ * 9. 鼠标光晕
  * ============================================================ */
 
 /**
@@ -1413,7 +1445,7 @@ function initGlow() {
 
 
 /* ============================================================
- * 9. 初始化
+ * 10. 初始化
  * ============================================================ */
 
 function init() {
@@ -1422,8 +1454,15 @@ function init() {
 
     initGlow();
 
-    /* 页面就绪后自动测一次延迟 */
-    testPing();
+    /*
+     * 自动测延迟放在 load 之后：
+     * 避免测速请求与首屏内容抢带宽 / 连接，加快首屏呈现
+     */
+    if (document.readyState === "complete") {
+        testPing();
+    } else {
+        window.addEventListener("load", testPing, { once: true });
+    }
 }
 
 /* 脚本位于 body 末尾，正常情况下 DOM 已经解析完成 */
