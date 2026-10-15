@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1110" />
+<title>绿洲 BT 下载器</title>
+<!-- 提前预热引擎 CDN 的 DNS 与 TLS 连接，缩短首次 import 的等待时间 -->
+<link rel="preconnect" href="https://esm.sh" crossorigin />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="dns-prefetch" href="https://esm.sh" />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<!-- 与引擎主源同 URL，可在 HTML 解析阶段就并行发起模块拉取 -->
+<link rel="modulepreload" href="https://esm.sh/webtorrent@3.0.21" crossorigin />
+<style>
+:root{color-scheme:dark;--bg:#0b1110;--panel:#111a18;--panel2:#15201d;--line:#263632;--text:#e9f3ef;--muted:#8da49b;--green:#6cff9b;--green2:#28cf75;--cyan:#71e8d2;--red:#ff727e;--yellow:#f1ce78;--shadow:0 16px 50px #0005}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 18% -12%,#16352b 0,transparent 38%),radial-gradient(ellipse at 100% 0%,#152823 0,transparent 28%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;min-height:100vh}button,input,textarea{font:inherit}button{cursor:pointer;border:0;transition:transform .15s ease,opacity .15s ease,background .15s ease}button:active{transform:translateY(1px)}button:disabled{cursor:not-allowed;opacity:.4;transform:none}.wrap{max-width:1120px;margin:0 auto;padding:26px 22px 50px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}.brand{display:flex;align-items:center;gap:13px}.logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(145deg,#a4ffc1,#37da7d);display:grid;place-items:center;color:#082013;box-shadow:0 0 32px #38df8040}.logo svg{width:25px;height:25px}.brand h1{font-size:21px;letter-spacing:.2px;margin:0;font-weight:760}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.badge{border:1px solid #355143;background:#10241a;color:#9fffc0;border-radius:999px;padding:7px 11px;font-size:12px;display:flex;align-items:center;gap:7px;white-space:nowrap}.dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 10px #6cff9b90}.hero{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,.7fr);gap:18px;margin-bottom:18px;align-items:start}.panel{border:1px solid var(--line);background:linear-gradient(145deg,#131d1aef,#0f1715f5);border-radius:20px;box-shadow:var(--shadow)}.intro{padding:18px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-height:259px}.eyebrow{font-size:11px;color:var(--green);letter-spacing:1.6px;font-weight:750;text-transform:uppercase}.intro .desc{margin:11px 0 0;color:var(--muted);font-size:12px;line-height:1.75}.symbol{position:absolute;right:8px;bottom:-10px;color:#6cff9b10;font-size:74px;font-weight:900;line-height:1;pointer-events:none}.formpanel{padding:21px 22px}.section-label{font-weight:700;font-size:13px;margin:0 0 12px;display:flex;align-items:center;gap:8px}.section-label .n{display:grid;place-items:center;background:#1e3930;border:1px solid #305346;border-radius:7px;width:22px;height:22px;color:var(--green);font-size:11px}.inputwrap{display:flex;gap:8px}.magnet{flex:1;min-width:0;width:100%;background:#0a100f;border:1px solid #2d4039;border-radius:11px;color:var(--text);padding:13px 14px;outline:none;font-size:13px}.magnet:focus{border-color:#55e68a;box-shadow:0 0 0 3px #6cff9b15}.btn{border-radius:10px;padding:11px 15px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}.btn svg{width:16px;height:16px;flex-shrink:0}.primary{background:var(--green);color:#062112}.primary:hover{background:#8cffb0}.secondary{background:#24342e;border:1px solid #344a40;color:#e5f3eb}.secondary:hover{background:#2d4339}.danger{background:#351e23;border:1px solid #63323b;color:#ffb2b9}.danger:hover{background:#48252d}.outline{background:transparent;border:1px solid #344a40;color:#d1e1d8}.full{width:100%;margin-top:11px}.filepick{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;margin-top:10px;border:1px dashed #3b5147;border-radius:11px;background:#101815;color:var(--muted);font-size:12px}.filepick strong{color:#d8e9df;font-weight:600}.hidden{display:none!important}.hint{font-size:11px;color:#7e958b;line-height:1.6;margin:11px 0 0}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px}.stat{background:#0e1614;border:1px solid #22332d;border-radius:13px;padding:14px;min-width:0}.stat-head{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.stat-head svg{width:14px;height:14px;color:var(--green)}.stat-value{font-size:22px;font-weight:750;letter-spacing:-.5px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}.stat-sub{font-size:10px;color:#71877d;margin-top:3px}.content{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(270px,.7fr);gap:18px;align-items:stretch}.maincol{display:grid;gap:18px;grid-template-rows:auto minmax(0,1fr);min-height:0}.sidecol{display:grid;gap:18px;align-content:start}.section{padding:21px 22px}.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}.section-head h3{font-size:15px;margin:0;font-weight:750;display:flex;align-items:center;gap:9px}.section-head h3 svg{width:18px;height:18px;color:var(--green)}.muted{color:var(--muted)}.tiny{font-size:11px}.status-chip{border:1px solid #30473c;background:#15231c;color:#b9f7cf;padding:5px 9px;border-radius:999px;font-size:10px;white-space:nowrap}.progress-area{padding:2px 0 5px}.progress-line{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:10px}.progress-big{font-size:31px;font-weight:800;letter-spacing:-1.2px;line-height:1}.progress-big small{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:0}.progress-desc{text-align:right;color:var(--muted);font-size:11px}.bar{height:9px;border-radius:99px;background:#263530;overflow:hidden;position:relative}.bar-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#28c879,#8bffab);box-shadow:0 0 14px #51f08a65;transition:width .3s ease;position:relative}.bar-fill:after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 25%,#ffffff45 50%,transparent 75%);background-size:200% 100%;animation:shine 1.8s linear infinite}@keyframes shine{to{background-position:-200% 0}}.progress-meta{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:11px;margin-top:10px}.speed-chart{height:63px;width:100%;display:flex;align-items:end;gap:3px;padding:9px 1px 0;margin:4px 0 0}.speed-chart span{flex:1;min-width:2px;border-radius:3px 3px 0 0;background:linear-gradient(0deg,#22965a,#71ff9f);opacity:.72;min-height:3px;transition:height .28s ease}.control-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:17px}.control-row .btn{flex:1;min-width:110px}.files-panel{display:flex;flex-direction:column;min-height:0}.files-panel>.section-head{flex:none}.files-panel>#fallbackSaveBox{flex:none}.files-body{position:relative;flex:1 1 auto;min-height:0}.files-empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--muted);border:1px dashed #2b3c35;border-radius:12px;background:#0c1311}.empty-icon{height:42px;width:42px;margin:0 auto 11px;display:grid;place-items:center;border-radius:13px;background:#192a22;color:var(--green)}.empty-icon svg{width:22px;height:22px}.files-empty strong{display:block;color:#c7d8ce;font-size:13px;margin-bottom:4px}.files-empty p{margin:0;font-size:11px}.filelist{position:absolute;inset:0;display:grid;gap:9px;align-content:start;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#2b3f36 transparent}.filelist::-webkit-scrollbar{width:8px}.filelist::-webkit-scrollbar-track{background:transparent}.filelist::-webkit-scrollbar-thumb{background:#2b3f36;border-radius:99px}.filelist::-webkit-scrollbar-thumb:hover{background:#3a5447}.fileitem{display:flex;align-items:center;gap:12px;padding:12px;background:#0d1512;border:1px solid #23362e;border-radius:12px;min-width:0}.fileicon{width:37px;height:37px;flex:0 0 37px;display:grid;place-items:center;border-radius:10px;background:#192a22;color:#90eeb0}.fileicon svg{width:18px;height:18px}.fileinfo{min-width:0;flex:1}.filename{font-size:12px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.filemeta{font-size:10px;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}.fileactions{display:flex;align-items:center;gap:6px}.btn-sm{padding:8px 10px;font-size:11px;border-radius:8px}.file-status{display:none;font-size:10px;color:var(--green);white-space:nowrap}.fileitem.saved .file-status{display:block}.fileitem.saved .fileicon{color:var(--green);background:#173b27}.log{height:180px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:#2b3f36 transparent}.log::-webkit-scrollbar{width:8px}.log::-webkit-scrollbar-track{background:transparent}.log::-webkit-scrollbar-thumb{background:#2b3f36;border-radius:99px}.log::-webkit-scrollbar-thumb:hover{background:#3a5447}.logrow{display:grid;grid-template-columns:52px 1fr;gap:10px;font-size:11px;margin-bottom:9px}.logrow:last-child{margin-bottom:0}.logtime{color:#658074;font-variant-numeric:tabular-nums}.logtext{color:#b3c7bd;overflow-wrap:anywhere}.logtext.ok{color:#8df6ad}.logtext.warn{color:#eed38a}.logtext.err{color:#ff9ba4}.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:#62786e;font-size:10px;margin-top:20px}.footer a{color:#8fbda1;text-decoration:none}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:8;max-width:calc(100vw - 30px);background:#e7fff0;color:#0a2415;padding:11px 16px;border-radius:11px;box-shadow:0 8px 35px #0006;font-size:12px;font-weight:650;display:none}.toast.show{display:block}.save-link{display:block;margin-top:9px;background:#1a422b;border:1px solid #31774a;border-radius:9px;padding:11px 13px;color:#adffc3;text-decoration:none;font-size:12px;font-weight:700;text-align:center}.libstate{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted)}.libstate:before{content:"";width:7px;height:7px;border-radius:50%;background:#d6ae55}.libstate.ready:before{background:var(--green);box-shadow:0 0 8px #6cff9b65}.pill{font-size:10px;border-radius:6px;padding:3px 7px;background:#202c26;border:1px solid #304138;color:#a8bdb1}.selectline{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media(max-width:820px){.hero,.content{grid-template-columns:1fr}.maincol{grid-template-rows:auto auto}.files-body{flex:0 0 auto;height:200px}.stats{grid-template-columns:repeat(4,1fr)}.stat{padding:12px}.stat-value{font-size:18px}.symbol{font-size:60px;right:6px}.intro{padding:18px;order:-1;min-height:133px}}
+@media(max-width:560px){.wrap{padding:17px 12px 30px}.topbar{margin-bottom:17px}.brand h1{font-size:18px}.badge{font-size:10px;padding:6px 8px}.intro .desc{font-size:12px}.formpanel,.section{padding:17px}.inputwrap{flex-direction:column}.inputwrap .btn{width:100%}.stats{grid-template-columns:1fr 1fr;gap:8px}.stat-value{font-size:21px}.fileitem{align-items:flex-start;flex-wrap:wrap}.fileinfo{min-width:calc(100% - 60px)}.fileactions{width:100%;padding-left:49px}.fileactions .btn{flex:1}.progress-big{font-size:27px}.footer{align-items:flex-start;flex-direction:column}.control-row .btn{min-width:calc(50% - 8px)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 17v3h14v-3"/><path d="M4 7a9 9 0 0 1 16 0"/></svg></div>
+      <div><h1>绿洲 BT 下载器</h1><p>WEB TORRENT CLIENT · 单页版</p></div>
+    </div>
+    <div id="connectionBadge" class="badge"><span class="dot"></span><span id="connectionText">正在初始化引擎</span></div>
+  </header>
+
+  <div class="hero">
+    <section class="panel formpanel">
+      <div class="section-label"><span class="n">01</span> 添加下载任务</div>
+      <form id="magnetForm">
+        <div class="inputwrap"><input class="magnet" id="magnetInput" type="text" placeholder="粘贴 magnet:?xt=urn:btih:…" autocomplete="off" spellcheck="false" aria-label="磁力链接" /><button id="addBtn" class="btn primary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>添加任务</button></div>
+      </form>
+      <div class="filepick"><div><strong id="pickedName">也可以导入 .torrent 文件</strong><div style="margin-top:3px">从设备中选择已有种子文件</div></div><button id="chooseTorrent" type="button" class="btn secondary">选择文件</button><input id="torrentFileInput" class="hidden" type="file" accept=".torrent,application/x-bittorrent" /></div>
+      <div class="hint">下载引擎使用 WebTorrent，已配置多个加载源与 WebSocket Tracker。网页必须联网加载引擎；磁力任务还需要可用的 WebRTC 兼容节点。</div>
+      <button id="retryEngineBtn" type="button" class="btn secondary full hidden">重新加载下载引擎</button>
+    </section>
+    <section class="panel intro">
+      <div class="eyebrow">PEER TO PEER / YOUR BROWSER</div>
+      <p class="desc">粘贴磁力链接，或导入 .torrent 种子文件。实时查看下载速率、进度、节点和预计剩余时间，并将下载内容保存到本地。</p>
+      <div class="symbol" aria-hidden="true">↯</div>
+    </section>
+  </div>
+
+  <div class="content">
+    <div class="maincol">
+      <section class="panel section">
+        <div class="section-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 16.5V20h16v-3.5M7 10l5 5 5-5M12 15V3"/></svg>下载状态</h3><span id="taskChip" class="status-chip">等待任务</span></div>
+        <div id="transferTitle" class="muted tiny" style="margin-bottom:14px;overflow-wrap:anywhere">添加一个磁力链接或种子文件以开始</div>
+        <div class="progress-area">
+          <div class="progress-line"><div class="progress-big"><span id="progressPercent">0.0</span><small>%</small></div><div class="progress-desc"><div id="progressCaption">等待开始下载</div><div id="progressSize" style="margin-top:4px">0 B / 0 B</div></div></div>
+          <div class="bar" role="progressbar" aria-label="下载进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progressFill" class="bar-fill"></div></div>
+          <div class="progress-meta"><span id="progressLeft">已保存 0 B</span><span id="etaText">剩余时间 —</span></div>
+        </div>
+        <div class="control-row"><button id="pauseBtn" class="btn secondary" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H6v14h3zM18 5h-3v14h3z"/></svg>暂停</button><button id="resumeBtn" class="btn primary" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m8 5 11 7-11 7z"/></svg>继续</button><button id="stopBtn" class="btn danger" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>停止任务</button></div>
+        <div id="batchAction" style="margin-top:13px"><button id="downloadAllBtn" class="btn primary full" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h7l2 2h9v10H3z"/><path d="M12 11v5m-2-2 2 2 2-2"/></svg>选择保存文件夹 · 下载整个种子</button><div id="batchHint" class="hint">支持目录选择的桌面浏览器可以一次保存整个种子；也可在下方逐个选择文件保存。</div></div>
+      </section>
+
+      <section class="panel section files-panel">
+        <div class="section-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/></svg>文件列表</h3><span id="fileCount" class="pill">0 个文件</span></div>
+        <div class="files-body">
+          <div id="filesEmpty" class="files-empty"><div class="empty-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h4"/></svg></div><strong>当前没有文件</strong><p>添加种子后，这里会展示文件名、体积及保存按钮。</p></div>
+          <div id="fileList" class="filelist"></div>
+        </div>
+        <div id="fallbackSaveBox" class="hidden"></div>
+      </section>
+    </div>
+
+    <aside class="sidecol">
+      <section class="panel stats">
+        <div class="stat"><div class="stat-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v18M3 12h18"/><path d="m7 7 10 10m0-10L7 17"/></svg>实时下载速度</div><div class="stat-value" id="downloadSpeed">0 B/s</div><div class="stat-sub">来自当前 BT 连接</div></div>
+        <div class="stat"><div class="stat-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12m-5-5 5 5 5-5M5 17v3h14v-3"/></svg>上传速度</div><div class="stat-value" id="uploadSpeed">0 B/s</div><div class="stat-sub">BT 回传流量</div></div>
+        <div class="stat"><div class="stat-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 5a3 3 0 0 1 0 6m4 9v-2a6 6 0 0 0-3-5"/></svg>连接节点</div><div class="stat-value" id="peerCount">0</div><div class="stat-sub">当前已连接 Peers</div></div>
+        <div class="stat"><div class="stat-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg>种子体积</div><div class="stat-value" id="totalSize">—</div><div class="stat-sub">当前任务总大小</div></div>
+      </section>
+
+      <section class="panel section">
+        <div class="section-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17V7m6 14V3m6 14V7m6 10V3"/></svg>网速曲线</h3><span class="pill">LIVE</span></div>
+        <div id="speedChart" class="speed-chart" aria-label="实时下载速度变化"></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:7px"><span>过去约 30 秒</span><span id="speedPeak">峰值 0 B/s</span></div>
+      </section>
+
+      <section class="panel section">
+        <div class="section-head"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h4"/></svg>任务日志</h3><button id="clearLogBtn" class="btn outline btn-sm" type="button">清空</button></div>
+        <div id="logList" class="log"><div class="logrow"><span class="logtime">--:--:--</span><span class="logtext">下载器已就绪，等待添加任务。</span></div></div>
+      </section>
+    </aside>
+  </div>
+  <footer class="footer"><span>绿洲 BT 下载器 · 网络增强版</span><span>请仅下载你有权获取和保存的内容 · <a href="https://github.com/webtorrent/webtorrent" target="_blank" rel="noopener noreferrer">WebTorrent 开源项目 ↗</a></span></footer>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module">
+/* ============================================================================
+ * 绿洲 BT 下载器 · 单页脚本
+ * 纯前端实现：引擎从 CDN 动态加载，下载数据通过 File System Access API
+ * 流式写入本地磁盘，全程没有服务端参与。
+ * ========================================================================== */
+
+/** 快捷获取 DOM 元素 */
+const $ = id => document.getElementById(id);
+
+/**
+ * WebSocket Tracker 列表。
+ * 浏览器只能与同样是 WebTorrent 的节点经 WebRTC 通信，因此这里只保留 WSS Tracker；
+ * HTTP / UDP Tracker 在浏览器环境根本无法使用，刻意省略。
+ */
+const TRACKERS = [
+  'wss://tracker.webtorrent.dev:443',
+  'wss://tracker.openwebtorrent.com:443',
+  'wss://open.ftorrent.com:443'
+];
+
+/**
+ * 引擎备用源，按可靠性排序（第一项优先）。
+ * loadEngine() 会错峰并发尝试这些源，谁先成功就用谁，详见下方的对冲加载逻辑。
+ */
+const ENGINE_SOURCES = [
+  { url: 'https://esm.sh/webtorrent@3.0.21', name: 'esm.sh 标准 ESM 入口' },
+  { url: 'https://cdn.jsdelivr.net/npm/webtorrent@3.0.21/+esm', name: 'jsDelivr 备用源' },
+  { url: 'https://esm.sh/webtorrent@3.0.21?bundle', name: 'esm.sh 预先捆绑源' }
+];
+
+/** 错峰对冲的启动延迟（毫秒），下标与 ENGINE_SOURCES 一一对应 */
+const HEDGE_DELAYS = [0, 2500, 5000];
+
+/** 单个引擎模块源的等待上限（毫秒） */
+const ENGINE_IMPORT_TIMEOUT = 12000;
+
+/** 等待种子元数据（把 magnet 解析成文件列表）的超时时间（毫秒） */
+const METADATA_TIMEOUT = 45000;
+
+/** 统计刷新间隔，32 根柱子 × 900ms ≈ 29 秒，与「过去约 30 秒」文案一致 */
+const TICK_MS = 900;
+const HISTORY_SIZE = 32;
+
+/** 日志面板最多保留的行数，防止长时间运行后 DOM 无限膨胀 */
+const MAX_LOG_ROWS = 35;
+
+/** 「无兼容节点」日志的最小间隔，避免刷屏（毫秒） */
+const NO_PEER_LOG_INTERVAL = 25000;
+
+// ---------------------------------------------------------------------------
+// 运行时状态
+// ---------------------------------------------------------------------------
+
+let WebTorrentClass = null;  // WebTorrent 构造函数
+let client = null;           // WebTorrent 客户端实例（全局唯一）
+let engineLoading = false;   // 引擎是否正在加载，用于防止重复触发
+let metadataTimer = null;    // 元数据超时计时器
+let lastNoPeerLogAt = 0;     // 上次输出「无兼容节点」的时间戳，用于限流
+let pauseWaiters = [];       // 暂停期间挂起的唤醒回调
+
+let torrent = null;          // 当前任务
+let transfer = null;         // 当前写入会话（一次「下载并保存」的上下文）
+let paused = false;          // 用户是否点了暂停
+let stopped = false;         // 任务是否已被用户停止
+let isBusy = false;          // 是否正在下载 / 写入磁盘
+
+/**
+ * 任务序号。每次开始新的写入会话都会自增；
+ * 异步流程在每个 await 之后用 checkSerial() 校验，防止旧会话写入新任务的进度。
+ */
+let taskSerial = 0;
+
+let toastTimer = null;
+let ticker = null;
+let speedHistory = Array(HISTORY_SIZE).fill(0);
+let peakSpeed = 0;
+let lastErrorLogged = '';    // 同一错误只记录一次
+let lastProgress = null;     // 上一次完成的进度快照 { total, done }
+
+const savedPaths = new Set(); // 已保存的文件路径集合
+let fileSaveButtons = [];     // 缓存文件列表中的保存按钮，避免每帧 querySelectorAll
+let fallbackObjectUrl = null; // 兼容模式产生的 Blob URL，需要显式释放
+
+/** 整包保存（批量）的进度状态 */
+const batchState = {
+  active: false,
+  totalWritten: 0,
+  totalBytes: 0,
+  currentFile: null,
+  currentWritten: 0,
+  task: 0
+};
+
+// ---------------------------------------------------------------------------
+// 通用工具
+// ---------------------------------------------------------------------------
+
+/**
+ * 仅在内容变化时写入 DOM。
+ * 统计面板每秒刷新一次，跳过相同值可以省掉大量无谓的重排。
+ */
+function setText(el, text) {
+  if (el.textContent !== text) el.textContent = text;
+}
+
+/**
+ * 向日志面板追加一行。
+ * @param {string} message 日志内容
+ * @param {''|'ok'|'warn'|'err'} [type] 样式类型
+ */
+function log(message, type = '') {
+  const root = $('logList');
+
+  const row = document.createElement('div');
+  row.className = 'logrow';
+
+  const time = document.createElement('span');
+  time.className = 'logtime';
+  time.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+
+  const text = document.createElement('span');
+  text.className = 'logtext ' + type;
+  text.textContent = message;
+
+  row.append(time, text);
+
+  // 先裁掉最旧的一行，再测量高度，避免影响滚动补偿
+  if (root.children.length >= MAX_LOG_ROWS) root.lastElementChild.remove();
+
+  // 新日志插在顶部：若用户已经往下翻，补偿高度以免内容跳动
+  const wasAtTop = root.scrollTop <= 1;
+  const beforeHeight = root.scrollHeight;
+  root.prepend(row);
+  if (!wasAtTop) root.scrollTop += root.scrollHeight - beforeHeight;
+}
+
+/** 底部浮层提示，3.4 秒后自动消失 */
+function toast(message) {
+  const el = $('toast');
+  el.textContent = message;
+  el.classList.add('show');
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3400);
+}
+
+/** 字节格式化（十进制单位，与磁盘厂商口径一致） */
+function fmtBytes(n) {
+  if (!Number.isFinite(n) || n < 0) return '0 B';
+  if (n < 1000) return `${Math.round(n)} B`;
+
+  const units = ['kB', 'MB', 'GB', 'TB'];
+  let value = n / 1000;
+  let index = 0;
+  while (value >= 1000 && index < units.length - 1) {
+    value /= 1000;
+    index++;
+  }
+
+  const digits = value >= 100 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(digits)} ${units[index]}`;
+}
+
+/** 速率格式化 */
+function fmtSpeed(n) {
+  return `${fmtBytes(n)}/s`;
+}
+
+/** 秒数格式化，超过 99 天视为「未知」 */
+function fmtTime(seconds) {
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds > 99 * 24 * 3600) return '—';
+
+  let rest = Math.ceil(seconds);
+  const days = Math.floor(rest / 86400);
+  rest %= 86400;
+  const hours = Math.floor(rest / 3600);
+  rest %= 3600;
+  const minutes = Math.floor(rest / 60);
+  const secs = rest % 60;
+
+  if (days) return `${days}天 ${hours}小时`;
+  if (hours) return `${hours}小时 ${minutes}分`;
+  if (minutes) return `${minutes}分 ${secs}秒`;
+  return `${secs}秒`;
+}
+
+/** 更新任务状态胶囊 */
+function setChip(text) {
+  setText($('taskChip'), text);
+}
+
+/** 更新顶部连接徽标 */
+function setStatus(text, ready = false) {
+  setText($('connectionText'), text);
+  $('connectionBadge').classList.toggle('ready', ready);
+}
+
+/** 记录错误并弹一次提示 */
+function showError(text) {
+  log(text, 'err');
+  toast(text);
+}
+// ---------------------------------------------------------------------------
+// 控件状态与统计刷新
+// ---------------------------------------------------------------------------
+
+/** 按当前状态统一设置各按钮的可用性 */
+function setControls() {
+  const hasTorrent = !!torrent && !stopped;
+  const active = !!transfer && isBusy && !stopped;
+
+  $('pauseBtn').disabled = !active || paused;
+  $('resumeBtn').disabled = !active || !paused;
+  $('stopBtn').disabled = !hasTorrent;
+  $('downloadAllBtn').disabled = !hasTorrent || isBusy || !torrent.files?.length;
+  $('addBtn').disabled = !WebTorrentClass || isBusy || engineLoading;
+  if ($('retryEngineBtn')) $('retryEngineBtn').disabled = engineLoading;
+
+  // 使用缓存数组，避免每帧遍历整个文档
+  fileSaveButtons.forEach(btn => { btn.disabled = !hasTorrent || isBusy; });
+}
+
+/** 已写入 / 已保存的字节数 */
+function progressBytes() {
+  if (batchState.active) {
+    return Math.min(batchState.totalBytes, batchState.totalWritten + batchState.currentWritten);
+  }
+  if (transfer) {
+    return Math.min(transfer.totalBytes, transfer.bytesWritten || 0);
+  }
+  return lastProgress?.done || 0;
+}
+
+/** 刷新进度条、百分比、剩余时间等 */
+function refreshProgress() {
+  const total = batchState.active
+    ? batchState.totalBytes
+    : (transfer?.totalBytes || lastProgress?.total || 0);
+  const done = Math.min(total, progressBytes());
+  const pct = total > 0 ? Math.max(0, Math.min(100, done / total * 100)) : 0;
+
+  setText($('progressPercent'), pct.toFixed(1));
+  $('progressFill').style.width = pct + '%';
+  $('progressFill').parentElement.setAttribute('aria-valuenow', String(pct));
+  setText($('progressSize'), `${fmtBytes(done)} / ${fmtBytes(total)}`);
+  setText($('progressLeft'), `已保存/写入 ${fmtBytes(done)}`);
+
+  // 剩余时间依据「已写入字节」估算，而不是 torrent 的实时速率
+  const speed = torrent ? Math.max(0, torrent.downloadSpeed || 0) : 0;
+  setText($('etaText'),
+    speed > 0 && total > done ? `剩余约 ${fmtTime((total - done) / speed)}`
+      : pct >= 100 ? '已完成' : '剩余时间 —');
+
+  setText($('progressCaption'),
+    paused ? '已暂停'
+      : isBusy ? (batchState.active ? '正在保存整个种子' : '正在下载并保存')
+      : pct >= 100 ? '保存完成'
+      : torrent ? '等待选择保存方式'
+      : '等待开始下载');
+}
+
+/** 绘制网速曲线（复用已有节点，不重建 DOM） */
+function renderChart() {
+  const chart = $('speedChart');
+
+  if (chart.children.length !== speedHistory.length) {
+    chart.replaceChildren();
+    for (let i = 0; i < speedHistory.length; i++) {
+      chart.append(document.createElement('span'));
+    }
+  }
+
+  const max = Math.max(1, ...speedHistory);
+  const bars = chart.children;
+  for (let i = 0; i < speedHistory.length; i++) {
+    const value = speedHistory[i];
+    const bar = bars[i];
+    bar.style.height = `${Math.max(4, Math.round(value / max * 100))}%`;
+    bar.title = fmtSpeed(value);
+  }
+
+  setText($('speedPeak'), `峰值 ${fmtSpeed(peakSpeed)}`);
+}
+
+/** 定时器回调：刷新右侧统计卡片与进度 */
+function updateStats() {
+  const down = torrent ? Math.max(0, torrent.downloadSpeed || 0) : 0;
+  const up = torrent ? Math.max(0, torrent.uploadSpeed || 0) : 0;
+
+  setText($('downloadSpeed'), fmtSpeed(down));
+  setText($('uploadSpeed'), fmtSpeed(up));
+  setText($('peerCount'), torrent ? String(torrent.numPeers || 0) : '0');
+  if (torrent?.length) setText($('totalSize'), fmtBytes(torrent.length));
+
+  speedHistory.push(down);
+  speedHistory.shift();
+  peakSpeed = Math.max(peakSpeed, down);
+
+  renderChart();
+  refreshProgress();
+  setControls();
+}
+
+/** 启动统计定时器 */
+function startTicker() {
+  clearInterval(ticker);
+  ticker = setInterval(updateStats, TICK_MS);
+  updateStats();
+}
+/** 清空进度相关 UI 与状态，准备开始一个新任务 */
+function clearTransferUI() {
+  transfer = null;
+  lastProgress = null;
+  batchState.active = false;
+  batchState.totalWritten = 0;
+  batchState.totalBytes = 0;
+  batchState.currentFile = null;
+  batchState.currentWritten = 0;
+
+  setText($('progressPercent'), '0.0');
+  $('progressFill').style.width = '0%';
+  setText($('progressSize'), '0 B / 0 B');
+  setText($('progressLeft'), '已保存/写入 0 B');
+  setText($('etaText'), '剩余时间 —');
+  setText($('progressCaption'), '等待选择保存方式');
+
+  // 释放上一次兼容模式遗留的 Blob URL，避免内存被长期占用
+  releaseFallbackObjectUrl();
+
+  $('fallbackSaveBox').replaceChildren();
+  $('fallbackSaveBox').classList.add('hidden');
+
+  speedHistory = Array(HISTORY_SIZE).fill(0);
+  peakSpeed = 0;
+  renderChart();
+}
+
+/** 释放兼容模式的 Blob URL */
+function releaseFallbackObjectUrl() {
+  if (!fallbackObjectUrl) return;
+  try { URL.revokeObjectURL(fallbackObjectUrl); } catch (_) { /* 忽略 */ }
+  fallbackObjectUrl = null;
+}
+
+/** 文件类型图标（统一使用文档图标，颜色由 CSS 控制） */
+function fileIcon() {
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">'
+    + '<path d="M6 3h9l4 4v14H6z"/>'
+    + '<path d="M14 3v5h5M9 13h7M9 17h5"/>'
+    + '</svg>';
+}
+
+/** 渲染文件列表 */
+function renderFiles() {
+  const list = $('fileList');
+  list.replaceChildren();
+  fileSaveButtons = [];
+
+  if (!torrent || !torrent.files?.length) {
+    $('filesEmpty').classList.remove('hidden');
+    setText($('fileCount'), '0 个文件');
+    setControls();
+    return;
+  }
+
+  $('filesEmpty').classList.add('hidden');
+  setText($('fileCount'), `${torrent.files.length} 个文件`);
+
+  torrent.files.forEach(file => {
+    const path = file.path || file.name;
+    const saved = savedPaths.has(path);
+
+    const item = document.createElement('div');
+    item.className = 'fileitem' + (saved ? ' saved' : '');
+    item.dataset.path = path;
+
+    const icon = document.createElement('div');
+    icon.className = 'fileicon';
+    icon.innerHTML = fileIcon();
+
+    const info = document.createElement('div');
+    info.className = 'fileinfo';
+
+    const name = document.createElement('div');
+    name.className = 'filename';
+    name.textContent = file.name;
+    name.title = path;
+
+    const meta = document.createElement('div');
+    meta.className = 'filemeta';
+    meta.textContent = `${fmtBytes(file.length)} · ${path}`;
+
+    info.append(name, meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'fileactions';
+
+    const state = document.createElement('span');
+    state.className = 'file-status';
+    state.textContent = '✓ 已保存';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn secondary btn-sm';
+    btn.dataset.fileSave = '';
+    btn.textContent = saved ? '再次保存' : '下载并保存';
+    btn.addEventListener('click', () => saveOneFile(file));
+    fileSaveButtons.push(btn);
+
+    actions.append(state, btn);
+    item.append(icon, info, actions);
+    list.append(item);
+  });
+
+  setControls();
+}
+// ---------------------------------------------------------------------------
+// 任务生命周期
+// ---------------------------------------------------------------------------
+
+/**
+ * 种子元数据就绪（拿到文件名、体积、文件列表）后的处理。
+ * 这里刻意「只读元数据不下载」：取消所有文件选择并断开已有连接，
+ * 等用户真正点击保存时再由 beginTransfer() 重新 resume + select。
+ */
+function onMetadata(t) {
+  if (t !== torrent || stopped) return;
+  if (t._oasisMetadataShown) return; // 只处理一次
+
+  clearTimeout(metadataTimer);
+  metadataTimer = null;
+  t._oasisMetadataShown = true;
+
+  try {
+    (t.files || []).forEach(f => f.deselect());
+  } catch (err) {
+    console.warn('deselect failed', err);
+  }
+
+  // 关闭现有数据连接；用户选择文件时 WebTorrent 会自动重连。
+  try {
+    t.pause();
+    (t.wires || []).slice().forEach(wire => {
+      try { wire.destroy(); } catch (_) { /* 忽略 */ }
+    });
+  } catch (err) {
+    console.warn(err);
+  }
+
+  setText($('transferTitle'), t.name || t.infoHash || 'BT 下载任务');
+  setText($('totalSize'), fmtBytes(t.length || 0));
+  setChip('已读取种子');
+  setStatus('种子信息已读取', true);
+  setText($('progressCaption'), '种子信息已读取 · 请选择保存方式');
+  log(`种子信息已读取：${t.name || '未命名任务'}，${t.files.length} 个文件，${fmtBytes(t.length)}。`, 'ok');
+
+  renderFiles();
+  setControls();
+}
+
+/** 销毁当前任务，为添加新任务复位所有状态 */
+function resetForNewTorrent() {
+  clearTimeout(metadataTimer);
+  metadataTimer = null;
+
+  if (torrent) {
+    try { torrent.destroy(); } catch (err) { console.warn(err); }
+  }
+
+  torrent = null;
+  stopped = false;
+  paused = false;
+  isBusy = false;
+  transfer = null;
+  taskSerial++; // 让所有在途的旧会话立即失效
+
+  savedPaths.clear();
+  clearTransferUI();
+  renderFiles();
+
+  setChip('正在连接');
+  lastErrorLogged = '';
+  lastNoPeerLogAt = 0;
+  setStatus('正在连接 Tracker', true);
+
+  setText($('transferTitle'), '正在获取种子信息…');
+  setText($('totalSize'), '—');
+  setText($('peerCount'), '0');
+
+  setControls();
+}
+
+/**
+ * 添加一个下载任务。
+ * @param {string|Uint8Array} id 磁力链接或 .torrent 文件内容
+ * @param {string} [label] 日志中展示的任务来源
+ */
+function addTorrent(id, label) {
+  if (!client || !WebTorrentClass) {
+    showError('下载引擎尚未就绪，请检查网络后点击“重新加载下载引擎”。');
+    return;
+  }
+  if (isBusy) {
+    toast('请先停止当前下载任务，再添加新任务。');
+    return;
+  }
+
+  resetForNewTorrent();
+  log(`正在添加任务：${label || '磁力链接'}`);
+  setStatus('正在查询 Tracker，等待兼容节点', true);
+
+  try {
+    // announce 会追加到磁力链接 / 种子自带的 tracker 列表之后；
+    // 单个 tracker 不可达不会阻塞其它 tracker。
+    const t = client.add(id, {
+      announce: TRACKERS,
+      maxWebConns: 8,
+      noPeersIntervalTime: 20
+    });
+    torrent = t;
+
+    t.on('metadata', () => onMetadata(t));
+    t.on('ready', () => onMetadata(t));
+
+    // 元数据已读取且不在下载中时，主动断开新建立的连接以节省流量
+    t.on('wire', wire => {
+      const idle = t._oasisMetadataShown && (paused || (!isBusy && !stopped));
+      if (idle) {
+        try { wire.destroy(); } catch (_) { /* 忽略 */ }
+      } else if (!stopped) {
+        setStatus('已连接 WebRTC 节点', true);
+      }
+    });
+
+    t.on('noPeers', kind => {
+      if (t !== torrent || stopped || Number(t.numPeers || 0) > 0) return;
+      setStatus('正在寻找兼容节点', false);
+
+      const now = Date.now();
+      if (now - lastNoPeerLogAt > NO_PEER_LOG_INTERVAL) {
+        lastNoPeerLogAt = now;
+        log(`暂未发现 WebRTC 兼容节点（${kind || '节点发现'}）。正在继续尝试多个 Tracker；`
+          + '普通 TCP/UDP 节点无法直接由浏览器连接。', 'warn');
+      }
+    });
+
+    t.on('warning', err => {
+      const message = err?.message || String(err);
+      if (message === lastErrorLogged) return;
+      lastErrorLogged = message;
+      log(`连接提示：${message}`, 'warn');
+    });
+
+    t.on('error', err => {
+      const message = err?.message || String(err);
+      showError(`任务错误：${message}`);
+      setChip('任务出错');
+      setStatus('任务发生错误', false);
+    });
+
+    t.on('done', () => {
+      if (!stopped && !batchState.active && transfer) log('种子数据已完成下载。', 'ok');
+    });
+
+    // 有些源（例如直接导入的 .torrent 文件）在 add 时就已经 ready
+    if (t.ready || t.files?.length) queueMicrotask(() => onMetadata(t));
+
+    metadataTimer = setTimeout(() => {
+      if (torrent !== t || stopped || t._oasisMetadataShown) return;
+      setStatus('获取种子信息超时', false);
+      log(`等待种子元数据超过 ${METADATA_TIMEOUT / 1000} 秒。请确认磁力链接正确、`
+        + 'Tracker 可访问，并且有 WebTorrent/WebRTC 兼容做种者。', 'warn');
+    }, METADATA_TIMEOUT);
+
+    setChip('获取种子信息');
+    startTicker();
+    setControls();
+  } catch (err) {
+    showError(`无法添加任务：${err?.message || err}`);
+    setChip('添加失败');
+    setStatus('添加任务失败', false);
+  }
+}
+// ---------------------------------------------------------------------------
+// 暂停 / 继续
+// ---------------------------------------------------------------------------
+
+/**
+ * 阻塞直到用户点击「继续」。
+ * 在文件写入管道的每个分片处调用，这样暂停时写入会真正停下来。
+ * @param {AbortSignal} [signal] 任务被停止时用它中断等待
+ */
+async function waitWhilePaused(signal) {
+  while (paused) {
+    if (stopped || signal?.aborted) throw new DOMException('Task stopped', 'AbortError');
+
+    await new Promise((resolve, reject) => {
+      const cleanup = () => {
+        pauseWaiters = pauseWaiters.filter(fn => fn !== onResume);
+        signal?.removeEventListener('abort', onAbort);
+      };
+      const onResume = () => { cleanup(); resolve(); };
+      const onAbort = () => { cleanup(); reject(new DOMException('Task stopped', 'AbortError')); };
+
+      pauseWaiters.push(onResume);
+      signal?.addEventListener('abort', onAbort, { once: true });
+    });
+  }
+
+  if (stopped || signal?.aborted) throw new DOMException('Task stopped', 'AbortError');
+}
+
+/** 唤醒所有在等待「继续」的写入管道 */
+function wakePausedTransfers() {
+  const waiters = pauseWaiters.splice(0);
+  waiters.forEach(fn => {
+    try { fn(); } catch (_) { /* 忽略 */ }
+  });
+}
+
+/** 暂停下载 */
+function wirePause() {
+  if (!torrent || !transfer || !isBusy || paused) return;
+
+  paused = true;
+  try { torrent.pause(); } catch (err) { console.warn('torrent pause', err); }
+
+  // WebTorrent 的 pause() 只是不再新建连接，已建立的连接仍会继续传数据；
+  // 因此额外用 throttleDownload(0) 把有效载荷传输也掐掉。
+  try { client?.throttleDownload(0); } catch (err) { console.warn('download throttle pause', err); }
+
+  setChip('已暂停');
+  setText($('progressCaption'), '已暂停');
+  log('已暂停下载与文件写入；连接状态会保留，点击“继续”恢复。', 'warn');
+  updateStats();
+}
+
+/** 继续下载 */
+function wireResume() {
+  if (!torrent || !transfer || stopped || !paused) return;
+
+  paused = false;
+  wakePausedTransfers();
+  try {
+    client?.throttleDownload(-1);
+    torrent.resume();
+  } catch (err) {
+    console.warn('resume', err);
+  }
+
+  setChip('正在下载');
+  log('已恢复下载，并继续寻找可用节点。', 'ok');
+  updateStats();
+}
+
+// ---------------------------------------------------------------------------
+// 流式写入
+// ---------------------------------------------------------------------------
+
+/**
+ * 把某个文件的字节流写入可写流，过程中响应暂停 / 停止。
+ * @param {File} file WebTorrent 文件对象
+ * @param {FileSystemWritableFileStream} writable 目标可写流
+ * @param {AbortSignal} signal 停止信号
+ * @param {(written:number)=>void} onBytes 已写入字节数回调
+ * @returns {Promise<number>} 最终写入的字节数
+ */
+async function monitoredPipe(file, writable, signal, onBytes) {
+  let written = 0;
+
+  const sink = new WritableStream({
+    async write(chunk) {
+      await waitWhilePaused(signal);
+      await writable.write(chunk);
+      written += chunk?.byteLength || 0;
+      onBytes(written);
+    },
+    async close() {
+      if (writable.close) await writable.close();
+    },
+    async abort(reason) {
+      if (!writable.abort) return;
+      try { await writable.abort(reason); } catch (_) { /* 忽略 */ }
+    }
+  });
+
+  await file.stream().pipeTo(sink, { signal });
+  return written;
+}
+
+/**
+ * 在目标目录下按相对路径逐级创建文件夹并取得文件句柄。
+ * @param {FileSystemDirectoryHandle} root 用户选择的根目录
+ * @param {string} path 种子内的相对路径
+ */
+async function getHandleForPath(root, path) {
+  const parts = String(path || 'download.bin')
+    .split(/[\\/]+/)
+    .filter(part => part && part !== '.' && part !== '..');
+  if (!parts.length) parts.push('download.bin');
+
+  let dir = root;
+  for (const folder of parts.slice(0, -1)) {
+    dir = await dir.getDirectoryHandle(folder, { create: true });
+  }
+  return dir.getFileHandle(parts[parts.length - 1], { create: true });
+}
+// ---------------------------------------------------------------------------
+// 写入会话
+// ---------------------------------------------------------------------------
+
+/**
+ * 开始一次写入会话，并让 torrent 恢复下载。
+ * @param {{totalBytes:number, batch?:boolean}} options
+ * @returns {number} 本次会话的序号
+ */
+function beginTransfer({ totalBytes, batch = false }) {
+  lastProgress = null;
+
+  const serial = ++taskSerial;
+  transfer = {
+    serial,
+    totalBytes,
+    bytesWritten: 0,
+    activeFile: null,
+    reader: null,
+    controller: new AbortController(),
+    kind: batch ? 'batch' : 'single'
+  };
+
+  isBusy = true;
+  stopped = false;
+  paused = false;
+
+  batchState.active = batch;
+  batchState.totalWritten = 0;
+  batchState.totalBytes = totalBytes;
+  batchState.currentFile = null;
+  batchState.currentWritten = 0;
+  batchState.task = serial;
+
+  if (torrent) {
+    try { torrent.resume(); } catch (_) { /* 忽略 */ }
+  }
+  try { client?.throttleDownload(-1); } catch (_) { /* 忽略 */ }
+
+  setChip(batch ? '批量保存中' : '下载中');
+  setControls();
+  updateStats();
+
+  return serial;
+}
+
+/** 切换当前正在写入的文件，并重置该文件的进度 */
+function setCurrentFile(file, serial) {
+  if (!transfer || transfer.serial !== serial) return;
+
+  transfer.activeFile = file;
+  transfer.bytesWritten = 0;
+  batchState.currentFile = file;
+  batchState.currentWritten = 0;
+
+  setText($('transferTitle'),
+    batchState.active ? `正在保存：${file.path || file.name}` : `正在保存：${file.name}`);
+
+  refreshProgress();
+}
+
+/** 上报当前文件已写入的字节数 */
+function transferBytes(n, serial) {
+  if (!transfer || transfer.serial !== serial) return;
+  transfer.bytesWritten = n;
+  batchState.currentWritten = n;
+  refreshProgress();
+}
+
+/** 会话有效性校验：任何 await 之后都应调用 */
+function checkSerial(serial) {
+  if (!transfer || transfer.serial !== serial || stopped) {
+    throw new DOMException('Task stopped', 'AbortError');
+  }
+}
+
+/**
+ * 保存单个文件。
+ * 支持 File System Access API 时直接流式写入磁盘，否则退化为内存缓冲方案。
+ */
+async function saveOneFile(file) {
+  if (!torrent || stopped || isBusy) return;
+
+  const fullPath = file.path || file.name;
+  let handle = null;
+
+  if ('showSaveFilePicker' in window) {
+    try {
+      handle = await window.showSaveFilePicker({ suggestedName: file.name });
+    } catch (err) {
+      if (err?.name === 'AbortError') return; // 用户主动取消
+      showError(`无法打开保存位置：${err?.message || err}`);
+      return;
+    }
+    // 选择框是异步的：用户停留期间可能已经停止任务，这里必须重新校验。
+    if (!torrent || stopped || isBusy) return;
+  }
+
+  const serial = beginTransfer({ totalBytes: file.length, batch: false });
+  setCurrentFile(file, serial);
+  file.select();
+  log(`开始下载文件：${fullPath}`);
+
+  try {
+    if (handle) {
+      const writable = await handle.createWritable();
+      checkSerial(serial);
+
+      await monitoredPipe(file, writable, transfer.controller.signal, n => transferBytes(n, serial));
+      checkSerial(serial);
+
+      try { file.deselect(); } catch (_) { /* 忽略 */ }
+      savedPaths.add(fullPath);
+      renderFiles();
+
+      log(`文件已保存：${file.name}（${fmtBytes(file.length)}）`, 'ok');
+      toast(`已保存：${file.name}`);
+      finishTransfer(serial, '文件保存完成');
+    } else {
+      await downloadBlobFallback(file, serial);
+    }
+  } catch (err) {
+    if (err?.name === 'AbortError' || stopped) {
+      log('当前下载已停止。', 'warn');
+    } else {
+      showError(`下载/保存失败：${err?.message || err}`);
+    }
+    if (transfer?.serial === serial) finishTransfer(serial, stopped ? '任务已停止' : '下载失败');
+  } finally {
+    try { file.deselect(); } catch (_) { /* 忽略 */ }
+  }
+}
+/**
+ * 兼容模式：浏览器不支持 File System Access API 时，
+ * 先把整个文件缓存在内存中，再生成一个下载链接让用户手动保存。
+ * ⚠️ 大文件会占用等量内存，因此会额外提示用户。
+ */
+async function downloadBlobFallback(file, serial) {
+  const reader = file.stream().getReader();
+  transfer.reader = reader;
+
+  const chunks = [];
+  let total = 0;
+
+  try {
+    for (;;) {
+      checkSerial(serial);
+
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      await waitWhilePaused(transfer.controller.signal);
+      chunks.push(value);
+      total += value.byteLength;
+      transferBytes(total, serial);
+    }
+
+    checkSerial(serial);
+
+    const blob = new Blob(chunks, { type: file.type || 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+
+    // 释放上一个链接占用的内存
+    if (fallbackObjectUrl) {
+      const previous = fallbackObjectUrl;
+      setTimeout(() => { try { URL.revokeObjectURL(previous); } catch (_) { /* 忽略 */ } }, 1000);
+    }
+    fallbackObjectUrl = url;
+
+    const box = $('fallbackSaveBox');
+    box.replaceChildren();
+    box.classList.remove('hidden');
+
+    const link = document.createElement('a');
+    link.className = 'save-link';
+    link.href = url;
+    link.download = file.name;
+    link.textContent = `⬇ 点击保存到设备：${file.name}（${fmtBytes(blob.size)}）`;
+    link.addEventListener('click', () => {
+      // 点击后延迟释放，给浏览器留出读取时间
+      setTimeout(() => {
+        try { URL.revokeObjectURL(url); } catch (_) { /* 忽略 */ }
+        if (fallbackObjectUrl === url) fallbackObjectUrl = null;
+      }, 60000);
+
+      savedPaths.add(file.path || file.name);
+      renderFiles();
+      log(`浏览器已触发保存：${file.name}`, 'ok');
+    });
+    box.append(link);
+
+    setText($('progressCaption'), '数据接收完成 · 点击上方按钮保存文件');
+    log(`文件数据已接收，请点击页面中的保存按钮完成保存：${file.name}`, 'ok');
+    toast('数据下载完成，请点击页面中的绿色保存按钮。');
+    finishTransfer(serial, '等待点击保存');
+  } finally {
+    try { reader.releaseLock(); } catch (_) { /* 忽略 */ }
+  }
+}
+
+/**
+ * 选择文件夹后整包保存所有文件（保留种子的目录结构）。
+ * 需要浏览器支持 showDirectoryPicker。
+ */
+async function downloadAllToDirectory() {
+  if (!torrent || stopped || isBusy) return;
+
+  if (!('showDirectoryPicker' in window)) {
+    toast('此浏览器不支持整包目录保存，请逐个点击文件旁的“下载并保存”。');
+    return;
+  }
+
+  let dir;
+  try {
+    dir = await window.showDirectoryPicker({ mode: 'readwrite' });
+  } catch (err) {
+    if (err?.name !== 'AbortError') showError(`无法选择文件夹：${err?.message || err}`);
+    return;
+  }
+  // 与单文件保存同理：选择框期间任务可能已被停止
+  if (!torrent || stopped || isBusy) return;
+
+  const files = [...torrent.files];
+  const total = files.reduce((sum, f) => sum + (f.length || 0), 0);
+  const serial = beginTransfer({ totalBytes: total, batch: true });
+
+  $('fallbackSaveBox').replaceChildren();
+  $('fallbackSaveBox').classList.add('hidden');
+  log(`已选择保存文件夹，开始保存整个种子（${files.length} 个文件）。`, 'ok');
+
+  try {
+    for (const file of files) {
+      checkSerial(serial);
+      setCurrentFile(file, serial);
+      file.select();
+
+      const fullPath = file.path || file.name;
+      const handle = await getHandleForPath(dir, fullPath);
+      const writable = await handle.createWritable();
+      checkSerial(serial);
+
+      await monitoredPipe(file, writable, transfer.controller.signal, n => transferBytes(n, serial));
+      checkSerial(serial);
+
+      try { file.deselect(); } catch (_) { /* 忽略 */ }
+
+      batchState.totalWritten += file.length;
+      batchState.currentWritten = 0;
+      savedPaths.add(fullPath);
+      renderFiles();
+      refreshProgress();
+      log(`已保存 ${file.name}（${fmtBytes(file.length)}）`, 'ok');
+    }
+
+    finishTransfer(serial, '整个种子已保存');
+    setChip('下载完成');
+    setText($('progressCaption'), '所有文件均已保存');
+    log('整个种子下载与保存完成。', 'ok');
+    toast('整个种子已保存到所选文件夹。');
+  } catch (err) {
+    if (err?.name === 'AbortError' || stopped) {
+      log('整包下载已停止；已完成的文件保留在保存文件夹。', 'warn');
+    } else {
+      showError(`整包下载/保存失败：${err?.message || err}`);
+    }
+    if (transfer?.serial === serial) finishTransfer(serial, stopped ? '任务已停止' : '保存失败');
+  }
+}
+/**
+ * 结束一次写入会话。
+ * @param {number} serial 会话序号
+ * @param {'文件保存完成'|'整个种子已保存'|'等待点击保存'|'下载失败'|'任务已停止'} label 结束原因
+ */
+function finishTransfer(serial, label) {
+  if (!transfer || transfer.serial !== serial) return;
+
+  const finalTotal = transfer.totalBytes;
+  let finalDone = progressBytes();
+  if (label === '整个种子已保存') finalDone = finalTotal;
+
+  // 保留进度快照，任务结束后进度条不会归零
+  lastProgress = { total: finalTotal, done: Math.min(finalTotal, finalDone) };
+
+  isBusy = false;
+  paused = false;
+
+  if (batchState.active) {
+    batchState.active = false;
+    batchState.totalWritten = label === '整个种子已保存'
+      ? batchState.totalBytes
+      : batchState.totalWritten + batchState.currentWritten;
+    batchState.currentFile = null;
+    batchState.currentWritten = 0;
+  }
+
+  transfer = null;
+
+  if (!stopped) {
+    const chipText = {
+      '整个种子已保存': '下载完成',
+      '文件保存完成': '已保存',
+      '等待点击保存': '等待保存'
+    }[label] || '已就绪';
+    setChip(chipText);
+  }
+
+  setText($('transferTitle'),
+    torrent ? (torrent.name || 'BT 下载任务') : '添加一个磁力链接或种子文件以开始');
+
+  refreshProgress();
+
+  if (label === '整个种子已保存') {
+    setText($('progressPercent'), '100.0');
+    $('progressFill').style.width = '100%';
+    setText($('progressSize'), `${fmtBytes(finalTotal)} / ${fmtBytes(finalTotal)}`);
+    setText($('progressLeft'), `已保存 ${fmtBytes(finalTotal)}`);
+    setText($('etaText'), '已完成');
+    setText($('progressCaption'), '所有文件均已保存');
+  } else if (label === '等待点击保存') {
+    setText($('progressCaption'), '数据接收完成 · 点击上方按钮保存文件');
+  }
+
+  setControls();
+}
+
+/** 停止任务：中断写入、断开所有连接并销毁 torrent */
+function stopTorrent() {
+  if (!torrent || stopped) return;
+
+  clearTimeout(metadataTimer);
+  metadataTimer = null;
+
+  stopped = true;
+  paused = false;
+  isBusy = false;
+  taskSerial++; // 让所有在途的旧会话立即失效
+
+  wakePausedTransfers();
+  try { client?.throttleDownload(-1); } catch (_) { /* 忽略 */ }
+
+  // 中止正在进行的写入，并取消兼容模式下的流读取
+  const old = transfer;
+  transfer = null;
+  if (old) {
+    try { old.controller.abort(); } catch (_) { /* 忽略 */ }
+    if (old.reader) old.reader.cancel().catch(() => { /* 忽略 */ });
+  }
+  batchState.active = false;
+
+  try {
+    (torrent.wires || []).slice().forEach(wire => {
+      try { wire.destroy(); } catch (_) { /* 忽略 */ }
+    });
+    torrent.destroy();
+  } catch (err) {
+    console.warn(err);
+  }
+  torrent = null;
+
+  setChip('已停止');
+  setText($('transferTitle'), '任务已停止 · 可重新添加种子继续创建新任务');
+  setText($('downloadSpeed'), '0 B/s');
+  setText($('uploadSpeed'), '0 B/s');
+  setText($('peerCount'), '0');
+  setText($('totalSize'), '—');
+  setText($('progressCaption'), '已停止');
+  setText($('etaText'), '剩余时间 —');
+
+  log('已停止任务并断开连接。未完成的文件可能不完整。', 'warn');
+  setStatus('已断开连接', false);
+  setControls();
+  renderFiles();
+}
+
+// ---------------------------------------------------------------------------
+// 事件绑定
+// ---------------------------------------------------------------------------
+
+$('magnetForm').addEventListener('submit', event => {
+  event.preventDefault();
+
+  const value = $('magnetInput').value.trim();
+  if (!value) {
+    toast('请先粘贴磁力链接。');
+    return;
+  }
+  if (!/^magnet:\?/i.test(value)) {
+    toast('链接格式不正确，请输入以 magnet:? 开头的磁力链接。');
+    return;
+  }
+  addTorrent(value, '磁力链接');
+});
+
+$('chooseTorrent').addEventListener('click', () => $('torrentFileInput').click());
+
+$('torrentFileInput').addEventListener('change', async event => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  setText($('pickedName'), file.name);
+
+  if (!file.name.toLowerCase().endsWith('.torrent')) {
+    toast('请选择 .torrent 文件。');
+    event.target.value = '';
+    return;
+  }
+
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    addTorrent(bytes, file.name);
+  } catch (err) {
+    showError(`读取种子文件失败：${err?.message || err}`);
+  }
+
+  event.target.value = '';
+});
+
+$('pauseBtn').addEventListener('click', wirePause);
+$('resumeBtn').addEventListener('click', wireResume);
+$('stopBtn').addEventListener('click', stopTorrent);
+$('downloadAllBtn').addEventListener('click', downloadAllToDirectory);
+$('clearLogBtn').addEventListener('click', () => {
+  $('logList').replaceChildren();
+  log('日志已清空。');
+});
+
+// ---------------------------------------------------------------------------
+// 引擎加载
+// ---------------------------------------------------------------------------
+
+/**
+ * 带超时的动态 import。
+ * 模块源可能卡住不返回，超时后当作失败，交给下一个源。
+ */
+function importWithTimeout(url, timeoutMs = ENGINE_IMPORT_TIMEOUT) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`等待模块源超过 ${Math.round(timeoutMs / 1000)} 秒`)),
+      timeoutMs
+    );
+
+    import(url).then(
+      value => { clearTimeout(timer); resolve(value); },
+      error => { clearTimeout(timer); reject(error); }
+    );
+  });
+}
+
+/** 拉取并校验单个引擎源，返回 { source, Candidate } */
+function prepareEngineSource(source) {
+  return importWithTimeout(source.url).then(mod => {
+    const Candidate = mod.default || mod.WebTorrent || mod;
+
+    if (typeof Candidate !== 'function') {
+      throw new Error('模块没有导出 WebTorrent 构造函数');
+    }
+    if (Candidate.WEBRTC_SUPPORT === false) {
+      throw new Error('当前浏览器不支持 WebRTC');
+    }
+    return { source, Candidate };
+  });
+}
+
+/** 用胜出的构造函数创建客户端并切换到就绪状态 */
+function buildClient(Candidate, source) {
+  // 销毁旧引擎，避免重试时泄漏 DHT socket 与 WebSocket tracker 连接
+  try { client?.destroy?.(); } catch (_) { /* 忽略 */ }
+
+  const candidateClient = new Candidate({ maxConns: 55 });
+  candidateClient.on('error', err => {
+    const message = err?.message || String(err);
+    if (message === lastErrorLogged) return;
+    lastErrorLogged = message;
+    log(`引擎提示：${message}`, 'warn');
+  });
+
+  WebTorrentClass = Candidate;
+  client = candidateClient;
+
+  $('retryEngineBtn').classList.add('hidden');
+  setStatus('BT 引擎已就绪', true);
+  log(`下载引擎加载成功：${source.name}；已启用 ${TRACKERS.length} 个 WebSocket Tracker。`, 'ok');
+  setControls();
+}
+
+/**
+ * 加载下载引擎。
+ *
+ * 采用「错峰对冲」策略：主源立即发起，2.5 秒 / 5 秒后依次补发备用源，
+ * 谁先成功就用谁。相比逐个串行重试，最坏情况的等待时间从
+ * (12s × 3) 降到约 12s，且第一个源可用时耗时与原来一致。
+ */
+async function loadEngine() {
+  if (engineLoading) return;
+
+  engineLoading = true;
+  $('retryEngineBtn').classList.add('hidden');
+  setControls();
+  setStatus('正在加载下载引擎', false);
+
+  const errors = [];
+
+  try {
+    const winner = await new Promise((resolve, reject) => {
+      let pending = ENGINE_SOURCES.length;
+      let done = false;
+      const timers = [];
+
+      const settleFail = (source, err) => {
+        if (done) return;
+
+        const reason = err?.message || err;
+        errors.push(`${source.name}: ${reason}`);
+        log(`引擎源不可用：${source.name}（${reason}）`, 'warn');
+
+        if (--pending === 0) {
+          done = true;
+          timers.forEach(clearTimeout);
+          reject(new Error(errors.join('；') || '所有下载引擎源均不可用'));
+        }
+      };
+
+      ENGINE_SOURCES.forEach((source, index) => {
+        const launch = () => {
+          if (done) return;
+          log(`尝试下载引擎源：${source.name}`);
+
+          prepareEngineSource(source).then(
+            value => {
+              if (done) return;
+              done = true;
+              timers.forEach(clearTimeout);
+              resolve(value);
+            },
+            err => settleFail(source, err)
+          );
+        };
+
+        const delay = HEDGE_DELAYS[index] ?? 0;
+        if (delay > 0) timers.push(setTimeout(launch, delay));
+        else launch();
+      });
+    });
+
+    buildClient(winner.Candidate, winner.source);
+  } finally {
+    engineLoading = false;
+    setControls();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// 网络状态
+// ---------------------------------------------------------------------------
+
+window.addEventListener('offline', () => {
+  setStatus('设备当前离线', false);
+  log('浏览器报告网络已断开。网络恢复后会继续尝试连接。', 'warn');
+});
+
+window.addEventListener('online', () => {
+  log('浏览器报告网络已恢复。', 'ok');
+
+  // 场景一：引擎从未加载成功，联网后自动重试
+  if (!WebTorrentClass && !engineLoading) {
+    loadEngine().catch(err => {
+      setStatus('引擎加载失败', false);
+      log(`恢复网络后仍无法加载引擎：${err?.message || err}`, 'err');
+      $('retryEngineBtn').classList.remove('hidden');
+    });
+    return;
+  }
+
+  // 场景二：引擎就绪且存在未完成的任务，重新寻找节点
+  if (WebTorrentClass && torrent && !stopped) {
+    if (!paused) {
+      try { torrent.resume(); } catch (_) { /* 忽略 */ }
+    }
+    const peers = Number(torrent.numPeers || 0);
+    setStatus(peers > 0 ? '已连接兼容节点' : '网络已恢复 · 正在重新发现节点', peers > 0);
+    return;
+  }
+
+  // 场景三：引擎就绪但没有任务
+  if (WebTorrentClass) setStatus('网络已恢复 · BT 引擎就绪', true);
+});
+
+// ---------------------------------------------------------------------------
+// 初始化
+// ---------------------------------------------------------------------------
+
+/** 根据浏览器的 API 支持情况调整提示文案与按钮可见性 */
+function capabilityMessage() {
+  const canPickDirectory = 'showDirectoryPicker' in window;
+  const canPickFile = 'showSaveFilePicker' in window;
+
+  if (!canPickDirectory) {
+    $('downloadAllBtn').classList.add('hidden');
+    setText($('batchHint'),
+      '当前浏览器不支持一次保存整个文件夹。请使用每个文件旁的“下载并保存”按钮；'
+      + '不支持直接磁盘写入的浏览器会提供下载后手动保存。');
+  }
+
+  if (!canPickFile) {
+    $('batchHint').textContent +=
+      ' 兼容模式会先将单个文件接收到浏览器内存中再提供保存链接，不适合特别大的文件。';
+  }
+}
+
+/** 页面入口 */
+async function init() {
+  capabilityMessage();
+
+  $('retryEngineBtn').addEventListener('click', async () => {
+    try {
+      await loadEngine();
+      toast('下载引擎加载成功。');
+    } catch (err) {
+      const reason = err?.message || String(err);
+      setStatus('引擎加载失败', false);
+      log(`引擎加载失败：${reason}`, 'err');
+      toast('多个引擎源均连接失败，请检查网络或更换网络后重试。');
+      $('retryEngineBtn').classList.remove('hidden');
+    }
+  });
+
+  try {
+    await loadEngine();
+  } catch (err) {
+    const reason = err?.message || String(err);
+    const localTip = location.protocol === 'file:'
+      ? ' 当前是本地 file:// 页面；部分浏览器会限制模块加载，建议通过 HTTPS 或 localhost 打开。'
+      : '';
+
+    setStatus('引擎加载失败', false);
+    setText($('transferTitle'), '无法加载下载引擎');
+    log(`所有下载引擎源均加载失败：${reason}`, 'err');
+    toast('引擎加载失败：检查网络、稍后重试；必要时使用 HTTPS 或 localhost。');
+
+    setText($('batchHint'),
+      '下载引擎无法连接多个 CDN。请确认网络可访问 esm.sh / jsDelivr，'
+      + '或在 HTTPS / localhost 环境打开后点击“重新加载下载引擎”。' + localTip);
+    $('retryEngineBtn').classList.remove('hidden');
+  }
+
+  startTicker();
+  renderChart();
+  setControls();
+}
+
+init();
+</script>
+</body>
+</html>
