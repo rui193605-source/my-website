@@ -9,6 +9,25 @@
         box-sizing: border-box;
     }
 
+    :root {
+        /* 统一字体：与页面大标题一致 */
+        --font-main:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+
+        /* 统一字号梯度 */
+        --font-size-xs: 12px;
+        --font-size-sm: 13px;
+        --font-size-base: 14px;
+        --font-size-md: 16px;
+        --font-size-lg: 18px;
+        --font-size-xl: 24px;
+        --font-size-2xl: 32px;
+    }
+
     html {
         scroll-behavior: smooth;
     }
@@ -435,7 +454,7 @@
         }
 
         .ip-address {
-            font-size: 28px;
+            font-size: 30px;
         }
 
         .info-card {
@@ -454,68 +473,55 @@
 
 
     /* =========================
-   IP PAGE
-   ========================= */
+       IP PAGE
+       ========================= */
 
-.ip-page {
-    max-width: 1100px;
-    margin: 0 auto;
+    .ip-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 150px 6% 80px;
+    }
 
-    padding:
-        150px 6% 80px;
-}
+    /* 页面标题 */
 
+    .page-label {
+        color: #6cff9b;
+        font-family: var(--font-main);
+        font-size: var(--font-size-base);
+        letter-spacing: 3px;
+        margin-bottom: 18px;
+    }
 
-/* 页面标题 */
+    .ip-page h1 {
+        margin: 0;
 
-.page-label {
-    color: #6cff9b;
+        /* 预留底部空间，避免渐变文字被裁切 */
+        padding-bottom: 14px;
 
-    font-family: monospace;
+        font-size: clamp(42px, 7vw, 80px);
+        line-height: 1.1;
+        letter-spacing: -4px;
+        font-weight: 900;
 
-    font-size: 12px;
-
-    letter-spacing: 3px;
-
-    margin-bottom: 18px;
-}
-
-
-.ip-page h1 {
-    margin: 0;
-
-    font-size:
-        clamp(42px, 7vw, 80px);
-
-    line-height: 0.95;
-
-    letter-spacing: -4px;
-
-    font-weight: 900;
-
-    background:
-        linear-gradient(
+        background: linear-gradient(
             120deg,
             #ffffff,
             #9aa6b2
         );
 
-    -webkit-background-clip: text;
-    background-clip: text;
+        -webkit-background-clip: text;
+        background-clip: text;
 
-    color: transparent;
-}
+        color: transparent;
+    }
 
-
-.page-description {
-    margin-top: 20px;
-
-    color: #6f7a84;
-
-    font-family: monospace;
-
-    font-size: 14px;
-}
+    .page-description {
+        margin-top: 20px;
+        color: #6f7a84;
+        font-family: var(--font-main);
+        font-size: var(--font-size-md);
+        font-weight: 400;
+    }
 
 
 /* =========================
@@ -556,65 +562,39 @@
 }
 
 
-.card-label {
+    .card-label {
+        color: #56616c;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        letter-spacing: 2px;
+    }
 
-    color: #56616c;
+    .ip-address {
+        margin-top: 10px;
+        color: #e8edf2;
+        font-family: var(--font-main);
+        font-size: clamp(32px, 5vw, 56px);
+        font-weight: 400;
+        letter-spacing: -2px;
+        word-break: break-all;
+    }
 
-    font-family: monospace;
+    /* 在线状态 */
 
-    font-size: 11px;
-
-    letter-spacing: 2px;
-}
-
-
-.ip-address {
-
-    margin-top: 10px;
-
-    color: #e8edf2;
-
-    font-family: monospace;
-
-    font-size:
-        clamp(30px, 5vw, 55px);
-
-    font-weight: 700;
-
-    letter-spacing: -2px;
-
-    word-break: break-all;
-}
-
-
-/* 在线状态 */
-
-.online-status {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 7px;
-
-    padding:
-        7px 10px;
-
-    border:
-        1px solid rgba(108,255,155,0.2);
-
-    border-radius: 999px;
-
-    color: #6cff9b;
-
-    font-family: monospace;
-
-    font-size: 10px;
-
-    letter-spacing: 1px;
-
-    white-space: nowrap;
-}
+    .online-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 12px;
+        border: 1px solid rgba(108,255,155,0.2);
+        border-radius: 999px;
+        color: #6cff9b;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        letter-spacing: 1px;
+        white-space: nowrap;
+    }
 
 
 .online-dot {
@@ -661,34 +641,24 @@
 }
 
 
-.info-label {
+    .info-label {
+        display: block;
+        color: #56616c;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+    }
 
-    display: block;
-
-    color: #56616c;
-
-    font-family: monospace;
-
-    font-size: 10px;
-
-    letter-spacing: 1.5px;
-
-    margin-bottom: 7px;
-}
-
-
-.info-value {
-
-    display: block;
-
-    color: #c8d0d7;
-
-    font-family: monospace;
-
-    font-size: 14px;
-
-    word-break: break-word;
-}
+    .info-value {
+        display: block;
+        color: #c8d0d7;
+        font-family: var(--font-main);
+        font-size: var(--font-size-lg);
+        font-weight: 400;
+        word-break: break-word;
+    }
 
 
 /* =========================
@@ -769,53 +739,36 @@
 }
 
 
-.card-number {
+    .card-number {
+        color: #56616c;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        letter-spacing: 1px;
+    }
 
-    color: #56616c;
+    .info-card h2 {
+        margin: 22px 0 18px;
+        font-size: var(--font-size-xl);
+        font-weight: 400;
+        letter-spacing: -0.5px;
+    }
 
-    font-family: monospace;
+    .big-value {
+        color: #6cff9b;
+        font-family: var(--font-main);
+        font-size: var(--font-size-2xl);
+        font-weight: 400;
+    }
 
-    font-size: 11px;
-
-    letter-spacing: 1px;
-}
-
-
-.info-card h2 {
-
-    margin:
-        22px 0 18px;
-
-    font-size: 25px;
-
-    letter-spacing: -0.5px;
-}
-
-
-.big-value {
-
-    color: #6cff9b;
-
-    font-family: monospace;
-
-    font-size: 30px;
-
-    font-weight: 700;
-}
-
-
-.info-card p {
-
-    color: #68737d;
-
-    font-family: monospace;
-
-    font-size: 12px;
-
-    line-height: 1.7;
-
-    margin-top: 10px;
-}
+    .info-card p {
+        color: #68737d;
+        font-family: var(--font-main);
+        font-size: var(--font-size-base);
+        font-weight: 400;
+        line-height: 1.7;
+        margin-top: 10px;
+    }
 
 
 /* =========================
@@ -835,58 +788,40 @@
 }
 
 
-.coordinate span {
+    .coordinate span {
+        display: block;
+        color: #56616c;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
 
-    display: block;
-
-    color: #56616c;
-
-    font-family: monospace;
-
-    font-size: 9px;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 7px;
-}
-
-
-.coordinate strong {
-
-    display: block;
-
-    color: #e8edf2;
-
-    font-family: monospace;
-
-    font-size: 18px;
-}
+    .coordinate strong {
+        display: block;
+        color: #e8edf2;
+        font-family: var(--font-main);
+        font-size: var(--font-size-lg);
+        font-weight: 400;
+    }
 
 
 /* =========================
    小状态
    ========================= */
 
-.mini-status {
-
-    display: inline-block;
-
-    margin-top: 20px;
-
-    padding:
-        6px 9px;
-
-    border-radius: 5px;
-
-    background:
-        rgba(108,255,155,0.06);
-
-    color: #6cff9b;
-
-    font-family: monospace;
-
-    font-size: 10px;
-}
+    .mini-status {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 6px 11px;
+        border-radius: 5px;
+        background: rgba(108,255,155,0.06);
+        color: #6cff9b;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+    }
 
 
 /* =========================
@@ -917,52 +852,35 @@
 }
 
 
-.network-title {
+    .network-title {
+        margin-top: 8px;
+        color: #6cff9b;
+        font-family: var(--font-main);
+        font-size: var(--font-size-lg);
+        font-weight: 400;
+        letter-spacing: 1px;
+    }
 
-    margin-top: 8px;
+    .network-details {
+        display: flex;
+        gap: 35px;
+    }
 
-    color: #6cff9b;
+    .network-details span {
+        display: block;
+        color: #56616c;
+        font-family: var(--font-main);
+        font-size: var(--font-size-xs);
+        font-weight: 400;
+        margin-bottom: 6px;
+    }
 
-    font-family: monospace;
-
-    font-size: 18px;
-
-    font-weight: 700;
-
-    letter-spacing: 1px;
-}
-
-
-.network-details {
-
-    display: flex;
-
-    gap: 35px;
-}
-
-
-.network-details span {
-
-    display: block;
-
-    color: #56616c;
-
-    font-family: monospace;
-
-    font-size: 9px;
-
-    margin-bottom: 5px;
-}
-
-
-.network-details strong {
-
-    color: #c8d0d7;
-
-    font-family: monospace;
-
-    font-size: 12px;
-}
+    .network-details strong {
+        color: #c8d0d7;
+        font-family: var(--font-main);
+        font-size: var(--font-size-base);
+        font-weight: 400;
+    }
 
 </style>
 </head>
@@ -1257,169 +1175,157 @@
 <script>
     /* =========================IP 信息 API========================= */
 
+    const IP_API_ENDPOINT = "/api/ip";
+
+    /* 页面中需要填充的字段，用于统一处理异常状态 */
+    const IP_FIELD_IDS = [
+        "ip",
+        "city",
+        "region",
+        "country",
+        "timezone",
+        "latitude",
+        "longitude",
+        "asn",
+        "cloudflare-colocation"
+    ];
+
+    /* 按优先级读取字段，兼容不同的大小写与命名风格 */
+    function pickField(raw, ...keys) {
+        for (const key of keys) {
+            const value = raw[key];
+
+            if (value !== undefined && value !== null && value !== "") {
+                return value;
+            }
+        }
+
+        return "Unknown";
+    }
+
+    /* 统一写入文本，元素不存在时静默跳过 */
+    function setFieldText(id, text) {
+        const element = document.getElementById(id);
+
+        if (element) {
+            element.textContent = text;
+        }
+    }
+
+    /* =========================时区格式化========================= */
+    function formatTimezone(timezone) {
+        if (!timezone || timezone === "Unknown") return "Unknown";
+
+        const parts = timezone.split("/");
+        if (parts.length < 2) return timezone;
+
+        const offset = getTimezoneOffset(timezone);
+        if (!offset) return timezone;
+
+        return parts[0] + " / " + offset;
+    }
+
+    function getTimezoneOffset(timezone) {
+        try {
+            const formatter = new Intl.DateTimeFormat("en-US", {
+                timeZone: timezone,
+                timeZoneName: "longOffset"
+            });
+
+            const offsetPart = formatter
+                .formatToParts(new Date())
+                .find(part => part.type === "timeZoneName");
+
+            if (!offsetPart) return "";
+
+            const rawOffset = offsetPart.value.replace("GMT", "");
+            if (rawOffset === "") return "0";
+
+            const match = rawOffset.match(/([+-])(\d{2}):?(\d{2})?/);
+            if (!match) return "";
+
+            const sign = match[1];
+            const hours = Number(match[2]);
+            const minutes = match[3] ? Number(match[3]) : 0;
+            const direction = sign === "+" ? "E" : "W";
+
+            if (minutes === 0) {
+                return sign + hours + direction;
+            }
+
+            return sign + hours + ":" + String(minutes).padStart(2, "0") + direction;
+        } catch (error) {
+            console.error("Timezone format error:", error);
+            return "";
+        }
+    }
+
+    /* =========================经纬度格式化========================= */
+    function formatCoordinate(value, positive, negative) {
+        const number = parseFloat(value);
+
+        if (!Number.isFinite(number)) return "Unknown";
+
+        const direction = number >= 0 ? positive : negative;
+        return Math.abs(number).toFixed(5) + "° " + direction;
+    }
+
+    const formatLatitude = value => formatCoordinate(value, "N", "S");
+    const formatLongitude = value => formatCoordinate(value, "E", "W");
+
+    /* =========================国家名称格式化========================= */
+    function formatCountry(country) {
+        if (!country || country === "Unknown") return "Unknown";
+
+        const normalized = String(country).trim().toUpperCase();
+
+        if (normalized === "TW") return "中国";
+
+        try {
+            const displayNames = new Intl.DisplayNames(["zh-CN"], { type: "region" });
+            return displayNames.of(normalized) || normalized;
+        } catch (error) {
+            console.error("Country format error:", error);
+            return normalized;
+        }
+    }
+
+    /* =========================加载与渲染========================= */
     async function loadIPInfo() {
         try {
-            const response = await fetch("/api/ip", { cache: "no-store" });
+            const response = await fetch(IP_API_ENDPOINT, { cache: "no-store" });
 
             if (!response.ok) {
                 throw new Error("IP API HTTP " + response.status);
             }
 
             const raw = await response.json();
-            const data = {
-                ip: raw.ip ?? raw.IP ?? raw.ip_address ?? "Unknown",
-                city: raw.city ?? raw.CITY ?? "Unknown",
-                region: raw.region ?? raw.REGION ?? "Unknown",
-                country: raw.country ?? raw.COUNTRY ?? "Unknown",
-                timezone: raw.timezone ?? raw.TIMEZONE ?? "Unknown",
-                latitude: raw.latitude ?? raw.LATITUDE ?? "Unknown",
-                longitude: raw.longitude ?? raw.LONGITUDE ?? "Unknown",
-                asn: raw.asn ?? raw.ASN ?? "Unknown",
-                cloudflare_colocation: raw.cloudflare_colocation ?? raw.cloudflareColocation ?? raw["cloudflare-colocation"] ?? "Unknown"
-            };
-            console.log("IP API:", data);
+            console.log("IP API:", raw);
 
-            const map = {
-                ip: document.getElementById("ip"),
-                city: document.getElementById("city"),
-                region: document.getElementById("region"),
-                country: document.getElementById("country"),
-                timezone: document.getElementById("timezone"),
-                latitude: document.getElementById("latitude"),
-                longitude: document.getElementById("longitude"),
-                asn: document.getElementById("asn"),
-                "cloudflare-colocation": document.getElementById("cloudflare-colocation")
-            };
+            const latitude = pickField(raw, "latitude", "LATITUDE");
+            const longitude = pickField(raw, "longitude", "LONGITUDE");
+            const asn = pickField(raw, "asn", "ASN");
 
-            if (map.ip) map.ip.textContent = data.ip || "Unknown";
-            if (map.city) map.city.textContent = data.city || "Unknown";
-            if (map.region) map.region.textContent = data.region || "Unknown";
-            if (map.country) map.country.textContent = formatCountry(data.country);
-            if (map.timezone) map.timezone.textContent = formatTimezone(data.timezone);
-            if (map.latitude) map.latitude.textContent = formatLatitude(data.latitude);
-            if (map.longitude) map.longitude.textContent = formatLongitude(data.longitude);
-            if (map.asn) map.asn.textContent = data.asn ? "AS" + data.asn : "Unknown";
-            if (map["cloudflare-colocation"]) map["cloudflare-colocation"].textContent = data.cloudflare_colocation || "Unknown";
-        } 
-            catch (error) {
-            console.error("IP API error:", error);
-
-            const elements = [
-                "ip",
-                "city",
-                "region",
-                "country",
-                "timezone",
-                "latitude",
-                "longitude",
-                "asn",
-                "cloudflare-colocation"
-            ];
-
-            elements.forEach(function (id) {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.textContent = "Unavailable";}
-                    }
-                );
-            }
-    }
-
-    function formatTimezone(timezone) {
-        if (!timezone) return "Unknown";
-
-        const parts = timezone.split("/");
-        if (parts.length < 2) return timezone;
-
-        const continent = parts[0];
-
-        try {
-            const now = new Date();
-            const formatter = new Intl.DateTimeFormat("en-US", {
-                timeZone: timezone,
-                timeZoneName: "longOffset"
-            });
-
-            const formatted = formatter.formatToParts(now);
-            const offsetPart = formatted.find(function (part) {
-                return part.type === "timeZoneName";
-            });
-
-            if (!offsetPart) return timezone;
-
-            let offset = offsetPart.value.replace("GMT", "");
-            if (offset === "") return continent + " / 0";
-
-            const match = offset.match(/([+-])(\d{2}):?(\d{2})?/);
-            if (!match) return timezone;
-
-            const sign = match[1];
-            const hours = Number(match[2]);
-            const minutes = match[3] ? Number(match[3]) : 0;
-
-            let offsetText;
-
-            if (minutes === 0) {
-                offsetText = sign === "+" ? "+" + hours + "E" : "-" + hours + "W";
-            } else {
-                offsetText = sign === "+"
-                    ? "+" + hours + ":" + String(minutes).padStart(2, "0") + "E"
-                    : "-" + hours + ":" + String(minutes).padStart(2, "0") + "W";
-            }
-
-            return continent + " / " + offsetText;
-        } catch (error) {
-            console.error("Timezone format error:", error);
-            return timezone;
-        }
-    }
-
-    /* =========================南北纬换算函数========================= */
-    function formatLatitude(latitude) {
-        if (latitude === null || latitude === undefined || isNaN(latitude)) {
-            return "Unknown";
-        }
-
-        const lat = parseFloat(latitude);
-        const direction = lat >= 0 ? "N" : "S";
-        return Math.abs(lat).toFixed(5) + "° " + direction;
-    }
-
-    /* =========================东西经换算函数========================= */
-    function formatLongitude(longitude) {
-        if (longitude === null || longitude === undefined || isNaN(longitude)) {
-            return "Unknown";
-        }
-
-        const lon = parseFloat(longitude);
-        const direction = lon >= 0 ? "E" : "W";
-        return Math.abs(lon).toFixed(5) + "° " + direction;
-    }
-
-    /* =========================国家名称换算函数========================= */
-    function formatCountry(country) {
-        if (!country || country === "Unknown") {
-            return "Unknown";
-        }
-
-        const normalized = String(country).trim();
-
-        if (normalized.toUpperCase() === "TW") {
-            return "中国";
-        }
-
-        try {
-            const displayNames = new Intl.DisplayNames(
-                ["zh-CN"],
-                {
-                    type: "region"
-                }
+            setFieldText("ip", pickField(raw, "ip", "IP", "ip_address"));
+            setFieldText("city", pickField(raw, "city", "CITY"));
+            setFieldText("region", pickField(raw, "region", "REGION"));
+            setFieldText("country", formatCountry(pickField(raw, "country", "COUNTRY")));
+            setFieldText("timezone", formatTimezone(pickField(raw, "timezone", "TIMEZONE")));
+            setFieldText("latitude", formatLatitude(latitude));
+            setFieldText("longitude", formatLongitude(longitude));
+            setFieldText("asn", asn === "Unknown" ? "Unknown" : "AS" + asn);
+            setFieldText(
+                "cloudflare-colocation",
+                pickField(
+                    raw,
+                    "cloudflare_colocation",
+                    "cloudflareColocation",
+                    "cloudflare-colocation"
+                )
             );
-
-            return displayNames.of(normalized.toUpperCase()) || normalized;
         } catch (error) {
-            console.error("Country format error:", error);
-            return normalized;
+            console.error("IP API error:", error);
+            IP_FIELD_IDS.forEach(id => setFieldText(id, "Unavailable"));
         }
     }
 
