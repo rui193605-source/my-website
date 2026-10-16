@@ -267,7 +267,7 @@
 
         background: rgba(255,255,255,0.035);
 
-        border: 10px solid rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.07);
 
         font-size: 29px;
 
@@ -560,8 +560,8 @@
     .grid {
         display: grid;
 
-        grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));            
-        
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+
         column-gap: 30px;    /* 左右卡片间距 */
 
         row-gap: 30px;       /* 上下卡片间距 */
@@ -570,11 +570,14 @@
     .card {
         position: relative;
 
+        display: flex;
+        flex-direction: column;
+
         padding: 25px;
 
-        min-height: 150px;
+        min-height: 300px;
 
-        width: 290px;
+        width: 100%;
 
         background: rgba(255,255,255,0.035);
 
@@ -633,6 +636,10 @@
     }
 
     .card p {
+        flex: 1;
+
+        margin-bottom: 0;
+
         color: #6c7177;
 
         line-height: 1.7;
@@ -640,12 +647,17 @@
         font-size: 15px;
     }
 
-    .tag {
-        display: inline-block;
+    .card-tags {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 5px;
 
         margin-top: 12px;
+    }
 
-        margin-right: 5px;
+    .tag {
+        display: inline-block;
 
         padding: 5px 8px;
 
@@ -821,7 +833,6 @@
    ========================= */
 
 .project-link {
-    display: block;
     color: inherit;
     text-decoration: none;
     cursor: pointer;
@@ -868,6 +879,7 @@
     </div>
 
     <div>
+        <!-- 新增板块后，在这里添一行导航即可 -->
         <a href="#关于">关于</a>
         <a href="#项目与展示">项目与展示</a>
         <a href="#服务与支持">服务与支持</a>
@@ -1119,133 +1131,9 @@
         我的项目
     </h2>
 
-    <div class="grid">       <!--卡片外观标识句，添加新卡片时不要复制这一行-->
-<!-- =========================卡片1========================= -->
-    <a href="project2.html" class="card project-link">
-
-        <div class="card-number">
-        Project_ 1
-        </div>
-
-        <h3>
-        照片墙
-        </h3>
-
-        <p>
-        简单的照片墙。
-        </p>
-
-        <span class="tag">
-        photo
-        </span>
-
-        <span class="tag">
-        gallery                     
-        </span>
-
-    </a>
-
-<!-- =========================卡片2========================= -->
-    <a href="calculator.html" class="card project-link">
-
-    <div class="card-number">                    
-        Porject_ 2                          <!--编号-->
-    </div>
-
-    <h3>
-        Calculator                            <!--标题-->
-    </h3>
-
-    <p>
-        一个支持科学计算、历史记录的计算器。    <!--描述-->
-    </p>
-
-    <span class="tag">
-        Calculator                           <!--标签-->
-    </span>
-
-    <span class="tag">
-        Scientific                           <!--标签-->
-    </span>
-
-    </a>
-
-<!-- =========================卡片3========================= -->
-    <a href="map.html" class="card project-link">
-
-        <div class="card-number">
-        Project_ 3
-        </div>
-
-        <h3>
-        地图
-        </h3>
-
-        <p>
-        查看地图或输入坐标和地点以查看精确位置。
-        </p>
-
-        <span class="tag">
-        Map
-        </span>
-
-        <span class="tag">
-        Location
-        </span>
-
-    </a>
-
-<!-- =========================卡片4========================= -->
-    <div class="card">
-
-        <div class="card-number">
-        Porject_ 4
-        </div>
-
-        <h3>
-        More Things
-        </h3>
-
-        <p>
-        这里以后会出现更多奇怪的项目。
-        </p>
-
-        <span class="tag">
-        WIP
-        </span>
-
-    </div>
-
-<!-- =========================卡片5========================= -->
-    <div class="card">
-
-        <div class="card-number">
-        Porject_ 5
-        </div>
-
-        <h3>
-        Local AI
-        </h3>
-
-        <p>
-        在本地运行 AI 模型。
-        </p>
-
-        <span class="tag">
-        Deepseek
-        </span>
-
-        <span class="tag">
-        ChatGPT
-        </span>
-
-        <span class="tag">
-        LLM
-        </span>
-
-        </div>
-
-    </div>
+    <!-- 这里的卡片不用手写，由下方 JS 的 PROJECTS 数组自动渲染 -->
+    <!-- 新增板块时，复制本 section 整块，并改 id 与标题即可 -->
+    <div class="grid" id="projects-grid"></div>
 
 </section>
 
@@ -1261,55 +1149,9 @@
     <h2>
         我的服务器
     </h2>
-<!-- =========================卡片1========================= -->
-    <a href="ip.html" class="card project-link">
 
-        <div class="card-number">
-        Project_ 1
-        </div>
-
-        <h3>
-        查看你的IP
-        </h3>
-
-        <p>
-        简单的IP查看。
-        </p>
-
-        <span class="tag">
-        IP
-        </span>
-
-        <span class="tag">
-        positioning                     
-        </span>
-
-    </a>
-
-    <!-- =========================卡片2========================= -->
-    <a href="web speed test.html" class="card project-link">
-
-        <div class="card-number">
-        Project_ 2
-        </div>
-
-        <h3>
-        网络测速
-        </h3>
-
-        <p>
-        简单的网络测速。
-        </p>
-
-        <span class="tag">
-        Network
-        </span>
-
-        <span class="tag">
-        Speed Test                  
-        </span>
-
-    </a>
+    <!-- 这里的卡片不用手写，由下方 JS 的 SERVICES 数组自动渲染 -->
+    <div class="grid" id="services-grid"></div>
 
 </section>
 
@@ -1349,6 +1191,177 @@
 
         }
     );
+
+
+    /* =========================================================
+       卡片数据 —— 想加卡片就在这里加一条对象
+
+       字段说明：
+         number       卡片左上角的编号
+         title        标题
+         description  描述
+         href         可选：跳转链接，填了卡片才可点击
+         tags         可选：标签数组，可写多个
+       ========================================================= */
+
+    const PROJECTS = [   // ← 02 板块「项目与展示」的卡片
+
+        {
+            number: "Project_ 1",           // 编号
+            title: "照片墙",                 // 标题
+            description: "简单的照片墙。",     // 描述
+            href: "project2.html",          // 链接（不需要可整行删除）
+            tags: ["photo", "gallery"]      // 标签（不需要可整行删除）
+        },
+
+        {
+            number: "Project_ 2",
+            title: "Calculator",
+            description: "一个支持科学计算、历史记录的计算器。",
+            href: "calculator.html",
+            tags: ["Calculator", "Scientific"]
+        },
+
+        {
+            number: "Project_ 3",
+            title: "地图",
+            description: "查看地图或输入坐标和地点以查看精确位置。",
+            href: "map.html",
+            tags: ["Map", "Location"]
+        },
+
+        {
+            number: "Project_ 4",
+            title: "More Things",
+            description: "这里以后会出现更多奇怪的项目。",
+            tags: ["WIP"]
+        },
+
+        {
+            number: "Project_ 5",
+            title: "Local AI",
+            description: "在本地运行 AI 模型。",
+            tags: ["Deepseek", "ChatGPT", "LLM"]
+        }
+
+    ];
+
+    const SERVICES = [   // ← 03 板块「服务与支持」的卡片（字段同上）
+
+        {
+            number: "Project_ 1",           // 编号
+            title: "查看你的IP",             // 标题
+            description: "简单的IP查看。",    // 描述
+            href: "ip.html",                // 链接
+            tags: ["IP", "positioning"]     // 标签
+        },
+
+        {
+            number: "Project_ 2",
+            title: "网络测速",
+            description: "简单的网络测速。",
+            href: "web speed test.html",
+            tags: ["Network", "Speed Test"]
+        }
+
+    ];
+
+
+    /* =========================渲染卡片=========================
+       这个函数一般不用改
+       =========================渲染卡片========================= */
+
+    function renderCards(containerId, items) {
+
+        const container =
+            document.getElementById(containerId);
+
+        if (!container) {
+            return;
+        }
+
+        items.forEach((item) => {
+
+            const card =
+                document.createElement(
+                    item.href ? "a" : "div"
+                );
+
+            card.className =
+                item.href ?
+                    "card project-link" :
+                    "card";
+
+            if (item.href) {
+                card.href = item.href;
+            }
+
+
+            const number =
+                document.createElement("div");
+
+            number.className = "card-number";
+            number.textContent = item.number;
+
+
+            const title =
+                document.createElement("h3");
+
+            title.textContent = item.title;
+
+
+            const description =
+                document.createElement("p");
+
+            description.textContent = item.description;
+
+
+            card.append(
+                number,
+                title,
+                description
+            );
+
+
+            if (item.tags && item.tags.length) {
+
+                const tagList =
+                    document.createElement("div");
+
+                tagList.className = "card-tags";
+
+
+                item.tags.forEach((text) => {
+
+                    const tag =
+                        document.createElement("span");
+
+                    tag.className = "tag";
+                    tag.textContent = text;
+
+                    tagList.appendChild(tag);
+
+                });
+
+
+                card.appendChild(tagList);
+
+            }
+
+
+            container.appendChild(card);
+
+        });
+
+    }
+
+
+    /* 新建板块时，复制下面一行，把容器 id 和数组名换掉就行
+       例：renderCards("tools-grid", TOOLS); */
+
+    renderCards("projects-grid", PROJECTS);
+
+    renderCards("services-grid", SERVICES);
 
 
     /* =========================天气 API========================= */
@@ -1522,6 +1535,10 @@
                 "--";
 
 
+            pressureElement.textContent =
+                "--";
+
+
             iconElement.textContent =
                 "⚠️";
 
@@ -1540,6 +1557,44 @@
 
     /* =========================WMO Weather Code========================= */
 
+    const WEATHER_ICONS = {
+
+        0: "☀️",
+
+        1: "⛅",
+        2: "⛅",
+        3: "☁️",
+
+        45: "🌫️",
+        48: "🌫️",
+
+        51: "🌦️",
+        53: "🌦️",
+        55: "🌦️",
+        56: "🌦️",
+        57: "🌦️",
+
+        61: "🌧️",
+        63: "🌧️",
+        65: "🌧️",
+        66: "🌧️",
+        67: "🌧️",
+
+        71: "🌨️",
+        73: "🌨️",
+        75: "🌨️",
+        77: "🌨️",
+
+        80: "🌦️",
+        81: "🌦️",
+        82: "🌦️",
+
+        95: "⛈️",
+        96: "⛈️",
+        99: "⛈️"
+
+    };
+
     function getWeatherIcon(code) {
 
         if (
@@ -1550,91 +1605,43 @@
         }
 
 
-        code = Number(code);
-
-
-        if (code === 0) {
-            return "☀️";
-        }
-
-
-        if (
-            code === 1 ||
-            code === 2
-        ) {
-            return "⛅";
-        }
-
-
-        if (code === 3) {
-            return "☁️";
-        }
-
-
-        if (
-            code === 45 ||
-            code === 48
-        ) {
-            return "🌫️";
-        }
-
-
-        if (
-            code === 51 ||
-            code === 53 ||
-            code === 55 ||
-            code === 56 ||
-            code === 57
-        ) {
-            return "🌦️";
-        }
-
-
-        if (
-            code === 61 ||
-            code === 63 ||
-            code === 65 ||
-            code === 66 ||
-            code === 67
-        ) {
-            return "🌧️";
-        }
-
-
-        if (
-            code === 71 ||
-            code === 73 ||
-            code === 75 ||
-            code === 77
-        ) {
-            return "🌨️";
-        }
-
-
-        if (
-            code === 80 ||
-            code === 81 ||
-            code === 82
-        ) {
-            return "🌦️";
-        }
-
-
-        if (
-            code === 95 ||
-            code === 96 ||
-            code === 99
-        ) {
-            return "⛈️";
-        }
-
-
-        return "⛅";
+        return WEATHER_ICONS[Number(code)] || "⛅";
 
     }
 
 
     /* =========================Weather Description========================= */
+
+    const WEATHER_DESCRIPTIONS = {
+
+        0: "Clear sky",
+        1: "Mainly clear",
+        2: "Partly cloudy",
+        3: "Overcast",
+        45: "Fog",
+        48: "Rime fog",
+        51: "Light drizzle",
+        53: "Drizzle",
+        55: "Heavy drizzle",
+        56: "Freezing drizzle",
+        57: "Heavy freezing drizzle",
+        61: "Light rain",
+        63: "Rain",
+        65: "Heavy rain",
+        66: "Freezing rain",
+        67: "Heavy freezing rain",
+        71: "Light snow",
+        73: "Snow",
+        75: "Heavy snow",
+        77: "Snow grains",
+        80: "Light showers",
+        81: "Showers",
+        82: "Heavy showers",
+        95: "Thunderstorm",
+        96: "Thunderstorm + hail",
+        99: "Thunderstorm + heavy hail"
+
+    };
 
     function getWeatherDescription(code) {
 
@@ -1646,67 +1653,7 @@
         }
 
 
-        code = Number(code);
-
-
-        const descriptions = {
-
-            0: "Clear sky",
-
-            1: "Mainly clear",
-
-            2: "Partly cloudy",
-
-            3: "Overcast",
-
-            45: "Fog",
-
-            48: "Rime fog",
-
-            51: "Light drizzle",
-
-            53: "Drizzle",
-
-            55: "Heavy drizzle",
-
-            56: "Freezing drizzle",
-
-            57: "Heavy freezing drizzle",
-
-            61: "Light rain",
-
-            63: "Rain",
-
-            65: "Heavy rain",
-
-            66: "Freezing rain",
-
-            67: "Heavy freezing rain",
-
-            71: "Light snow",
-
-            73: "Snow",
-
-            75: "Heavy snow",
-
-            77: "Snow grains",
-
-            80: "Light showers",
-
-            81: "Showers",
-
-            82: "Heavy showers",
-
-            95: "Thunderstorm",
-
-            96: "Thunderstorm + hail",
-
-            99: "Thunderstorm + heavy hail"
-
-        };
-
-
-        return descriptions[code] ||
+        return WEATHER_DESCRIPTIONS[Number(code)] ||
             "Current weather";
 
     }
