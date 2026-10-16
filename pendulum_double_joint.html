@@ -3,79 +3,589 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>微差 · 20 个钟摆的路径</title>
+<title>微差 · 100 个钟摆的路径</title>
 <style>
-:root{color-scheme:dark;--bg:#07090f;--panel:#0c111b;--line:#273142;--text:#e8edf6;--muted:#8390a5;--pink:#ff8ab5;--gold:#f6d995;--cyan:#9be8f4}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(ellipse at 50% 38%,#111725 0,#080b12 47%,#05070b 100%);color:var(--text);font-family:Inter,"Segoe UI","Microsoft YaHei",sans-serif}
-body{padding:22px;display:flex;justify-content:center}.app{width:min(1500px,100%);display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}
-.stage{position:relative;min-height:650px;border:1px solid #222b39;border-radius:18px;overflow:hidden;background:radial-gradient(ellipse at 50% 46%,rgba(42,51,75,.25),transparent 58%),rgba(3,5,9,.7)}
-canvas{display:block;width:100%;height:100%;position:absolute;inset:0}.stage-head{position:absolute;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;pointer-events:none}.eyebrow{font-size:10px;letter-spacing:.22em;color:#d7bd83;text-transform:uppercase}.headline{font-size:clamp(25px,3vw,43px);font-weight:300;letter-spacing:.08em;margin-top:9px}.subtitle{font-size:12px;color:var(--muted);margin-top:8px}.live{border:1px solid #30394b;border-radius:999px;padding:7px 11px;font-size:10px;letter-spacing:.12em;color:#a7e9d1;background:#0a1718}
-.stage-foot{position:absolute;bottom:18px;left:24px;right:24px;display:flex;justify-content:space-between;gap:12px;color:#778399;font-size:11px;pointer-events:none}.side{display:flex;flex-direction:column;gap:12px}.panel{border:1px solid #222b39;border-radius:16px;background:linear-gradient(150deg,rgba(17,23,35,.96),rgba(9,13,21,.96));padding:17px}.panel h2{font-size:12px;letter-spacing:.16em;font-weight:500;color:#c9d3e4;margin:0 0 16px;text-transform:uppercase}.metric{display:flex;justify-content:space-between;align-items:baseline;margin:13px 0}.metric .name{font-size:12px;color:#8996aa}.metric .value{font-variant-numeric:tabular-nums;font-size:20px;font-weight:300;color:var(--gold)}.metric small{font-size:10px;color:#778399}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn{border:1px solid #344055;border-radius:10px;background:#151e2c;color:#e6edf8;padding:10px 12px;cursor:pointer;font:inherit;font-size:12px;transition:.15s}.btn:hover{border-color:#8e9bb4;background:#1b2738}.btn.primary{background:#e7d39d;color:#151923;border-color:#e7d39d;font-weight:600}.btn:active{transform:translateY(1px)}.control{margin:17px 0 0}.control-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#a9b5c8;margin-bottom:9px}.control-top output{color:var(--gold);font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:#e8c98b;cursor:pointer}.check{display:flex;gap:9px;align-items:center;color:#a9b5c8;font-size:12px;margin-top:13px}.check input{accent-color:#e8c98b}.note{font-size:11px;line-height:1.65;color:#78869b;margin:0}.formula{font-family:ui-monospace,Consolas,monospace;font-size:11px;line-height:1.8;color:#b9c7d9;background:#080c13;border:1px solid #1e2939;border-radius:9px;padding:10px}.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:10px;color:#8794a8}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}.footer-note{margin-top:auto}
-@media(max-width:900px){body{padding:10px}.app{grid-template-columns:1fr}.stage{min-height:62vh;min-height:560px}.side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.footer-note{margin-top:0}}
-@media(max-width:560px){.stage{min-height:500px}.stage-head{left:17px;top:18px}.stage-foot{left:16px;right:16px;flex-direction:column}.side{grid-template-columns:1fr}.headline{font-size:25px}}
+    /* =========================基础========================= */
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        margin: 0;
+
+        padding: 22px;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        background: #05070a;
+        color: #e8edf2;
+
+        font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+
+        overflow-x: hidden;
+    }
+
+    /* =========================背景网格========================= */
+
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.16;
+
+        background-image:
+            linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+
+        background-size: 45px 45px;
+
+        mask-image: linear-gradient(to bottom, black, transparent 85%);
+        -webkit-mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+
+    /* =========================布局========================= */
+
+    .app {
+        width: min(1500px, 100%);
+
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 16px;
+    }
+
+    .stage {
+        position: relative;
+
+        min-height: 650px;
+
+        border: 1px solid rgba(255,255,255,0.08);
+        overflow: hidden;
+
+        background: rgba(255,255,255,0.02);
+    }
+
+    canvas {
+        display: block;
+        position: absolute;
+        inset: 0;
+
+        width: 100%;
+        height: 100%;
+    }
+
+    /* =========================标题区========================= */
+
+    .stage-head {
+        position: absolute;
+        top: 24px;
+        left: 28px;
+        right: 28px;
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+
+        pointer-events: none;
+    }
+
+    .eyebrow {
+        color: #6cff9b;
+
+        font-family: monospace;
+        font-size: 15px;
+        letter-spacing: 3px;
+    }
+
+    .headline {
+        margin: 25px 0 10px;
+
+        /* background-clip:text only paints inside this box, so keep room below the baseline. */
+        padding-bottom: 0.14em;
+
+        font-size: clamp(34px, 4.4vw, 64px);
+        line-height: 1.15;
+        letter-spacing: -2px;
+        font-weight: 900;
+
+        background: linear-gradient(120deg, #ffffff, #9aa6b2);
+
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        color: transparent;
+    }
+
+    .subtitle {
+        margin-top: 10px;
+
+        color: #9da8b3;
+
+        font-size: clamp(14px, 1.4vw, 18px);
+    }
+
+    .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+
+        padding: 8px 13px;
+
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 999px;
+
+        background: rgba(255,255,255,0.035);
+
+        color: #9ca7b2;
+
+        font-size: 12px;
+        letter-spacing: 1px;
+
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 0.45;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    .stage-foot {
+        position: absolute;
+        bottom: 18px;
+        left: 24px;
+        right: 24px;
+
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+
+        color: #89949f;
+
+        font-family: monospace;
+        font-size: 12px;
+
+        pointer-events: none;
+    }
+
+    /* =========================侧栏========================= */
+
+    .side {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .panel {
+        padding: 18px 22px;
+
+        border: 1px solid rgba(255,255,255,0.08);
+
+        background: rgba(255,255,255,0.035);
+    }
+
+    .panel h2 {
+        margin: 0 0 18px;
+
+        color: #6cff9b;
+
+        font-family: monospace;
+        font-size: 13px;
+        font-weight: 400;
+        letter-spacing: 3px;
+    }
+
+    /* =========================数据========================= */
+
+    .metric {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+
+        margin: 13px 0;
+    }
+
+    .metric .name {
+        color: #89949f;
+
+        font-size: 13px;
+    }
+
+    .metric .value {
+        color: #6cff9b;
+
+        font-family: monospace;
+        font-variant-numeric: tabular-nums;
+        font-size: 19px;
+        font-weight: 700;
+    }
+
+    .metric small {
+        color: #89949f;
+
+        font-size: 12px;
+    }
+
+    /* =========================控制========================= */
+
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .btn {
+        padding: 10px 12px;
+
+        border: 1px solid rgba(255,255,255,0.12);
+
+        background: rgba(255,255,255,0.035);
+        color: #e8edf2;
+
+        font-family: monospace;
+        font-size: 13px;
+        letter-spacing: 1px;
+
+        cursor: pointer;
+        transition: 0.25s;
+    }
+
+    .btn:hover {
+        border-color: #e7d39d;
+        background: rgba(255,255,255,0.08);
+    }
+
+    .btn.primary {
+        border-color: #e7d39d;
+
+        background: #e7d39d;
+        color: #151923;
+
+        font-weight: 700;
+
+        box-shadow: 0 0 30px rgba(231,211,157,0.06);
+    }
+
+    .control {
+        margin: 12px 0 0;
+    }
+
+    .control-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+
+        margin-bottom: 7px;
+
+        color: #9ca7b2;
+
+        font-size: 13px;
+    }
+
+    .control-top output {
+        color: #6cff9b;
+
+        font-family: monospace;
+        font-variant-numeric: tabular-nums;
+    }
+
+    input[type=range] {
+        width: 100%;
+
+        accent-color: #e8c98b;
+
+        cursor: pointer;
+    }
+
+    .check {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+
+        margin-top: 13px;
+
+        color: #9ca7b2;
+
+        font-size: 13px;
+    }
+
+    .check input {
+        accent-color: #e8c98b;
+    }
+
+    .rgb-btn {
+        width: 100%;
+        margin-top: 13px;
+    }
+
+    /* =========================说明块========================= */
+
+    .formula {
+        padding: 18px 22px;
+
+        border-left: 2px solid #6cff9b;
+
+        background: #05070a;
+        color: #89949f;
+
+        font-family: monospace;
+        font-size: 13px;
+        line-height: 1.9;
+
+        box-shadow: 0 0 30px rgba(108,255,155,0.04);
+    }
+
+    .note {
+        margin: 0;
+
+        color: #89949f;
+
+        font-size: 13px;
+        line-height: 1.9;
+    }
+
+    .footer-note {
+        margin-top: auto;
+    }
+
+    .footer-note h2 {
+        color: #f6d995;
+    }
+
+    /* =========================页脚========================= */
+
+    footer {
+        width: min(1500px, 100%);
+
+        margin-top: 18px;
+        padding-top: 14px;
+
+        border-top: 1px solid rgba(255,255,255,0.08);
+
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+
+        color: #89949f;
+
+        font-family: monospace;
+        font-size: 12px;
+        letter-spacing: 1px;
+    }
+
+    @media (max-width: 560px) {
+        footer {
+            flex-direction: column;
+            gap: 6px;
+        }
+    }
+
+    /* =========================手机端========================= */
+
+    @media (max-width: 900px) {
+
+        body {
+            padding: 10px;
+        }
+
+        .app {
+            grid-template-columns: 1fr;
+        }
+
+        .stage {
+            min-height: 62vh;
+            min-height: 560px;
+        }
+
+        .side {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .footer-note {
+            margin-top: 0;
+        }
+    }
+
+    @media (max-width: 560px) {
+
+        .stage {
+            min-height: 500px;
+        }
+
+        .stage-head {
+            left: 17px;
+            top: 18px;
+        }
+
+        .stage-foot {
+            left: 16px;
+            right: 16px;
+
+            flex-direction: column;
+        }
+
+        .side {
+            grid-template-columns: 1fr;
+        }
+
+        .headline {
+            font-size: 30px;
+        }
+    }
 </style>
 </head>
 <body>
 <main class="app">
 <section class="stage" id="stage">
-<canvas id="scene" aria-label="20 个真实双段摆的二维轨迹动画"></canvas>
-<div class="stage-head"><div><div class="eyebrow">DETERMINISTIC PENDULUM STUDY · 01</div><div class="headline">微小差异，迥异路径</div><div class="subtitle"> </div></div>
-<div class="stage-foot"><span>每条轨迹都由运动方程实时计算 · 无随机扰动</span><span>同一二维平面内运动 · 滚轮可缩放</span></div>
+  <canvas id="scene" aria-label="100 个真实双段摆的二维轨迹动画"></canvas>
+  <div class="stage-head">
+    <div>
+      <div class="eyebrow">DETERMINISTIC PENDULUM STUDY · 01</div>
+      <div class="headline">微小差异，迥异路径</div>
+      <div class="subtitle"> </div>
+    </div>
+    <div class="live" id="status">● SIMULATING</div>
+  </div>
+  <div class="stage-foot">
+    <span>每条轨迹都由运动方程实时计算 · 无随机扰动</span>
+    <span>同一二维平面内运动</span>
+  </div>
 </section>
 <aside class="side">
-<section class="panel">
-<h2>Simulation / 模拟状态</h2>
-<div class="metric"><span class="name">模拟时间</span><span class="value" id="time">0.00 <small>s</small></span></div>
-<div class="metric"><span class="name">双段摆数量</span><span class="value" id="count">20 <small>个</small></span></div>
-<div class="metric"><span class="name">最大角度偏差</span><span class="value" id="deviation">0.000°</span></div>
-<div class="metric"><span class="name">当前显示轨迹</span><span class="value" id="trailMetric">1.0 <small>s</small></span></div>
-<div class="legend"><span><i class="dot" style="background:#ff8ab5"></i>路径 A</span><span><i class="dot" style="background:#f6d995"></i>路径 B</span><span><i class="dot" style="background:#9be8f4"></i>路径 C</span></div>
-</section>
-<section class="panel">
-<h2>Controls / 控制</h2>
-<div class="controls"><button class="btn primary" id="play">Ⅱ 暂停</button><button class="btn" id="reset">↺ 重置</button><button class="btn" id="step">＋ 单步 0.1s</button><button class="btn" id="clear">⌫ 清除轨迹</button></div>
-<div class="control"><div class="control-top"><label for="speed">模拟速度</label><output id="speedOut">1.0×</output></div><input id="speed" type="range" min=".25" max="3" step=".25" value="1"></div>
-<div class="control"><div class="control-top"><label for="spread">初始角度差范围</label><output id="spreadOut">0.10°</output></div><input id="spread" type="range" min=".001" max=".5" step=".001" value=".1"></div>
-<div class="control"><div class="control-top"><label for="length">摆长差范围</label><output id="lengthOut">2.0%</output></div><input id="length" type="range" min="0" max="8" step=".25" value="2"></div>
-<div class="control"><div class="control-top"><label for="trail">轨迹保留时间</label><output id="trailOut">1.0s</output></div><input id="trail" type="range" min="0.3" max="2" step="0.1" value="1"></div>
-<label class="check"><input type="checkbox" id="showBobs" checked> 显示摆球与摆线</label>
-<label class="check"><input type="checkbox" id="glow" checked> 发光轨迹</label>
-</section>
-<section class="panel">
-<h2>Physics / 物理模型</h2>
-<div class="formula">双段摆 · 双角度耦合方程<br>θ₁', θ₂' → RK4 数值积分<br>g = 9.81 m/s² · γ = 0.015 s⁻¹</div>
-<p class="note" style="margin-top:10px">每个装置由两段摆杆和一个中间转轴组成，按双段摆的耦合动力学方程进行 RK4 数值积分。角度与总摆长按确定性序列微调；相同初始条件会得到相同轨迹。</p>
-</section>
-<section class="panel footer-note">
-<h2>Reading the model / 如何理解</h2>
-<p class="note">本原型使用双段摆动力学模型，不将轨迹随机化。20 个双段摆共用一个悬挂点，全部限制在同一二维平面内；每个装置由上、下两段摆杆和一个中间关节构成，并从接近竖直向上的位置释放。虚线圆是固定的摆头参考轨迹框，不随某一个摆头的位置移动。</p>
-</section>
+  <section class="panel">
+    <h2>Simulation / 模拟状态</h2>
+    <div class="metric">
+      <span class="name">模拟时间</span>
+      <span class="value" id="time">0.00
+        <small>s</small>
+      </span>
+    </div>
+    <div class="metric">
+      <span class="name">双段摆数量</span>
+      <span class="value" id="count">100
+        <small>个</small>
+      </span>
+    </div>
+    <div class="metric">
+      <span class="name">最大角度偏差</span>
+      <span class="value" id="deviation">0.000°</span>
+    </div>
+    <div class="metric">
+      <span class="name">当前显示轨迹</span>
+      <span class="value" id="trailMetric">0.3
+        <small>s</small>
+      </span>
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Controls / 控制</h2>
+    <div class="controls">
+      <button class="btn primary" id="play">Ⅱ 暂停</button>
+      <button class="btn" id="reset">↺ 重置</button>
+      <button class="btn" id="step">＋ 单步 0.1s</button>
+      <button class="btn" id="clear">⌫ 清除轨迹</button>
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <label for="pendCount">摆的数量</label>
+        <output id="pendCountOut">100 个</output>
+      </div>
+      <input id="pendCount" type="range" min="20" max="1000" step="10" value="100">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <label for="speed">模拟速度</label>
+        <output id="speedOut">1.0×</output>
+      </div>
+      <input id="speed" type="range" min=".25" max="3" step=".25" value="1">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <label for="length">摆长差范围</label>
+        <output id="lengthOut">0.00%</output>
+      </div>
+      <input id="length" type="range" min="0" max="8" step=".25" value="0">
+    </div>
+    <div class="control">
+      <div class="control-top">
+        <label for="trail">轨迹保留时间</label>
+        <output id="trailOut">0.3s</output>
+      </div>
+      <input id="trail" type="range" min="0.3" max="2" step="0.1" value="0.3">
+    </div>
+    <label class="check">
+      <input type="checkbox" id="showBobs" checked> 显示摆球与摆线
+    </label>
+    <label class="check">
+      <input type="checkbox" id="glow"> 发光轨迹
+    </label>
+    <button class="btn rgb-btn" id="rgb">RGB</button>
+  </section>
+  <section class="panel">
+    <h2>Physics / 物理模型</h2>
+    <div class="formula">双段摆 · 双角度耦合方程
+      <br>θ₁', θ₂' → RK4 数值积分
+      <br>g = 9.81 m/s² · γ = 0.015 s⁻¹
+    </div>
+    <p class="note" style="margin-top:10px">每个装置由两段摆杆和一个中间转轴组成，按双段摆的耦合动力学方程进行 RK4 数值积分。总摆长按确定性序列微调；相同初始条件会得到相同轨迹。</p>
+  </section>
+  <section class="panel footer-note">
+    <h2>Reading the model / 如何理解</h2>
+    <p class="note">本原型使用双段摆动力学模型，不将轨迹随机化。100 个双段摆共用一个悬挂点，全部限制在同一二维平面内；每个装置由上、下两段摆杆和一个中间关节构成，并从接近竖直向上的位置释放。虚线圆是固定的摆头参考轨迹框，不随某一个摆头的位置移动。</p>
+  </section>
 </aside>
 </main>
-
 
 <script>
 (() => {
 const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
 const $=id=>document.getElementById(id);
-const N=1000,g=9.81,gamma=.015,dt=1/240;
-let width=1,height=1,dpr=1,paused=false,time=0,last=performance.now(),acc=0,trailClock=0,zoom=1,yaw=.35,pitch=.2,drag=null;
-let pendulums=[],trails=[],lastUi=0;
+const g=9.81,gamma=.015,dt=1/240;
+// Pendulum count comes from its slider; default 100.
+const pendCount=()=>+$('pendCount').value;
+// Initial angle offset. The slider that used to set this is gone, so it stays at its former
+// minimum: the pendulums still start a hair off the upright equilibrium and diverge.
+const ANGLE_SPREAD=.001*Math.PI/180;
+let width=1,height=1,dpr=1,paused=false,time=0,last=performance.now(),acc=0,trailClock=0;
+let pendulums=[],lastUi=0,rgbOn=false;
 const TAU=Math.PI*2;  
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function params(){return {spread:+$('spread').value*Math.PI/180,length:+$('length').value/100,speed:+$('speed').value,trail:+$('trail').value,show:$('showBobs').checked,glow:$('glow').checked};}
+// Fixed view scale. The guide circle and the projection share it, so the longest pendulum
+// (total length 1.0) reaches exactly the circle radius at every screen size.
+const ZOOM=.85;
+function viewScale(){return Math.min(width,height)*.34*ZOOM+230/dpr;}
+function params(){return {length:+$('length').value/100,speed:+$('speed').value,trail:+$('trail').value,show:$('showBobs').checked,glow:$('glow').checked,rgb:rgbOn};}
 function init(clear=true){
- const p=params(); pendulums=[];trails=[];time=0;acc=0;trailClock=0;
- for(let i=0;i<N;i++){
-   // Deterministic, evenly distributed perturbations (not random).
-   const u=N===1?0:i/(N-1)*2-1;
-   const phi=0;
-   const angle1=Math.PI + u*p.spread + Math.sin(i*1.61803398875)*p.spread*.12;
-   const angle2=Math.PI + u*p.spread*.72 + Math.sin(i*2.41421356237)*p.spread*.18;
-   const L=1.0*(1+u*p.length);
+ const p=params(); pendulums=[];time=0;acc=0;trailClock=0;
+ const n=pendCount();
+ for(let i=0;i<n;i++){
+   // Deterministic, evenly distributed length differences (not random).
+   const u=n===1?0:i/(n-1)*2-1;
+   const angle1=Math.PI + u*ANGLE_SPREAD + Math.sin(i*1.61803398875)*ANGLE_SPREAD*.12;
+   const angle2=Math.PI + u*ANGLE_SPREAD*.72 + Math.sin(i*2.41421356237)*ANGLE_SPREAD*.18;
+   // Normalised so the longest rod always equals the guide circle radius.
+   const L=(1+u*p.length)/(1+p.length);
    // Total nominal length stays the same; the middle joint splits it into two rods.
    const l1=L*.5, l2=L*.5;
-   pendulums.push({theta1:angle1,omega1:0,theta2:angle2,omega2:0,L,l1,l2,phase:u,trail:[],color:`hsl(${330+i*2.45} 75% ${67+(i%4)*3}%)`});
+   pendulums.push({theta1:angle1,omega1:0,theta2:angle2,omega2:0,L,l1,l2,phase:u,trail:[],hue:330+i*2.45});
  }
  if(clear) draw();
  updateUi(true);
@@ -108,7 +618,7 @@ function world(p){
  };
 }
 function project(v){
- const scale=Math.min(width,height)*.34*zoom;
+ const scale=viewScale();
  return {x:width/2+v.x*scale,y:height*.53-v.y*scale,z:0};
 }
 function resize(){
@@ -127,35 +637,39 @@ function draw(){
  grd.addColorStop(0,'rgba(60,70,105,.16)');grd.addColorStop(1,'rgba(5,7,12,0)');
  ctx.fillStyle=grd;ctx.fillRect(0,0,width,height);
  const p=params();
+ // Bob light color: white by default, cycling RGB once the RGB mode is on.
+ const lightCol=b=>p.rgb?`hsl(${(b.hue+time*90)%360} 100% 64%)`:'#ffffff';
  const pivot=project({x:0,y:0,z:0});
  // Fixed dotted reference circle fitted to the nominal full-length bob locus.
  // It is a stationary guide, not a trail attached to any moving bob.
- const guideRadius=Math.min(width,height)*.34*zoom;
+ const guideRadius=viewScale();
  ctx.save();ctx.setLineDash([2,6]);ctx.strokeStyle='rgba(139,160,190,.24)';ctx.lineWidth=1;
  ctx.beginPath();ctx.arc(pivot.x,pivot.y,guideRadius,0,TAU);ctx.stroke();ctx.restore();
  // Draw trajectories in order, old segments fade by age.
  for(let i=0;i<pendulums.length;i++){
-   const bob=pendulums[i],pts=bob.trail;
+   const bob=pendulums[i],pts=bob.trail,col=lightCol(bob);
    if(pts.length>1){
      const maxAge=p.trail;
      for(let j=1;j<pts.length;j++){
        const age=time-pts[j].t;if(age>maxAge)continue;
        const alpha=(1-age/maxAge)*.46;
        const a=project(pts[j-1].v),b=project(pts[j].v);
-       if(p.glow){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=bob.color;line(a,b,bob.color,alpha*.18,3);ctx.restore();}
-       line(a,b,bob.color,alpha,.8);
+       if(p.glow){ctx.save();ctx.shadowBlur=8;ctx.shadowColor=col;line(a,b,col,alpha*.18,3);ctx.restore();}
+       line(a,b,col,alpha,.8);
      }
    }
  }
  if(p.show){
    for(const bob of pendulums){
-     const pos=world(bob),j=project(pos.joint),q=project(pos.bob);
+     const pos=world(bob),j=project(pos.joint),q=project(pos.bob),col=lightCol(bob);
      // Two separate rods with a visible central hinge; the bob remains 2 px in diameter.
      line(pivot,j,'rgba(190,202,220,.58)',.82,1);
      line(j,q,'rgba(190,202,220,.58)',.82,1);
-     ctx.fillStyle=bob.color;
+     if(p.glow){ctx.save();ctx.shadowBlur=10;ctx.shadowColor=col;}
+     ctx.fillStyle=col;
      ctx.beginPath();ctx.arc(j.x,j.y,1.15,0,TAU);ctx.fill();
      ctx.beginPath();ctx.arc(q.x,q.y,1,0,TAU);ctx.fill();
+     if(p.glow)ctx.restore();
    }
  }
  // Reduced suspension point and crosshair, keeping the shared pivot visually subtle.
@@ -181,7 +695,7 @@ function stepPhysics(h){
 function updateUi(force=false){
  if(!force&&time-lastUi<.1)return;lastUi=time;
  $('time').innerHTML=time.toFixed(2)+' <small>s</small>';
- $('count').innerHTML=N+' <small>个</small>';
+ $('count').innerHTML=pendCount()+' <small>个</small>';
  const angles=pendulums.map(p=>Math.atan2(Math.sin(p.theta1),Math.cos(p.theta1))*180/Math.PI);
  const dev=Math.max(...angles)-Math.min(...angles);
  $('deviation').textContent=dev.toFixed(3)+'°';
@@ -204,11 +718,14 @@ $('play').addEventListener('click',()=>{paused=!paused;last=performance.now();up
 $('reset').addEventListener('click',()=>{init(true);});
 $('clear').addEventListener('click',()=>{pendulums.forEach(p=>p.trail=[]);draw();});
 $('step').addEventListener('click',()=>{paused=true;for(let i=0;i<Math.round(.1/dt);i++)stepPhysics(dt);draw();updateUi(true);});
-for(const id of ['speed','spread','length','trail']){
+$('pendCount').addEventListener('input',()=>{
+ $('pendCountOut').textContent=pendCount()+' 个';
+ init(true);
+});
+for(const id of ['speed','length','trail']){
  $(id).addEventListener('input',()=>{
   const p=params();
   $('speedOut').textContent=p.speed.toFixed(2).replace(/0$/,'')+'×';
-  $('spreadOut').textContent=(+$('spread').value).toFixed(3)+'°';
   $('lengthOut').textContent=(+$('length').value).toFixed(2)+'%';
   $('trailOut').textContent=p.trail.toFixed(1)+'s';
   if(id==='trail')pendulums.forEach(b=>{const cutoff=time-p.trail;while(b.trail.length>2&&b.trail[1].t<cutoff)b.trail.shift();});
@@ -216,10 +733,16 @@ for(const id of ['speed','spread','length','trail']){
  });
 }
 $('showBobs').addEventListener('change',draw);$('glow').addEventListener('change',draw);
-canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=clamp(zoom*(e.deltaY<0?1.08:.92),.55,1.8);draw();},{passive:false});
+$('rgb').addEventListener('click',()=>{rgbOn=!rgbOn;$('rgb').classList.toggle('primary',rgbOn);draw();});
 window.addEventListener('resize',resize);
 init();resize();requestAnimationFrame(frame);
 })();
 </script>
+
+<!-- ========================页脚========================= -->
+<footer>
+    <div>Jerry // Personal system</div>
+    <div>Powered by Cloudflare</div>
+</footer>
 </body>
 </html>
