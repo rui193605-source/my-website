@@ -11,6 +11,23 @@
     box-sizing: border-box;
 }
 
+:root {
+    /* 统一字体：与大标题一致 */
+    --font-main:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Microsoft YaHei",
+        sans-serif;
+
+    /* 统一字号梯度 */
+    --font-size-xs: 13px;
+    --font-size-sm: 14px;
+    --font-size-base: 16px;
+    --font-size-md: 18px;
+    --font-size-lg: 24px;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -170,7 +187,9 @@ nav a:hover {
     min-height: 100vh;
 
     padding:
-        115px 5% 70px;
+        clamp(88px, 10vh, 130px)
+        clamp(16px, 4vw, 60px)
+        clamp(32px, 5vh, 72px);
 }
 
 /* =========================
@@ -178,17 +197,17 @@ nav a:hover {
    ========================= */
 
 .page-header {
-    max-width: 1050px;
+    max-width: 1180px;
 
-    margin: 0 auto 25px;
+    margin: 0 auto clamp(14px, 2.2vh, 30px);
 }
 
 .page-label {
     color: #6cff9b;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 12px;
+    font-size: var(--font-size-sm);
 
     letter-spacing: 3px;
 
@@ -198,9 +217,14 @@ nav a:hover {
 .page-header h1 {
     margin: 0;
 
-    font-size: clamp(40px, 7vw, 72px);
+    /* 预留底部空间，避免渐变文字被裁切 */
+    padding-bottom: 12px;
 
-    line-height: 1;
+    font-family: var(--font-main);
+
+    font-size: clamp(40px, min(7vw, 8.5vh), 72px);
+
+    line-height: 1.1;
 
     letter-spacing: -3px;
 
@@ -224,9 +248,9 @@ nav a:hover {
 
     color: #69747f;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 13px;
+    font-size: var(--font-size-base);
 }
 
 /* =========================
@@ -234,7 +258,9 @@ nav a:hover {
    ========================= */
 
 .calculator-layout {
-    max-width: 1050px;
+    width: 100%;
+
+    max-width: 1180px;
 
     margin: 0 auto;
 
@@ -242,9 +268,9 @@ nav a:hover {
 
     grid-template-columns:
         minmax(0, 1fr)
-        280px;
+        clamp(240px, 24%, 320px);
 
-    gap: 20px;
+    gap: clamp(14px, 1.6vw, 24px);
 
     align-items: start;
 }
@@ -256,7 +282,7 @@ nav a:hover {
 .calculator {
     width: 100%;
 
-    padding: 20px;
+    padding: clamp(14px, 1.4vw, 24px);
 
     background:
         rgba(255,255,255,0.035);
@@ -280,9 +306,9 @@ nav a:hover {
 .display {
     width: 100%;
 
-    min-height: 105px;
+    min-height: clamp(80px, 11vh, 116px);
 
-    padding: 16px 18px;
+    padding: clamp(12px, 1.2vw, 18px) clamp(14px, 1.4vw, 20px);
 
     margin-bottom: 14px;
 
@@ -310,9 +336,9 @@ nav a:hover {
 
     color: #69747f;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 13px;
+    font-size: var(--font-size-base);
 
     white-space: nowrap;
 
@@ -330,11 +356,11 @@ nav a:hover {
 
     color: #e8edf2;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: clamp(28px, 5vw, 42px);
+    font-size: clamp(28px, 2.6vw + 12px, 46px);
 
-    font-weight: 600;
+    font-weight: 400;
 
     line-height: 1.1;
 
@@ -389,9 +415,9 @@ nav a:hover {
 
     color: #69747f;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 10px;
+    font-size: var(--font-size-xs);
 
     cursor: pointer;
 
@@ -418,9 +444,9 @@ nav a:hover {
 .memory-display {
     color: #56616c;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 10px;
+    font-size: var(--font-size-xs);
 }
 
 /* =========================
@@ -434,9 +460,9 @@ nav a:hover {
     grid-template-columns:
         repeat(8, minmax(0, 1fr));
 
-    gap: 7px;
+    gap: clamp(5px, 0.6vw, 9px);
 
-    margin-bottom: 9px;
+    margin-bottom: clamp(6px, 0.7vw, 10px);
 }
 
 /* =========================
@@ -449,7 +475,7 @@ nav a:hover {
     grid-template-columns:
         1fr 3fr;
 
-    gap: 7px;
+    gap: clamp(5px, 0.6vw, 9px);
 }
 
 /* 左侧功能 */
@@ -459,9 +485,9 @@ nav a:hover {
     grid-template-columns:
         repeat(2, minmax(0, 1fr));
 
-    grid-auto-rows: 48px;
+    grid-auto-rows: clamp(40px, 5.4vh, 54px);
 
-    gap: 7px;
+    gap: clamp(5px, 0.6vw, 9px);
 }
 
 /* 数字与运算 */
@@ -472,9 +498,9 @@ nav a:hover {
         repeat(4, minmax(0, 1fr));
 
     grid-template-rows:
-        repeat(4, 48px);
+        repeat(4, clamp(40px, 5.4vh, 54px));
 
-    gap: 7px;
+    gap: clamp(5px, 0.6vw, 9px);
 }
 
 /* =========================
@@ -491,9 +517,9 @@ nav a:hover {
 
     color: #c4ccd3;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 13px;
+    font-size: clamp(13px, 0.35vw + 10px, 15px);
 
     cursor: pointer;
 
@@ -529,11 +555,11 @@ nav a:hover {
 
 /* 科学按钮 */
 .scientific-button {
-    height: 42px;
+    height: clamp(32px, 4.3vh, 44px);
 
     color: #89949f;
 
-    font-size: 11px;
+    font-size: clamp(12px, 0.35vw + 8px, 14px);
 }
 
 /* 运算符 */
@@ -574,6 +600,12 @@ nav a:hover {
 
 /* 等号 */
 .equals {
+    width: 100%;
+
+    height: clamp(40px, 5.4vh, 54px);
+
+    margin-top: clamp(6px, 0.6vw, 9px);
+
     color: #05070a;
 
     background: #6cff9b;
@@ -582,7 +614,7 @@ nav a:hover {
 
     font-weight: 800;
 
-    font-size: 17px;
+    font-size: var(--font-size-md);
 }
 
 .equals:hover {
@@ -597,7 +629,7 @@ nav a:hover {
 .number {
     color: #e8edf2;
 
-    font-size: 16px;
+    font-size: clamp(16px, 0.6vw + 12px, 20px);
 
     background:
         rgba(255,255,255,0.055);
@@ -610,7 +642,7 @@ nav a:hover {
 .history-panel {
     width: 100%;
 
-    min-height: 390px;
+    min-height: clamp(320px, 42vh, 480px);
 
     padding: 18px;
 
@@ -644,9 +676,9 @@ nav a:hover {
 .history-title {
     color: #6cff9b;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 12px;
+    font-size: var(--font-size-sm);
 
     letter-spacing: 2px;
 }
@@ -658,9 +690,9 @@ nav a:hover {
 
     color: #56616c;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 10px;
+    font-size: var(--font-size-xs);
 
     cursor: pointer;
 }
@@ -676,7 +708,7 @@ nav a:hover {
 
     gap: 8px;
 
-    max-height: 500px;
+    max-height: clamp(240px, 42vh, 520px);
 
     overflow-y: auto;
 }
@@ -688,9 +720,9 @@ nav a:hover {
 
     color: #505a64;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 11px;
+    font-size: var(--font-size-sm);
 
     line-height: 1.8;
 }
@@ -722,9 +754,9 @@ nav a:hover {
 .history-expression {
     color: #69747f;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 10px;
+    font-size: var(--font-size-xs);
 
     overflow: hidden;
 
@@ -738,33 +770,15 @@ nav a:hover {
 
     color: #dce2e7;
 
-    font-family: monospace;
+    font-family: var(--font-main);
 
-    font-size: 13px;
+    font-size: var(--font-size-base);
 
     overflow: hidden;
 
     white-space: nowrap;
 
     text-overflow: ellipsis;
-}
-
-/* =========================
-   快捷键提示
-   ========================= */
-
-.keyboard-help {
-    max-width: 1050px;
-
-    margin: 18px auto 0;
-
-    color: #414b54;
-
-    font-family: monospace;
-
-    font-size: 10px;
-
-    text-align: right;
 }
 
 /* =========================
@@ -816,7 +830,7 @@ nav a:hover {
     .scientific-button {
         height: 39px;
 
-        font-size: 9px;
+        font-size: var(--font-size-xs);
     }
 
     .basic-area {
@@ -840,15 +854,15 @@ nav a:hover {
     }
 
     .calc-button {
-        font-size: 11px;
+        font-size: var(--font-size-xs);
     }
 
     .number {
-        font-size: 15px;
+        font-size: var(--font-size-base);
     }
 
     .equals {
-        font-size: 15px;
+        font-size: var(--font-size-base);
     }
 
     .page-header h1 {
@@ -883,7 +897,7 @@ nav a:hover {
     .scientific-button {
         height: 35px;
 
-        font-size: 8px;
+        font-size: var(--font-size-xs);
     }
 
     .basic-area {
@@ -906,11 +920,11 @@ nav a:hover {
     .calc-button {
         border-radius: 6px;
 
-        font-size: 10px;
+        font-size: var(--font-size-xs);
     }
 
     .number {
-        font-size: 14px;
+        font-size: var(--font-size-sm);
     }
 }
 </style>
@@ -940,7 +954,7 @@ nav a:hover {
             科学计算器
         </div>
 
-        <h1>CALCULATOR</h1>
+        <h1>计算器</h1>
 
         <p>
             
@@ -1404,15 +1418,12 @@ nav a:hover {
 
             <button
                 class="calc-button equals"
-                style="
-                    width:100%;
-                    height:48px;
-                    margin-top:7px;
-                "
                 onclick="calculate()"
             >
                 =
             </button>
+
+        </div>
 
 
           
@@ -1429,14 +1440,14 @@ nav a:hover {
             <div class="history-header">
 
                 <div class="history-title">
-                    HISTORY
+                    历史记录
                 </div>
 
                 <button
                     class="clear-history"
                     onclick="clearHistory()"
                 >
-                    CLEAR
+                    清空
                 </button>
 
             </div>
@@ -1448,18 +1459,13 @@ nav a:hover {
             >
 
                 <div class="history-empty">
-                    NO CALCULATIONS YET
+                    暂无计算记录
                 </div>
 
             </div>
 
         </aside>
 
-    </div>
-
-
-    <div class="keyboard-help">
-        KEYBOARD: 0-9 / + - * / / ENTER / ESC / BACKSPACE
     </div>
 
 </main>
@@ -2293,7 +2299,7 @@ function renderHistory() {
 
         historyList.innerHTML = `
             <div class="history-empty">
-                NO CALCULATIONS YET
+                暂无计算记录
             </div>
         `;
 
