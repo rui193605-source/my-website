@@ -23,6 +23,24 @@
         box-sizing: border-box;
     }
 
+    :root {
+        /* 统一字体：与大标题一致 */
+        --font-main:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+
+        /* 统一字号梯度 */
+        --font-size-xs: 13px;
+        --font-size-sm: 15px;
+        --font-size-base: 16px;
+        --font-size-md: 18px;
+        --font-size-lg: 22px;
+        --font-size-xl: 30px;
+    }
+
     html {
         scroll-behavior: smooth;
     }
@@ -221,9 +239,11 @@
     }
 
     .subtitle {
-        font-size: clamp(17px, 2vw, 25px);
+        font-size: clamp(20px, 2.2vw, 28px);
 
-        color: #9da8b3;
+        font-weight: 400;
+
+        color: #c8d0d7;
 
         margin-top: 30px;
 
@@ -250,9 +270,9 @@
     .panel-label {
         color: #6cff9b;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 12px;
+        font-size: var(--font-size-sm);
 
         letter-spacing: 2px;
 
@@ -281,7 +301,7 @@
 
         outline: none;
 
-        font-size: 15px;
+        font-size: var(--font-size-base);
 
         font-family: inherit;
 
@@ -310,9 +330,11 @@
 
         color: #6cff9b;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-weight: 700;
+        font-size: var(--font-size-sm);
+
+        font-weight: 400;
 
         letter-spacing: 1px;
 
@@ -395,7 +417,7 @@
         border: 1px solid rgba(255,255,255,0.12);
         background: rgba(255,255,255,0.04);
         color: #e8edf2;
-        font-size: 18px;
+        font-size: 20px;
         cursor: pointer;
         transition: 0.25s;
     }
@@ -415,15 +437,15 @@
         min-width: 80px;
         text-align: center;
         color: #b9c3cc;
-        font-family: monospace;
-        font-size: 13px;
+        font-family: var(--font-main);
+        font-size: var(--font-size-sm);
         letter-spacing: 1px;
     }
 
     .result-name {
-        font-size: 22px;
+        font-size: var(--font-size-xl);
 
-        font-weight: 700;
+        font-weight: 400;
 
         color: white;
 
@@ -433,7 +455,7 @@
     .result-address {
         color: #77828d;
 
-        font-size: 13px;
+        font-size: var(--font-size-base);
 
         line-height: 1.7;
 
@@ -460,9 +482,9 @@
     .data-label {
         color: #68737e;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 10px;
+        font-size: var(--font-size-xs);
 
         letter-spacing: 1.5px;
 
@@ -472,9 +494,11 @@
     .data-value {
         color: #e8edf2;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 15px;
+        font-size: var(--font-size-md);
+
+        font-weight: 400;
 
         word-break: break-word;
     }
@@ -498,9 +522,9 @@
     .reverse-title {
         color: #89949f;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 12px;
+        font-size: var(--font-size-xs);
 
         letter-spacing: 1.5px;
 
@@ -528,9 +552,9 @@
 
         outline: none;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 13px;
+        font-size: var(--font-size-sm);
     }
 
     .reverse-button {
@@ -548,7 +572,9 @@
 
         cursor: pointer;
 
-        font-family: monospace;
+        font-family: var(--font-main);
+
+        font-size: var(--font-size-sm);
 
         transition: 0.25s;
     }
@@ -570,9 +596,9 @@
 
         color: #77828d;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 12px;
+        font-size: var(--font-size-sm);
 
         display: none;
     }
@@ -740,7 +766,7 @@
     <div class="hero-content">
 
         <div class="subtitle">
-            Location &amp; Geographic Data Lookup
+            地点与地理信息查询
         </div>
 
 <!-- =========================
@@ -750,7 +776,7 @@
 <div class="lookup-panel">
 
     <div class="panel-label">
-        Location / Coordinates 
+        地点 / 坐标
     </div>
 
 
