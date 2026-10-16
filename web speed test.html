@@ -375,7 +375,12 @@
 
         font-weight: 400;
 
-        letter-spacing: -3px;
+        /* 数字之间的负字距会随位数叠加，多位数（如 44.5 / 123.4）会挤在一起，
+           这里放宽到接近默认，保证三位数与小数点的间距清晰 */
+        letter-spacing: -0.5px;
+
+        /* 等宽数字：刷新数值时宽度稳定，不会左右抖动 */
+        font-variant-numeric: tabular-nums;
 
         color: #ffffff;
     }
