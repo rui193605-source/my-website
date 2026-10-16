@@ -14,6 +14,24 @@
         box-sizing: border-box;
     }
 
+    :root {
+        /* 统一字体：与大标题一致 */
+        --font-main:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            "Microsoft YaHei",
+            sans-serif;
+
+        /* 统一字号梯度 */
+        --font-size-xs: 13px;
+        --font-size-sm: 14px;
+        --font-size-base: 16px;
+        --font-size-md: 18px;
+        --font-size-lg: 26px;
+        --font-size-xl: 44px;
+    }
+
     html {
         scroll-behavior: smooth;
 
@@ -271,9 +289,9 @@
     .section-label {
         color: #6cff9b;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 15px;
+        font-size: var(--font-size-sm);
 
         letter-spacing: 3px;
 
@@ -281,7 +299,9 @@
     }
 
     h2 {
-        font-size: 42px;
+        font-size: var(--font-size-xl);
+
+        font-weight: 400;
 
         margin: 0 0 45px;
 
@@ -335,9 +355,9 @@
     }
 
     .speed-card-label {
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 13px;
+        font-size: var(--font-size-sm);
 
         letter-spacing: 3px;
 
@@ -347,11 +367,13 @@
     .speed-value {
         margin-top: 20px;
 
-        font-size: clamp(42px, 6vw, 72px);
+        font-family: var(--font-main);
+
+        font-size: clamp(44px, 6vw, 72px);
 
         line-height: 1;
 
-        font-weight: 800;
+        font-weight: 400;
 
         letter-spacing: -3px;
 
@@ -359,9 +381,9 @@
     }
 
     .speed-unit {
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 13px;
+        font-size: var(--font-size-sm);
 
         color: #6cff9b;
 
@@ -406,9 +428,9 @@
 
         color: #dce3e9;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 12px;
+        font-size: var(--font-size-xs);
 
         letter-spacing: 2px;
 
@@ -455,9 +477,11 @@
     }
 
     .info-label {
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 11px;
+        font-size: var(--font-size-xs);
+
+        font-weight: 400;
 
         letter-spacing: 2px;
 
@@ -467,15 +491,19 @@
     .info-value {
         margin-top: 9px;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 24px;
+        font-size: var(--font-size-lg);
+
+        font-weight: 400;
 
         color: #ffffff;
     }
 
     .info-unit {
-        font-size: 11px;
+        font-family: var(--font-main);
+
+        font-size: var(--font-size-xs);
 
         color: #6cff9b;
 
@@ -485,9 +513,9 @@
     .speed-status {
         margin-top: 25px;
 
-        font-family: monospace;
+        font-family: var(--font-main);
 
-        font-size: 12px;
+        font-size: var(--font-size-sm);
 
         color: #7f8a95;
 
@@ -680,11 +708,11 @@
 <section>
 
     <div class="section-label">
-        NETWORK DIAGNOSTICS
+        网络诊断
     </div>
 
     <h2>
-        Internet Speed Test
+        网络测速
     </h2>
 
 
