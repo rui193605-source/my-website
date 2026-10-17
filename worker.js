@@ -2,34 +2,16 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-  
-    // 通用 JSON Response
-  
-
-    function jsonResponse(
-      data,
-      status = 200,
-      cache = "no-store"
-    ) {
-      return new Response(
-        JSON.stringify(data),
-        {
-          status,
-          headers: {
-            "Content-Type":
-              "application/json; charset=utf-8",
-
-            "Access-Control-Allow-Origin":
-              "*",
-
-            "Cache-Control":
-              cache
-          }
-        }
-      );
+    // ==============================
+    // CORS 预检
+    // 放在最前面：否则 OPTIONS 请求会先落入下面的 API 分支
+    // ==============================
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: corsHeaders()
+      });
     }
-
-
 
     // 1. 天气 API
 
@@ -971,16 +953,6 @@ if (url.pathname === "/api/location") {
     }
 
     // ==============================
-    // CORS
-    // ==============================
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: corsHeaders()
-      });
-    }
-
-    // ==============================
     // PING
     // GET /api/speed/ping
     // ==============================
@@ -1025,7 +997,10 @@ if (url.pathname === "/api/location") {
     // ==============================
     return new Response("Not Found", {
       status: 404,
-      headers: corsHeaders()
+      headers: {
+        ...corsHeaders(),
+        "Content-Type": "text/plain; charset=utf-8"
+      }
     });
   }
 };
@@ -1062,6 +1037,7 @@ function createDownloadResponse() {
 
   let closed = false;
   let controllerRef = null;
+  let timerId = null;
 
   const stream = new ReadableStream({
 
@@ -1083,13 +1059,17 @@ function createDownloadResponse() {
     },
 
     cancel() {
-      // 浏览器主动 abort 时触发
+      // 浏览器主动 abort 时触发，顺手清掉计时器
       closed = true;
+
+      if (timerId) clearTimeout(timerId);
     }
   });
 
   // 安全限制：单连接最多持续 MAX_DURATION
-  setTimeout(() => {
+  timerId = setTimeout(() => {
+
+    timerId = null;
 
     if (closed) return;
 
@@ -1192,6 +1172,34 @@ async function handleUpload(request) {
 
 
 // ============================================================
+// 通用 JSON Response
+// ============================================================
+
+function jsonResponse(
+  data,
+  status = 200,
+  cache = "no-store"
+) {
+  return new Response(
+    JSON.stringify(data),
+    {
+      status,
+      headers: {
+        "Content-Type":
+          "application/json; charset=utf-8",
+
+        "Access-Control-Allow-Origin":
+          "*",
+
+        "Cache-Control":
+          cache
+      }
+    }
+  );
+}
+
+
+// ============================================================
 // CORS
 // ============================================================
 
@@ -1209,6 +1217,10 @@ function corsHeaders() {
       "*",
 
     "Access-Control-Expose-Headers":
-      "*"
+      "*",
+
+    // 预检结果缓存一天：避免每次跨域测速都多一次 OPTIONS 往返
+    "Access-Control-Max-Age":
+      "86400"
   };
 }
