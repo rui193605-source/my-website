@@ -6,6 +6,12 @@ const canvas = $('core');           // 主舞台画布
 const g = canvas.getContext('2d');  // 主画布上下文
 const spec = $('spectrum');         // 右侧频谱画布
 const sg = spec.getContext('2d');   // 频谱画布上下文
+const playerEl = $('player');       // 播放器面板
+const ppBtn = $('playpause');       // 播放 / 暂停按钮
+const trackEl = $('track');         // 文件名
+const seekEl = $('seek');           // 进度条
+const timeEl = $('time');           // 时间显示
+const muteBtn = $('mute');          // 静音按钮
 
 /* ================= 运行时状态 ================= */
 let ctx;                 // AudioContext（首次交互时创建）
@@ -29,6 +35,11 @@ let drag = null;         // 拖拽状态
 let gain = 1.4;          // 灵敏度
 let smoothing = 0.75;    // 运动平滑度
 let energy = 0;          // 当前能量（RMS）
+let micState = 'idle';   // 麦克风权限：idle（未询问/无设备）| granted | denied
+let fileName = '';       // 当前音频文件名
+let startedAt = 0;       // 本轮播放开始时的音频时钟（秒）
+let seeking = false;     // 是否正在拖动进度条
+let lastVolume = 40;     // 静音前的音量
 
 /* ================= 控制棒阵列 ================= */
 // 半径 15 的圆内所有整数格点，每格一根控制棒
@@ -47,7 +58,6 @@ for (let x = -15; x <= 15; x++) {
     });
   }
 }
-$('count').textContent = rods.length;
 
 /* ================= 画布尺寸（适配 DPR） ================= */
 function size() {
@@ -175,8 +185,8 @@ function frame(t) {
       // 取相邻三个频点平均，减少抖动
       amp = (bins[idx] + bins[idx - 1] + bins[idx + 1]) / 765;
       amp = Math.pow(amp, 1.7) * gain; // 伽马校正 + 灵敏度
-    } else if (!playing && !ctx) {
-      // 待机预览：音频初始化前的静态呼吸动画（不产生声音）
+    } else if (!playing && micState !== 'granted') {
+      // 未授权 / 检测不到麦克风：保持波浪式待机动画
       amp =
         0.1 +
         0.2 * (0.5 + 0.5 * Math.sin(rod.r * 0.6 - t * 0.0007 + rod.x * 0.1));
@@ -276,6 +286,8 @@ function frame(t) {
       (playing && peak > 0
         ? Math.round((peakIndex * ctx.sampleRate) / 2048)
         : '—') + '<small>Hz</small>';
+
+    if (buffer) updatePlayerTime();
   }
 
   requestAnimationFrame(frame);
@@ -322,13 +334,85 @@ function stop() {
   update();
 }
 
-/* ================= 同步界面状态 ================= */
+/* ================= 播放器工具 ================= */
+// 秒 → m:ss
+function fmt(sec) {
+  if (!Number.isFinite(sec) || sec < 0) sec = 0;
+  return (
+    Math.floor(sec / 60) +
+    ':' +
+    String(Math.floor(sec % 60)).padStart(2, '0')
+  );
+}
+
+// 当前播放位置（秒）
+function playPosition() {
+  if (!buffer) return 0;
+  const dur = buffer.duration || 0;
+  if (!playing || mode !== 'file' || !ctx) return Math.min(offset, dur);
+  return Math.min(offset + (ctx.currentTime - startedAt), dur);
+}
+
+// 更新滑块已选部分的填充比例
+function setFill(input) {
+  const v = +input.value;
+  const min = +input.min || 0;
+  const max = +input.max || 100;
+  input.style.setProperty('--p', ((v - min) / (max - min)) * 100 + '%');
+}
+
+// 进度条与时间
+function updatePlayerTime() {
+  if (!buffer) return;
+  const dur = buffer.duration || 0;
+  const cur = playPosition();
+  if (!seeking) {
+    seekEl.value = dur ? (cur / dur) * 1000 : 0;
+    setFill(seekEl);
+  }
+  timeEl.textContent = fmt(cur) + ' / ' + fmt(dur);
+}
+
+// 播放器整体状态
+function updatePlayer() {
+  const has = !!buffer;
+  playerEl.hidden = !has;
+  if (!has) return;
+
+  trackEl.textContent = fileName || '未命名音频';
+
+  const active = playing && mode === 'file';
+  ppBtn.classList.toggle('playing', active);
+  ppBtn.setAttribute('aria-label', active ? '暂停' : '播放');
+
+  updatePlayerTime();
+}
+
+// 暂停文件播放（保留播放位置）
+function pauseFile() {
+  if (!playing || mode !== 'file') return;
+  offset = playPosition();
+
+  if (source) {
+    source.onended = null;
+    try {
+      source.stop?.();
+    } catch {}
+    source.disconnect();
+    source = null;
+  }
+
+  playing = false;
+  update();
+}
 function update() {
   $('mic').classList.toggle('selected', mode === 'mic');
 
   $('status').textContent = playing
     ? '运行中 · ' + (mode === 'mic' ? '实时输入' : '音频分析')
     : '待机 · ' + (mode === 'mic' ? '麦克风输入' : '已暂停');
+
+  updatePlayer();
 }
 
 /* ================= 开始播放 ================= */
@@ -354,6 +438,7 @@ async function start() {
       }
 
       stream = s;
+      micState = 'granted';
       source = ctx.createMediaStreamSource(s);
       source.connect(analyser);
       master.gain.value = 0; // 麦克风不内放，避免啸叫
@@ -369,7 +454,9 @@ async function start() {
       source.onended = () => {
         stop();
         offset = 0;
+        update();
       };
+      startedAt = ctx.currentTime;
       source.start(0, offset);
       $('message').textContent = '音频仅在本机处理，不会上传。';
     } else {
@@ -381,6 +468,7 @@ async function start() {
     playing = true;
     update();
   } catch (e) {
+    if (mode === 'mic') micState = 'denied';
     stop();
     $('message').textContent =
       mode === 'mic'
@@ -395,10 +483,9 @@ async function start() {
 
 // 切换为麦克风
 $('mic').onclick = () => {
+  if (mode === 'file' && playing) offset = playPosition();
   stop();
   mode = 'mic';
-  offset = 0;
-  buffer = null;
   update();
   start();
 };
@@ -423,9 +510,10 @@ $('file').onchange = async (e) => {
     buffer = decoded;
     mode = 'file';
     offset = 0;
+    fileName = f.name || '未命名音频';
     update();
     loading = false;
-    await start();
+    $('message').textContent = '已载入音频，点击播放开始。';
   } catch {
     $('message').textContent = '无法读取该文件，请尝试 MP3 或 WAV 音频。';
   } finally {
@@ -434,24 +522,122 @@ $('file').onchange = async (e) => {
   }
 };
 
+/* ================= 滑块：数值即时生效，文字/填充每帧最多更新一次 ================= */
+function bindRange(id, outId, apply, format) {
+  const input = $(id);
+  const out = outId ? $(outId) : null;
+  let queued = false;
+
+  const render = () => {
+    queued = false;
+    const v = +input.value;
+    setFill(input);
+    if (out) out.textContent = format(v);
+  };
+
+  input.oninput = () => {
+    apply(+input.value);
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(render);
+  };
+
+  render(); // 初始化填充与读数
+}
+
 // 灵敏度
-$('gain').oninput = (e) => {
-  gain = +e.target.value;
-  $('gainval').textContent = gain.toFixed(1) + '×';
-};
+bindRange(
+  'gain',
+  'gainval',
+  (v) => {
+    gain = v;
+  },
+  (v) => v.toFixed(1) + '×'
+);
 
 // 运动平滑度
-$('smooth').oninput = (e) => {
-  smoothing = +e.target.value / 100;
-  $('smoothval').textContent = e.target.value + '%';
+bindRange(
+  'smooth',
+  'smoothval',
+  (v) => {
+    smoothing = v / 100;
+  },
+  (v) => v + '%'
+);
+
+// 播放音量（仅作用于导入的文件）
+bindRange(
+  'volume',
+  null,
+  (v) => {
+    muteBtn.classList.toggle('muted', v === 0);
+    muteBtn.setAttribute('aria-label', v === 0 ? '取消静音' : '静音');
+    if (master && mode !== 'mic') {
+      master.gain.setTargetAtTime(v / 100, ctx.currentTime, 0.03);
+    }
+  },
+  (v) => v + '%'
+);
+
+lastVolume = +$('volume').value || 40;
+
+// 静音 / 恢复
+muteBtn.onclick = () => {
+  const v = +$('volume').value;
+  if (v > 0) {
+    lastVolume = v;
+    $('volume').value = 0;
+  } else {
+    $('volume').value = lastVolume || 40;
+  }
+  $('volume').dispatchEvent(new Event('input'));
 };
 
-// 播放音量
-$('volume').oninput = (e) => {
-  $('volumeval').textContent = e.target.value + '%';
-  if (master && mode !== 'mic') {
-    master.gain.setTargetAtTime(+e.target.value / 100, ctx.currentTime, 0.03);
+// 拖动进度：预览时间，松手后跳转
+seekEl.oninput = () => {
+  if (!buffer) return;
+  seeking = true;
+  setFill(seekEl);
+  timeEl.textContent =
+    fmt((+seekEl.value / 1000) * buffer.duration) +
+    ' / ' +
+    fmt(buffer.duration);
+};
+
+seekEl.onchange = () => {
+  if (!buffer) {
+    seeking = false;
+    return;
   }
+  seeking = false;
+
+  const target = (+seekEl.value / 1000) * buffer.duration;
+  if (mode !== 'file') {
+    offset = target;
+    return;
+  }
+
+  const wasPlaying = playing;
+  if (playing) pauseFile();
+  offset = Math.min(target, buffer.duration);
+  if (wasPlaying) start();
+  else updatePlayerTime();
+};
+
+// 播放 / 暂停
+ppBtn.onclick = async () => {
+  if (!buffer) return;
+
+  if (mode === 'file' && playing) {
+    pauseFile();
+    return;
+  }
+
+  stop();
+  mode = 'file';
+  if (offset >= buffer.duration - 0.05) offset = 0;
+  update();
+  await start();
 };
 
 /* ================= 画布交互：拖动旋转 / 滚轮 & 双指缩放 ================= */
@@ -555,6 +741,27 @@ document.addEventListener('fullscreenchange', () => {
 
 // 页面卸载时释放音频资源
 window.addEventListener('pagehide', stop);
+
+// 启动时读取已有权限：未授权/被拒绝 → 波浪待机；已授权 → 平整待机
+if (navigator.permissions?.query) {
+  try {
+    navigator.permissions
+      .query({ name: 'microphone' })
+      .then((status) => {
+        const apply = () => {
+          micState =
+            status.state === 'granted'
+              ? 'granted'
+              : status.state === 'denied'
+                ? 'denied'
+                : 'idle';
+        };
+        apply();
+        status.onchange = apply;
+      })
+      .catch(() => {});
+  } catch {}
+}
 
 update();
 
