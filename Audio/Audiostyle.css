@@ -8,6 +8,9 @@
   --text: #e6eadf;
   --accent: #deec95;
 
+  /* 全站字体（与主标题一致） */
+  --font: Arial, "PingFang SC", "Microsoft YaHei", "微软雅黑", "Noto Sans SC", sans-serif;
+
   /* 布局尺寸，方便各断点统一调整 */
   --header-h: 88px;  /* 顶栏高度 */
   --aside-w: 340px;  /* 右侧控制台宽度 */
@@ -23,7 +26,7 @@ body {
   min-height: 100svh;
   background: var(--bg);
   color: var(--text);
-  font-family: Arial, "PingFang SC", sans-serif;
+  font-family: var(--font);
   font-size: 16px;
   overflow-x: hidden;          /* 避免小屏出现横向滚动条 */
   -webkit-text-size-adjust: 100%; /* 防止横屏时自动放大字体 */
@@ -73,8 +76,11 @@ header {
 }
 
 .brand-icon {
-  font-size: 34px;
-  color: var(--accent);
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  fill: var(--accent);
+  margin-top: -1px;
 }
 
 /* 无边框文字按钮（全屏 / 重置视角） */
@@ -130,7 +136,7 @@ html:-webkit-full-screen .stage {
 }
 
 .eyebrow {
-  font: 12px monospace;
+  font: 12px var(--font);
   letter-spacing: 1.4px;
   color: var(--muted);
 }
@@ -143,7 +149,7 @@ h1 {
 }
 
 h1 span {
-  font: 13px monospace;
+  font: 13px var(--font);
   color: #697561;
   letter-spacing: 1px;
 }
@@ -181,17 +187,6 @@ h1 span {
 
 #core:active {
   cursor: grabbing;
-}
-
-/* 阵列通道数说明 */
-.axis {
-  position: absolute;
-  bottom: 66px;
-  left: 34px;
-  font: 12px monospace;
-  letter-spacing: 1.5px;
-  color: #737e6c;
-  pointer-events: none;
 }
 
 /* 底部操作提示 + 重置按钮 */
@@ -255,7 +250,7 @@ aside {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 4px 0 29px;
+  margin: 0 0 20px;
 }
 
 .panel-title > span:first-child {
@@ -264,8 +259,8 @@ aside {
 
 /* 侧栏内每个分段 */
 aside section {
-  padding-bottom: 23px;
-  margin-bottom: 23px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -273,9 +268,9 @@ aside section {
 .caption {
   display: block;
   color: #8e998a;
-  font: 12px monospace;
+  font: 12px var(--font);
   letter-spacing: 1px;
-  margin-bottom: 17px;
+  margin-bottom: 11px;
 }
 
 /* ==================== 输入源切换 ==================== */
@@ -306,8 +301,8 @@ aside section {
   background: #20261d;
   border: 1px dashed #535d44;
   width: 100%;
-  margin-top: 14px;
-  padding: 16px;
+  margin-top: 12px;
+  padding: 14px;
   display: grid;
   grid-template-columns: 25px 1fr;
   text-align: left;
@@ -328,7 +323,7 @@ aside section {
 }
 
 .upload small {
-  font: 11px monospace;
+  font: 11px var(--font);
   color: #85917b;
 }
 
@@ -337,14 +332,219 @@ aside section {
   background: #2a3222;
 }
 
+/* ==================== 音频播放器 ==================== */
+.player {
+  margin-top: 12px;
+  padding: 12px;
+  background: #101510;
+  border: 1px solid #31392d;
+}
+
+.player-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 播放 / 暂停按钮 */
+.icon-btn {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #121614;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.icon-btn:hover {
+  background: #eff7b4;
+}
+
+.icon-btn:active {
+  transform: scale(0.94);
+}
+
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+  fill: currentColor;
+}
+
+.icon-btn .icon-pause {
+  display: none;
+}
+
+.icon-btn.playing .icon-play {
+  display: none;
+}
+
+.icon-btn.playing .icon-pause {
+  display: block;
+}
+
+/* 文件名 */
+.track {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  color: #cdd6c2;
+}
+
+/* 进度条 */
+#seek {
+  height: 22px;
+  margin: 6px 0 2px;
+}
+
+#seek::-webkit-slider-thumb {
+  width: 13px;
+  height: 13px;
+  margin-top: -4.5px;
+}
+
+#seek::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+}
+
+.player-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.time {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 音量 */
+.vol {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vol-btn {
+  border: 0;
+  background: none;
+  padding: 3px;
+  display: grid;
+  place-items: center;
+  color: #a8b29f;
+}
+
+.vol-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+.vol-btn .icon-muted {
+  display: none;
+}
+
+.vol-btn.muted .icon-vol {
+  display: none;
+}
+
+.vol-btn.muted .icon-muted {
+  display: block;
+}
+
+#volume {
+  width: 96px;
+  height: 22px;
+  margin: 0;
+}
+
+#volume::-webkit-slider-thumb {
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+}
+
+#volume::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+}
+
 /* ==================== 滑块 ==================== */
 input[type="range"] {
+  --p: 0%;
   width: 100%;
-  accent-color: var(--accent);
-  height: 4px;
+  height: 26px;                /* 加大实际可点按区域，拖动更跟手 */
   display: block;
-  margin: 13px 0;
+  margin: 2px 0;
+  background: transparent;
   cursor: pointer;
+  touch-action: pan-y;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 轨道：左侧已选部分用强调色填充 */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--p),
+    #3a4034 var(--p)
+  );
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--accent) var(--p),
+    #3a4034 var(--p)
+  );
+}
+
+/* 滑块手柄 */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;            /* 相对 4px 轨道垂直居中 */
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+/* 拖动时手柄放大 + 光晕，提供即时反馈 */
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 6px #deec952e;
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.15);
+  box-shadow: 0 0 0 6px #deec952e;
 }
 
 /* 滑块标题行：名称 + 当前值 */
@@ -353,11 +553,13 @@ input[type="range"] {
   align-items: center;
   justify-content: space-between;
   font-size: 14px;
-  margin-top: 22px;
+  margin-top: 15px;
 }
 
 .slider-title output {
-  font: 13px monospace;
+  min-width: 44px;             /* 固定宽度，避免文字变化引起抖动 */
+  text-align: right;
+  font: 13px var(--font);
   color: var(--accent);
 }
 
@@ -371,7 +573,7 @@ input[type="range"] {
 .legend {
   display: flex;
   justify-content: space-between;
-  margin-top: 13px;
+  margin-top: 10px;
   font-size: 12px;
   color: #b4bcaa;
 }
@@ -409,12 +611,12 @@ input[type="range"] {
 
 .meters strong {
   display: block;
-  font: 26px monospace;
-  margin: 10px 0;
+  font: 26px var(--font);
+  margin: 7px 0;
 }
 
 .meters small {
-  font: 11px monospace;
+  font: 11px var(--font);
   color: var(--muted);
   margin-left: 5px;
 }
@@ -427,8 +629,8 @@ input[type="range"] {
 }
 
 .readings {
-  margin-bottom: 13px;
-  padding-bottom: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
 }
 
 /* 底部状态提示 */
@@ -469,7 +671,6 @@ input[type="range"] {
     left: 42px;
   }
 
-  .axis,
   .stage-bottom {
     left: 42px;
   }
@@ -557,7 +758,8 @@ input[type="range"] {
   }
 
   .brand-icon {
-    font-size: 26px;
+    width: 23px;
+    height: 23px;
   }
 
   /* 改为上下堆叠 */
@@ -602,13 +804,6 @@ input[type="range"] {
     bottom: 12px;
   }
 
-  .axis {
-    left: 16px;
-    bottom: 56px;
-    font-size: 9px;
-    letter-spacing: 1px;
-  }
-
   .scale {
     right: 14px;
     bottom: 74px;
@@ -648,9 +843,23 @@ input[type="range"] {
     padding: 14px;
   }
 
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  #volume {
+    width: 110px;
+  }
+
   input[type="range"] {
-    margin: 15px 0;
-    height: 6px;
+    margin: 3px 0;
+    height: 32px;
   }
 
   .meters {
@@ -679,11 +888,6 @@ input[type="range"] {
   .stage {
     height: 52svh;
     min-height: 300px;
-  }
-
-  /* 空间不足时隐藏通道数说明 */
-  .axis {
-    display: none;
   }
 
   aside {
@@ -757,7 +961,6 @@ input[type="range"] {
     left: auto;
   }
 
-  .axis,
   .scale {
     display: none;
   }
