@@ -320,7 +320,7 @@
         /* 原来的 backdrop-filter 在滚动 / 重绘时开销很大，
            而面板本身接近全透明，视觉收益几乎为零，故移除 */
 
-        padding: 32px;
+        padding: 24px;
 
         box-shadow:
             0 0 40px rgba(0,0,0,0.25);
@@ -329,29 +329,100 @@
         contain: layout style;
     }
 
-    .speed-grid {
-        display: grid;
-
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-
-        gap: 20px;
-    }
-
-    .speed-card {
-        border: 1px solid rgba(255,255,255,0.08);
-
-        background: rgba(255,255,255,0.025);
-
-        padding: 28px;
-
-        min-height: 230px;
-
+    .speed-rows {
         display: flex;
 
         flex-direction: column;
 
-        justify-content: space-between;
+        gap: 14px;
+    }
+
+    .speed-row {
+        display: grid;
+
+        grid-template-columns: 200px minmax(0, 1fr);
+
+        gap: 20px;
+
+        border: 1px solid rgba(255,255,255,0.08);
+
+        background: rgba(255,255,255,0.025);
+
+        padding: 16px 20px;
+    }
+
+    .speed-control {
+        display: flex;
+
+        flex-direction: column;
+
+        justify-content: center;
+
+        gap: 10px;
+
+        border-right: 1px solid rgba(255,255,255,0.07);
+
+        padding-right: 20px;
+    }
+
+    .speed-readout {
+        display: flex;
+
+        flex-direction: column;
+
+        gap: 10px;
+
+        /* 曲线用 canvas 绘制，宽度跟随容器，避免被内容撑开 */
+        min-width: 0;
+    }
+
+    .speed-metrics {
+        display: flex;
+
+        align-items: flex-end;
+
+        gap: 28px;
+    }
+
+    .metric-label {
+        font-family: var(--font-main);
+
+        font-size: var(--font-size-xs);
+
+        letter-spacing: 2px;
+
+        color: #7f8a95;
+    }
+
+    .metric-line {
+        display: flex;
+
+        align-items: baseline;
+
+        gap: 7px;
+
+        margin-top: 4px;
+    }
+
+    .speed-chart {
+        position: relative;
+
+        width: 100%;
+
+        height: 96px;
+
+        border: 1px solid rgba(255,255,255,0.06);
+
+        background: rgba(255,255,255,0.015);
+
+        overflow: hidden;
+    }
+
+    .speed-chart canvas {
+        display: block;
+
+        width: 100%;
+        height: 100%;
     }
 
     .speed-card-label {
@@ -365,17 +436,15 @@
     }
 
     .speed-value {
-        margin-top: 20px;
-
         font-family: var(--font-main);
 
-        font-size: clamp(44px, 6vw, 72px);
+        font-size: clamp(24px, 3vw, 32px);
 
         line-height: 1;
 
         font-weight: 400;
 
-        /* 数字之间的负字距会随位数叠加，多位数（如 44.5 / 123.4）会挤在一起，
+        /* 数字之间的负字距会随位数叠加，多位数会挤在一起，
            这里放宽到接近默认，保证三位数与小数点的间距清晰 */
         letter-spacing: -0.5px;
 
@@ -385,16 +454,19 @@
         color: #ffffff;
     }
 
+    /* 峰值用强调色区分，和实时值一眼可分 */
+    .speed-value-peak {
+        color: #6cff9b;
+    }
+
     .speed-unit {
         font-family: var(--font-main);
 
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-xs);
 
         color: #6cff9b;
 
         letter-spacing: 2px;
-
-        margin-top: 10px;
     }
 
     .speed-progress {
@@ -403,8 +475,6 @@
         height: 3px;
 
         background: rgba(255,255,255,0.08);
-
-        margin: 25px 0 20px;
 
         overflow: hidden;
     }
@@ -425,7 +495,7 @@
     .speed-button {
         width: 100%;
 
-        padding: 13px 16px;
+        padding: 10px 14px;
 
         border: 1px solid rgba(255,255,255,0.14);
 
@@ -515,18 +585,6 @@
         margin-left: 4px;
     }
 
-    .speed-status {
-        margin-top: 25px;
-
-        font-family: var(--font-main);
-
-        font-size: var(--font-size-sm);
-
-        color: #7f8a95;
-
-        min-height: 18px;
-    }
-
     /* =========================关于========================= */
 
     .about {
@@ -603,11 +661,28 @@
         }
 
         .speed-panel {
-            padding: 18px;
+            padding: 14px;
         }
 
-        .speed-grid {
+        .speed-row {
             grid-template-columns: 1fr;
+
+            gap: 12px;
+
+            padding: 14px 16px;
+        }
+
+        .speed-control {
+            border-right: 0;
+
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+
+            padding-right: 0;
+            padding-bottom: 12px;
+        }
+
+        .speed-chart {
+            height: 88px;
         }
 
         .network-info {
@@ -649,15 +724,15 @@
         }
 
         .speed-panel {
-            padding: 14px;
+            padding: 12px;
         }
 
-        .speed-card {
-            padding: 20px;
+        .speed-row {
+            padding: 12px;
         }
 
-        .speed-value {
-            font-size: 46px;
+        .speed-metrics {
+            gap: 20px;
         }
     }
 
@@ -723,39 +798,16 @@
 
     <div class="speed-panel">
 
-        <div class="speed-grid">
+        <div class="speed-rows">
 
             <!-- =========================下载========================= -->
 
-            <div class="speed-card">
+            <div class="speed-row">
 
-                <div>
+                <div class="speed-control">
 
                     <div class="speed-card-label">
-                        开始
-                    </div>
-
-                    <div class="speed-value"
-                         id="downloadValue">
-                        --
-                    </div>
-
-                    <div class="speed-unit">
-                        Mbps
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <div class="speed-progress">
-
-                        <div
-                            class="speed-progress-bar"
-                            id="downloadProgress">
-                        </div>
-
+                        下载
                     </div>
 
                     <button
@@ -766,6 +818,76 @@
 
                     </button>
 
+                    <div class="speed-progress">
+
+                        <div
+                            class="speed-progress-bar"
+                            id="downloadProgress">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="speed-readout">
+
+                    <div class="speed-metrics">
+
+                        <div class="metric">
+
+                            <div class="metric-label">
+                                实时
+                            </div>
+
+                            <div class="metric-line">
+
+                                <span
+                                    class="speed-value"
+                                    id="downloadValue">
+                                    --
+                                </span>
+
+                                <span class="speed-unit">
+                                    Mbps
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <div class="metric-label">
+                                最大
+                            </div>
+
+                            <div class="metric-line">
+
+                                <span
+                                    class="speed-value speed-value-peak"
+                                    id="downloadPeak">
+                                    --
+                                </span>
+
+                                <span class="speed-unit">
+                                    Mbps
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="speed-chart">
+
+                        <canvas id="downloadChart"></canvas>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -773,27 +895,21 @@
 
             <!-- =========================上传========================= -->
 
-            <div class="speed-card">
+            <div class="speed-row">
 
-                <div>
+                <div class="speed-control">
 
                     <div class="speed-card-label">
-                        开始
+                        上传
                     </div>
 
-                    <div class="speed-value"
-                         id="uploadValue">
-                        --
-                    </div>
+                    <button
+                        class="speed-button"
+                        id="uploadButton">
 
-                    <div class="speed-unit">
-                        Mbps
-                    </div>
+                        TEST UPLOAD
 
-                </div>
-
-
-                <div>
+                    </button>
 
                     <div class="speed-progress">
 
@@ -804,13 +920,66 @@
 
                     </div>
 
-                    <button
-                        class="speed-button"
-                        id="uploadButton">
+                </div>
 
-                        TEST UPLOAD
 
-                    </button>
+                <div class="speed-readout">
+
+                    <div class="speed-metrics">
+
+                        <div class="metric">
+
+                            <div class="metric-label">
+                                实时
+                            </div>
+
+                            <div class="metric-line">
+
+                                <span
+                                    class="speed-value"
+                                    id="uploadValue">
+                                    --
+                                </span>
+
+                                <span class="speed-unit">
+                                    Mbps
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="metric">
+
+                            <div class="metric-label">
+                                最大
+                            </div>
+
+                            <div class="metric-line">
+
+                                <span
+                                    class="speed-value speed-value-peak"
+                                    id="uploadPeak">
+                                    --
+                                </span>
+
+                                <span class="speed-unit">
+                                    Mbps
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="speed-chart">
+
+                        <canvas id="uploadChart"></canvas>
+
+                    </div>
 
                 </div>
 
@@ -865,15 +1034,6 @@
                 </div>
 
             </div>
-
-        </div>
-
-
-        <div
-            class="speed-status"
-            id="speedStatus">
-
-            READY // SELECT A TEST
 
         </div>
 
@@ -935,18 +1095,24 @@ const CONFIG = {
     /* 下载测试 */
     download: {
         endpoint: "/api/speed/download",
-        duration: 10000, // 测试总时长（ms）
+        duration: 15000, // 测试总时长（ms）
         concurrency: 3   // 并发连接数：单连接通常跑不满带宽
     },
 
     /* 上传测试 */
     upload: {
         endpoint: "/api/speed/upload",
-        duration: 10000,
+        duration: 15000,
         concurrency: 2,
 
         // 数据块越小，统计值越接近「真正写入网络」的字节数，但 CPU 开销更高
         chunkSize: 64 * 1024
+    },
+
+    /* 采样：用于实时值平滑、峰值与曲线 */
+    sample: {
+        window: 5,   // 实时值取最近 N 个瞬时样本的平均，避免数字剧烈跳动
+        warmUp: 400  // 曲线与峰值跳过开始的预热期（ms）
     },
 
     /* 界面刷新间隔：与网络读取解耦，避免每读一块数据就写一次 DOM */
@@ -961,18 +1127,20 @@ const CONFIG = {
 
 const dom = {
     downloadValue: document.getElementById("downloadValue"),
+    downloadPeak: document.getElementById("downloadPeak"),
     downloadProgress: document.getElementById("downloadProgress"),
     downloadButton: document.getElementById("downloadButton"),
+    downloadChart: document.getElementById("downloadChart"),
 
     uploadValue: document.getElementById("uploadValue"),
+    uploadPeak: document.getElementById("uploadPeak"),
     uploadProgress: document.getElementById("uploadProgress"),
     uploadButton: document.getElementById("uploadButton"),
+    uploadChart: document.getElementById("uploadChart"),
 
     latencyValue: document.getElementById("latencyValue"),
     jitterValue: document.getElementById("jitterValue"),
-    edgeValue: document.getElementById("edgeValue"),
-
-    speedStatus: document.getElementById("speedStatus")
+    edgeValue: document.getElementById("edgeValue")
 };
 
 
@@ -1045,16 +1213,6 @@ function median(values) {
 }
 
 /**
- * 写入底部状态栏
- * @param {string} text
- */
-function setStatus(text) {
-    /* 内容相同时不写 DOM，减少无谓的样式重算 */
-    if (dom.speedStatus.textContent === text) return;
-    dom.speedStatus.textContent = text;
-}
-
-/**
  * 更新进度条（ratio 会被限制在 0 ~ 1）
  * @param {HTMLElement} element
  * @param {number} ratio
@@ -1098,15 +1256,275 @@ function updateEdge(response) {
  * 汇总失败原因，便于排查（接口未部署 / 被拦截 / 服务端报错等）
  * @param {PromiseSettledResult<unknown>[]} results
  * @param {string} label
+ * @returns {string} 可直接追加到状态栏的原因文本
  */
 function reportFailure(results, label) {
-    results
-        .filter((result) => result.status === "rejected")
-        .slice(0, 1)
-        .forEach((result) => {
-            console.error(label + " failed:", result.reason);
-        });
+    if (!Array.isArray(results)) return "";
+
+    const failure = results.find((result) => result.status === "rejected");
+    if (!failure) return "";
+
+    console.error(label + " failed:", failure.reason);
+
+    const message =
+        failure.reason?.message ||
+        String(failure.reason ?? "");
+
+    return message ? " // " + message : "";
 }
+
+
+/* ---------- 速度曲线 ---------- */
+
+/**
+ * 创建速度曲线绘制器
+ *
+ * 横轴按测试总时长铺满：曲线随时间向右延伸，而不是每来一个点就重排图形。
+ * 纵轴按当前峰值自适应，顶部留 15% 余量。
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} duration 测试总时长（ms）
+ * @returns {{ reset: () => void, push: (t: number, v: number) => void }}
+ */
+function createSpeedChart(canvas, duration) {
+
+    const ctx = canvas.getContext("2d");
+
+    const points = [];
+
+    /* 绘图区边距：左侧几乎贴边，右侧留一点空隙，底部留给时间刻度 */
+    const PADDING = {
+        left: 6,
+        right: 10,
+        top: 8,
+        bottom: 16
+    };
+
+    let peak = 0;
+    let width = 0;
+    let height = 0;
+
+    /**
+     * 取“好看”的纵轴上限：1 / 1.2 / 1.5 / 2 / 2.5 / 3 / 4 / 5 / 6 / 8 / 10 × 10^n。
+     * 取峰值上方约 40% 作为目标，再向上取整到刻度值，
+     * 峰值最终落在绘图区 60%~67% 高度处，曲线处于中间偏上位置。
+     * @param {number} value
+     * @returns {number}
+     */
+    function niceMax(value) {
+
+        const raw = Math.max(value * 1.4, 1);
+        const exponent = Math.pow(10, Math.floor(Math.log10(raw)));
+        const fraction = raw / exponent;
+
+        const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+        const nice = steps.find((step) => fraction <= step) ?? 10;
+
+        return nice * exponent;
+    }
+
+    /**
+     * 刻度文本：去掉多余的小数位
+     * @param {number} value
+     * @returns {string}
+     */
+    function formatTick(value) {
+        if (value >= 10) return String(Math.round(value));
+        return String(Number(value.toFixed(2)));
+    }
+
+    function draw() {
+
+        if (!ctx || width < 2 || height < 2) return;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const plotLeft = PADDING.left;
+        const plotTop = PADDING.top;
+        const plotWidth = Math.max(0, width - PADDING.left - PADDING.right);
+        const plotHeight = Math.max(0, height - PADDING.top - PADDING.bottom);
+
+        if (plotWidth < 2 || plotHeight < 2) return;
+        if (!points.length) return;
+
+        const maxValue = niceMax(peak);
+        const gridCount = 4;
+
+        const toX = (t) =>
+            plotLeft +
+            (Math.min(t, duration) / duration) * plotWidth;
+
+        const toY = (v) =>
+            plotTop + plotHeight - (v / maxValue) * plotHeight;
+
+        /* 横向网格与纵轴刻度 */
+        ctx.font = "10px ui-monospace, SFMono-Regular, Consolas, monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.lineWidth = 1;
+
+        for (let i = 0; i <= gridCount; i++) {
+
+            const value = (maxValue / gridCount) * i;
+            const y = Math.round(toY(value)) + 0.5;
+
+            ctx.strokeStyle = "rgba(255,255,255,0.06)";
+
+            ctx.beginPath();
+            ctx.moveTo(plotLeft, y);
+            ctx.lineTo(plotLeft + plotWidth, y);
+            ctx.stroke();
+
+            /*
+             * 只标中值和上限；0 由底边表示，避免和起点曲线重叠。
+             * 文字叠在绘图区内，曲线经过时用深色描边保持可读。
+             */
+            if (i !== gridCount / 2 && i !== gridCount) continue;
+
+            const label = formatTick(value);
+            const labelX = plotLeft + 4;
+
+            ctx.lineJoin = "round";
+            ctx.strokeStyle = "rgba(5,7,10,0.9)";
+            ctx.lineWidth = 3;
+            ctx.strokeText(label, labelX, y);
+
+            ctx.fillStyle = "rgba(255,255,255,0.38)";
+            ctx.fillText(label, labelX, y);
+        }
+
+        /* 底部时间刻度 */
+        ctx.textBaseline = "top";
+        ctx.fillStyle = "rgba(255,255,255,0.30)";
+
+        for (let i = 0; i <= 2; i++) {
+
+            const fraction = i / 2;
+            const x = plotLeft + plotWidth * fraction;
+            const seconds = (duration / 1000) * fraction;
+
+            /* 两端对齐绘图区，不越出左右边界；7.5s 这类半秒值保留一位小数 */
+            ctx.textAlign = i === 0 ? "left" : i === 2 ? "right" : "center";
+
+            const label = seconds % 1 === 0
+                ? String(seconds)
+                : seconds.toFixed(1);
+
+            ctx.fillText(label + "s", x, plotTop + plotHeight + 5);
+        }
+
+        if (points.length < 2) return;
+
+        /* 曲线与面积裁剪在绘图区内，避免压到刻度文字 */
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(plotLeft, plotTop, plotWidth, plotHeight);
+        ctx.clip();
+
+        /* 面积：从曲线垂到基线，用主色渐变填充 */
+        const gradient = ctx.createLinearGradient(
+            0, plotTop,
+            0, plotTop + plotHeight
+        );
+
+        gradient.addColorStop(0, "rgba(108,255,155,0.26)");
+        gradient.addColorStop(1, "rgba(108,255,155,0)");
+
+        ctx.beginPath();
+        ctx.moveTo(toX(points[0].t), plotTop + plotHeight);
+
+        for (const point of points) {
+            ctx.lineTo(toX(point.t), toY(point.v));
+        }
+
+        ctx.lineTo(toX(points[points.length - 1].t), plotTop + plotHeight);
+        ctx.closePath();
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        /* 折线 */
+        ctx.beginPath();
+
+        points.forEach((point, index) => {
+            const x = toX(point.t);
+            const y = toY(point.v);
+
+            if (index === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+
+        ctx.strokeStyle = "#6cff9b";
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+
+        ctx.restore();
+
+        /* 末端高亮当前速度位置 */
+        const last = points[points.length - 1];
+
+        ctx.beginPath();
+        ctx.arc(toX(last.t), toY(last.v), 3, 0, Math.PI * 2);
+        ctx.fillStyle = "#6cff9b";
+        ctx.fill();
+    }
+
+    /**
+     * 按容器尺寸重建画布：按 devicePixelRatio 缩放，避免高分屏模糊
+     */
+    function resize() {
+
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        width = rect.width;
+        height = rect.height;
+
+        canvas.width = Math.max(1, Math.round(width * dpr));
+        canvas.height = Math.max(1, Math.round(height * dpr));
+
+        if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        draw();
+    }
+
+    if (typeof ResizeObserver !== "undefined") {
+        new ResizeObserver(resize).observe(canvas);
+    } else {
+        window.addEventListener("resize", resize, { passive: true });
+    }
+
+    resize();
+
+    return {
+
+        reset() {
+            points.length = 0;
+            peak = 0;
+            draw();
+        },
+
+        /**
+         * @param {number} t 相对测试开始的毫秒数
+         * @param {number} v 瞬时速度（Mbps）
+         */
+        push(t, v) {
+            points.push({ t, v });
+
+            if (v > peak) peak = v;
+
+            draw();
+        }
+    };
+}
+
+
+/* 图表实例：脚本位于 body 末尾，DOM 已就绪 */
+const charts = {
+    download: createSpeedChart(dom.downloadChart, CONFIG.download.duration),
+    upload: createSpeedChart(dom.uploadChart, CONFIG.upload.duration)
+};
 
 
 /* ============================================================
@@ -1138,6 +1556,11 @@ async function testPing() {
 
             /* 必须把 body 读完，否则连接不会被立即回收 */
             await response.arrayBuffer();
+
+            /* 4xx / 5xx 不是有效样本，否则会把错误响应当成极低延迟 */
+            if (!response.ok) {
+                throw new Error("ping HTTP " + response.status);
+            }
 
             /* 顺便取一次边缘节点信息（同源请求可以读到 cf-ray） */
             updateEdge(response);
@@ -1190,46 +1613,106 @@ async function testPing() {
  *
  * @param {object} options
  * @param {HTMLButtonElement} options.button          触发的按钮
- * @param {HTMLElement} options.valueElement          数值元素
+ * @param {HTMLElement} options.valueElement          实时数值元素
+ * @param {HTMLElement} options.peakElement           峰值数值元素
  * @param {HTMLElement} options.progressElement       进度条元素
+ * @param {{reset: () => void, push: (t: number, v: number) => void}} options.chart 速度曲线
  * @param {string} options.idleText                   按钮空闲文案
  * @param {string} options.label                      状态栏前缀（DOWNLOAD / UPLOAD）
  * @param {number} options.duration                   测试时长（ms）
- * @param {string} options.emptyMessage               没有数据时的提示
+ * @param {HTMLButtonElement} [options.peerButton]    另一个测速按钮（测速期间禁用）
  * @param {() => number} options.measure              读取当前累计字节数
  * @param {(signal: AbortSignal) => Promise<unknown>[]} options.start 启动全部连接
  */
 async function runSpeedTest(options) {
 
     const {
-        button, valueElement, progressElement,
-        idleText, label, duration, emptyMessage,
-        measure, start
+        button, valueElement, peakElement, progressElement, chart,
+        idleText, label, duration,
+        measure, start, peerButton
     } = options;
 
     setBusy(button, true, idleText);
+
+    /* 下载与上传同时进行会互相抢带宽，测速期间禁用另一个按钮 */
+    if (peerButton) peerButton.disabled = true;
+
     valueElement.textContent = "0.0";
+    if (peakElement) peakElement.textContent = "--";
+    if (chart) chart.reset();
+
     setProgress(progressElement, 0);
-    setStatus(label + " // INITIALIZING");
 
     const controller = new AbortController();
     const startedAt = performance.now();
+
+    /* 瞬时速度采样状态 */
+    let lastBytes = 0;
+    let lastSampleAt = startedAt;
+    let peak = 0;
+    const recent = [];
 
     /* 到时间统一中止：一个 AbortController 可以同时终止所有并发请求 */
     const stopTimer = setTimeout(() => controller.abort(), duration);
 
     /* 界面刷新交给定时器，与网络读取解耦 */
     const uiTimer = setInterval(() => {
-        const elapsed = (performance.now() - startedAt) / 1000;
-        const mbps = toMbps(measure(), elapsed).toFixed(1);
 
-        valueElement.textContent = mbps;
-        setProgress(progressElement, (elapsed * 1000) / duration);
-        setStatus(label + " // " + mbps + " Mbps");
+        const now = performance.now();
+        const elapsedMs = now - startedAt;
+        const totalBytes = measure();
+
+        /*
+         * 区间瞬时速度：相邻两次采样之间的差值。
+         * 比「累计字节 ÷ 总耗时」更能反映速度的变化过程，
+         * 曲线和峰值都用这个值。
+         */
+        const instantMbps = toMbps(
+            totalBytes - lastBytes,
+            (now - lastSampleAt) / 1000
+        );
+
+        lastBytes = totalBytes;
+        lastSampleAt = now;
+
+        /* 实时数字取最近几个样本的平均，避免剧烈跳动 */
+        recent.push(instantMbps);
+        if (recent.length > CONFIG.sample.window) recent.shift();
+
+        const currentMbps =
+            recent.reduce((sum, value) => sum + value, 0) / recent.length;
+
+        valueElement.textContent = currentMbps.toFixed(1);
+
+        /* 跳过预热期：开始瞬间的缓冲突发会把峰值和曲线拉得过高 */
+        if (elapsedMs >= CONFIG.sample.warmUp) {
+
+            if (instantMbps > peak) peak = instantMbps;
+            if (peakElement) peakElement.textContent = peak.toFixed(1);
+            if (chart) chart.push(elapsedMs, instantMbps);
+        }
+
+        setProgress(progressElement, elapsedMs / duration);
+
     }, CONFIG.uiInterval);
 
     /* 用 allSettled：被 abort 的连接会 reject，属于预期情况 */
-    const results = await Promise.allSettled(start(controller.signal));
+    const settled = Promise.allSettled(start(controller.signal));
+
+    /*
+     * 与 abort 事件赛跑：到达测试时长就收尾，
+     * 不依赖每条连接都及时响应中止。
+     */
+    const results = await Promise.race([
+        settled,
+        new Promise((resolve) => {
+            controller.signal.addEventListener(
+                "abort",
+                () => resolve(null),
+                { once: true }
+            );
+        })
+    ]);
 
     clearTimeout(stopTimer);
     clearInterval(uiTimer);
@@ -1239,13 +1722,15 @@ async function runSpeedTest(options) {
     const mbps = toMbps(bytes, elapsed);
 
     setBusy(button, false, idleText);
+    if (peerButton) peerButton.disabled = false;
 
     if (bytes > 0) {
+        /* 最终值用整段时间的平均，与曲线上的瞬时波动区分开 */
         valueElement.textContent = mbps.toFixed(1);
+        if (peakElement && peak > 0) peakElement.textContent = peak.toFixed(1);
+
         setProgress(progressElement, 1);
-        setStatus(label + " // COMPLETE // " + mbps.toFixed(1) + " Mbps");
     } else {
-        setStatus(label + " // ERROR // " + emptyMessage);
         reportFailure(results, label.toLowerCase());
     }
 }
@@ -1260,7 +1745,8 @@ async function runSpeedTest(options) {
  */
 async function testDownload() {
 
-    if (running.download) return;
+    /* 上传测试进行中时拒绝启动，避免互相抢带宽、污染数据 */
+    if (running.download || running.upload) return;
     running.download = true;
 
     /* 所有连接共享的总字节数，由 downloadStream 的回调累加 */
@@ -1269,11 +1755,13 @@ async function testDownload() {
     await runSpeedTest({
         button: dom.downloadButton,
         valueElement: dom.downloadValue,
+        peakElement: dom.downloadPeak,
         progressElement: dom.downloadProgress,
+        chart: charts.download,
         idleText: "TEST DOWNLOAD",
         label: "DOWNLOAD",
         duration: CONFIG.download.duration,
-        emptyMessage: "未收到数据",
+        peerButton: dom.uploadButton,
 
         measure: () => bytes,
 
@@ -1348,7 +1836,8 @@ async function downloadStream(signal, onBytes) {
  */
 async function testUpload() {
 
-    if (running.upload) return;
+    /* 下载测试进行中时拒绝启动，避免互相抢带宽、污染数据 */
+    if (running.upload || running.download) return;
     running.upload = true;
 
     /* 所有连接复用同一块只读数据，避免反复分配内存 */
@@ -1366,11 +1855,13 @@ async function testUpload() {
     await runSpeedTest({
         button: dom.uploadButton,
         valueElement: dom.uploadValue,
+        peakElement: dom.uploadPeak,
         progressElement: dom.uploadProgress,
+        chart: charts.upload,
         idleText: "TEST UPLOAD",
         label: "UPLOAD",
         duration: CONFIG.upload.duration,
-        emptyMessage: "未发送数据",
+        peerButton: dom.downloadButton,
 
         measure: totalBytes,
 
@@ -1454,6 +1945,9 @@ function initGlow() {
 
     /* 没有鼠标的设备直接跳过 */
     if (!window.matchMedia("(hover: hover)").matches) return;
+
+    /* 系统开启「减少动态效果」时跳过（CSS 已隐藏光晕，这里省掉监听） */
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let x = 0;
     let y = 0;
