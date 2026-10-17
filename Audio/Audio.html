@@ -19,10 +19,15 @@
   <!-- ==================== 顶栏 ==================== -->
   <header>
     <!-- 品牌 -->
-    <a class="brand" href="./">
-      <span class="brand-icon">▦</span>
-      REACTOR
-    </a>
+    <div class="brand">
+      <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M17.5 21.526A11 11 0 0 1 6.5 21.526L10.2 15.118A3.6 3.6 0 0 0 13.8 15.118Z"/>
+        <path d="M1 12A11 11 0 0 1 6.5 2.474L10.2 8.882A3.6 3.6 0 0 0 8.4 12Z"/>
+        <path d="M17.5 2.474A11 11 0 0 1 23 12L15.6 12A3.6 3.6 0 0 0 13.8 8.882Z"/>
+        <circle cx="12" cy="12" r="2.2"/>
+      </svg>
+      声场反应堆
+    </div>
 
     <!-- 全屏开关（文案由 JS 更新） -->
     <button id="fullscreen" class="plain">全屏 ↗</button>
@@ -46,9 +51,6 @@
 
       <!-- 主画布：控制棒阵列（由 app.js 绘制） -->
       <canvas id="core" aria-label="圆形控制棒阵列，随音频频谱起伏的三维可视化"></canvas>
-
-      <!-- 阵列通道数（由 JS 写入实际数量） -->
-      <div class="axis top">CONTROL ROD ARRAY · <span id="count">709</span> CHANNELS</div>
 
       <!-- 操作提示 + 视角重置 -->
       <div class="stage-bottom">
@@ -90,6 +92,39 @@
           <small>MP3 / WAV / M4A / FLAC</small>
         </button>
         <input id="file" type="file" accept="audio/*" hidden>
+
+        <!-- 播放器：导入音频后显示 -->
+        <div id="player" class="player" hidden>
+          <div class="player-top">
+            <button id="playpause" class="icon-btn" type="button" aria-label="播放">
+              <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 5h4v14H7zM14 5h4v14h-4z"/>
+              </svg>
+            </button>
+            <span id="track" class="track">未选择文件</span>
+          </div>
+
+          <input id="seek" type="range" min="0" max="1000" value="0" step="1" aria-label="播放进度">
+
+          <div class="player-bottom">
+            <span id="time" class="time">0:00 / 0:00</span>
+
+            <div class="vol">
+              <button id="mute" class="vol-btn" type="button" aria-label="静音">
+                <svg class="icon-vol" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12z"/>
+                </svg>
+                <svg class="icon-muted" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 9v6h4l5 5V4L7 9H3zm18.4.1-1.4-1.4-2.5 2.5-2.5-2.5-1.4 1.4 2.5 2.5-2.5 2.5 1.4 1.4 2.5-2.5 2.5 2.5 1.4-1.4-2.5-2.5z"/>
+                </svg>
+              </button>
+              <input id="volume" type="range" min="0" max="100" value="40" aria-label="音量">
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ---------- 02 / 控制棒响应 ---------- -->
@@ -109,13 +144,6 @@
           <output id="smoothval">75%</output>
         </div>
         <input id="smooth" type="range" min="0" max="95" value="75">
-
-        <!-- 播放音量 -->
-        <div class="slider-title">
-          <label for="volume">播放音量</label>
-          <output id="volumeval">40%</output>
-        </div>
-        <input id="volume" type="range" min="0" max="100" value="40">
 
         <!-- 频段分布图例 -->
         <div class="slider-title">
