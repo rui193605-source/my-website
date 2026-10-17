@@ -1,0 +1,789 @@
+/* ==================== 主题变量 ==================== */
+:root {
+  color-scheme: dark;
+  --bg: #121614;
+  --panel: #191d1a;
+  --line: #343a32;
+  --muted: #8e998a;
+  --text: #e6eadf;
+  --accent: #deec95;
+
+  /* 布局尺寸，方便各断点统一调整 */
+  --header-h: 88px;  /* 顶栏高度 */
+  --aside-w: 340px;  /* 右侧控制台宽度 */
+}
+
+/* ==================== 基础重置 ==================== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, "PingFang SC", sans-serif;
+  font-size: 16px;
+  overflow-x: hidden;          /* 避免小屏出现横向滚动条 */
+  -webkit-text-size-adjust: 100%; /* 防止横屏时自动放大字体 */
+}
+
+/* 移动端去掉点击高亮 */
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* 键盘焦点可见性 */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* ==================== 顶栏 ==================== */
+header {
+  height: var(--header-h);
+  padding: 0 34px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* 品牌 */
+.brand {
+  text-decoration: none;
+  color: var(--text);
+  font-size: 25px;
+  letter-spacing: 3px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  font-size: 34px;
+  color: var(--accent);
+}
+
+/* 无边框文字按钮（全屏 / 重置视角） */
+.plain {
+  background: none;
+  border: 0;
+  color: #a8b29f;
+  font-size: 14px;
+  padding: 10px;
+}
+
+/* 顶栏按钮靠右 */
+header > .plain {
+  margin-left: auto;
+}
+
+/* ==================== 主布局 ==================== */
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--aside-w);
+  min-height: calc(100svh - var(--header-h));
+}
+
+/* ==================== 左：舞台 ==================== */
+.stage {
+  position: relative;
+  min-height: calc(100svh - var(--header-h));
+  overflow: hidden;
+  background: radial-gradient(
+    ellipse at 50% 49%,
+    #30382b 0%,
+    #1b211a 43%,
+    #141915 78%
+  );
+}
+
+/* ==================== 全屏模式 ==================== */
+/* 全屏时：舞台铺满可视高度，侧栏已由自身 max-height 约束 */
+html:fullscreen main,
+html:-webkit-full-screen main,
+html:fullscreen .stage,
+html:-webkit-full-screen .stage {
+  min-height: calc(100svh - var(--header-h));
+}
+
+/* 标题区（不拦截鼠标，避免防碍画布拖拽） */
+.stage-title {
+  position: absolute;
+  top: 30px;
+  left: 34px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.eyebrow {
+  font: 12px monospace;
+  letter-spacing: 1.4px;
+  color: var(--muted);
+}
+
+h1 {
+  font-size: 25px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  margin: 13px 0;
+}
+
+h1 span {
+  font: 13px monospace;
+  color: #697561;
+  letter-spacing: 1px;
+}
+
+/* 运行状态 */
+.live {
+  position: absolute;
+  top: 38px;
+  right: 28px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: #bdc5ad;
+}
+
+/* 状态灯 */
+.live i {
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 10px #deec9544;
+}
+
+/* 主画布：充满舞台，自身接管触摸手势 */
+#core {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  cursor: grab;
+}
+
+#core:active {
+  cursor: grabbing;
+}
+
+/* 阵列通道数说明 */
+.axis {
+  position: absolute;
+  bottom: 66px;
+  left: 34px;
+  font: 12px monospace;
+  letter-spacing: 1.5px;
+  color: #737e6c;
+  pointer-events: none;
+}
+
+/* 底部操作提示 + 重置按钮 */
+.stage-bottom {
+  position: absolute;
+  bottom: 18px;
+  left: 34px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #839078;
+  font-size: 12px;
+}
+
+/* 桌面 / 移动端操作提示切换 */
+.mobile {
+  display: none;
+}
+
+/* 振幅色标 */
+.scale {
+  position: absolute;
+  right: 25px;
+  bottom: 100px;
+  display: grid;
+  grid-template-columns: 8px 16px;
+  gap: 10px;
+  font-size: 12px;
+  color: #99a58d;
+}
+
+.scale span:first-child {
+  grid-column: 1 / 3;
+}
+
+.scale div {
+  grid-row: 2 / 4;
+  background: linear-gradient(#eff7b4, #a99c5e, #454c3c);
+  width: 5px;
+  height: 72px;
+}
+
+.scale span:last-child {
+  align-self: end;
+}
+
+/* ==================== 右：控制台侧栏 ==================== */
+aside {
+  background: var(--panel);
+  border-left: 1px solid var(--line);
+  padding: 27px 25px 18px;
+
+  /* 桌面端：高度不超出一屏，内容在侧栏内部滚动 */
+  max-height: calc(100svh - var(--header-h));
+  overflow-y: auto;
+}
+
+/* 面板标题 */
+.panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0 29px;
+}
+
+.panel-title > span:first-child {
+  font-size: 18px;
+}
+
+/* 侧栏内每个分段 */
+aside section {
+  padding-bottom: 23px;
+  margin-bottom: 23px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* 小标题 */
+.caption {
+  display: block;
+  color: #8e998a;
+  font: 12px monospace;
+  letter-spacing: 1px;
+  margin-bottom: 17px;
+}
+
+/* ==================== 输入源切换 ==================== */
+.source-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: #101510;
+  border: 1px solid #31392d;
+}
+
+.source-tabs button {
+  flex: 1;
+  background: transparent;
+  border: 0;
+  font-size: 14px;
+  padding: 10px 0;
+  color: #8e998a;
+}
+
+.source-tabs button.selected {
+  background: #3c4432;
+  color: #e4edc8;
+}
+
+/* ==================== 文件导入按钮 ==================== */
+.upload {
+  background: #20261d;
+  border: 1px dashed #535d44;
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  text-align: left;
+  gap: 6px 10px;
+}
+
+/* 左侧加号跨两行 */
+.upload > span {
+  grid-row: 1 / 3;
+  font-size: 25px;
+  align-self: center;
+  color: var(--accent);
+}
+
+.upload strong {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.upload small {
+  font: 11px monospace;
+  color: #85917b;
+}
+
+.upload:hover {
+  border-color: var(--accent);
+  background: #2a3222;
+}
+
+/* ==================== 滑块 ==================== */
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 4px;
+  display: block;
+  margin: 13px 0;
+  cursor: pointer;
+}
+
+/* 滑块标题行：名称 + 当前值 */
+.slider-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-top: 22px;
+}
+
+.slider-title output {
+  font: 13px monospace;
+  color: var(--accent);
+}
+
+/* 次要说明文字 */
+.subtle {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ==================== 频段图例 ==================== */
+.legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 13px;
+  font-size: 12px;
+  color: #b4bcaa;
+}
+
+.legend i {
+  display: inline-block;
+  height: 7px;
+  width: 7px;
+  margin-right: 7px;
+}
+
+/* 三档颜色：低 / 中 / 高 */
+.low {
+  background: #e6ba76;
+}
+
+.mid {
+  background: #c5d185;
+}
+
+.high {
+  background: #99b4a9;
+}
+
+/* ==================== 实时读数 ==================== */
+.meters {
+  display: flex;
+  gap: 35px;
+}
+
+.meters > div > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.meters strong {
+  display: block;
+  font: 26px monospace;
+  margin: 10px 0;
+}
+
+.meters small {
+  font: 11px monospace;
+  color: var(--muted);
+  margin-left: 5px;
+}
+
+/* 频谱条画布 */
+#spectrum {
+  width: 100%;
+  height: 44px;
+  display: block;
+}
+
+.readings {
+  margin-bottom: 13px;
+  padding-bottom: 14px;
+}
+
+/* 底部状态提示 */
+#message {
+  font-size: 12px;
+  color: #8f9a85;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ==================== 响应式：宽屏 ==================== */
+@media (min-width: 1500px) {
+  :root {
+    --aside-w: 370px;
+  }
+
+  aside {
+    padding: 30px;
+  }
+}
+
+/* ==================== 响应式：超宽屏（2K / 4K） ==================== */
+@media (min-width: 1900px) {
+  :root {
+    --aside-w: 430px;
+  }
+
+  aside {
+    padding: 34px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .stage-title {
+    top: 36px;
+    left: 42px;
+  }
+
+  .axis,
+  .stage-bottom {
+    left: 42px;
+  }
+}
+
+/* ==================== 响应式：小笔电 / 窄窗口 ==================== */
+@media (max-width: 1280px) {
+  :root {
+    --aside-w: 310px;
+  }
+
+  aside {
+    padding: 23px 20px 16px;
+  }
+}
+
+/* ==================== 响应式：矮屏（横向笔记本 / 全屏） ==================== */
+@media (max-height: 800px) and (min-width: 701px) {
+  :root {
+    --header-h: 72px;
+  }
+
+  .stage-title {
+    top: 22px;
+  }
+
+  aside {
+    padding-top: 20px;
+  }
+}
+
+@media (max-height: 680px) and (min-width: 701px) {
+  :root {
+    --header-h: 62px;
+  }
+
+  .stage-title {
+    top: 16px;
+  }
+
+  .live {
+    top: 24px;
+  }
+
+  /* 纵向空间不足时隐藏振幅色标 */
+  .scale {
+    display: none;
+  }
+}
+
+/* ==================== 响应式：中屏（平板 / 小笔电） ==================== */
+@media (max-width: 1000px) {
+  :root {
+    --aside-w: 300px;
+  }
+
+  /* 状态指示换行到标题下方 */
+  .live {
+    top: 108px;
+    left: 34px;
+    right: auto;
+  }
+
+  aside {
+    padding: 25px 20px;
+  }
+}
+
+/* ==================== 响应式：窄屏（手机） ==================== */
+@media (max-width: 700px) {
+  :root {
+    --header-h: 60px;
+  }
+
+  header {
+    padding: 0 16px;
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .brand {
+    font-size: 19px;
+    letter-spacing: 2px;
+    gap: 8px;
+  }
+
+  .brand-icon {
+    font-size: 26px;
+  }
+
+  /* 改为上下堆叠 */
+  main {
+    display: block;
+  }
+
+  /* 舞台约占屏幕高度 56%，剩余空间留给控制台 */
+  .stage {
+    height: 56svh;
+    min-height: 340px;
+  }
+
+  .stage-title {
+    top: 18px;
+    left: 16px;
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+
+  h1 {
+    font-size: 19px;
+    letter-spacing: 1px;
+  }
+
+  h1 span {
+    font-size: 11px;
+  }
+
+  .live {
+    top: 86px;
+    left: 16px;
+    font-size: 11px;
+  }
+
+  .stage-bottom {
+    left: 16px;
+    right: 16px;
+    bottom: 12px;
+  }
+
+  .axis {
+    left: 16px;
+    bottom: 56px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .scale {
+    right: 14px;
+    bottom: 74px;
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .scale div {
+    height: 54px;
+  }
+
+  aside {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    padding: 20px 18px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+
+    /* 手机端整页纵向滚动，不再限制侧栏高度 */
+    max-height: none;
+    overflow: visible;
+  }
+
+  .panel-title {
+    margin-bottom: 20px;
+  }
+
+  .panel-title > span:first-child {
+    font-size: 16px;
+  }
+
+  /* 触控目标不小于 44px */
+  .source-tabs button {
+    min-height: 44px;
+  }
+
+  .upload {
+    padding: 14px;
+  }
+
+  input[type="range"] {
+    margin: 15px 0;
+    height: 6px;
+  }
+
+  .meters {
+    gap: 24px;
+  }
+
+  .meters strong {
+    font-size: 22px;
+  }
+
+  #spectrum {
+    height: 38px;
+  }
+
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: inline;
+  }
+}
+
+/* ==================== 响应式：超小屏手机 ==================== */
+@media (max-width: 380px) {
+  .stage {
+    height: 52svh;
+    min-height: 300px;
+  }
+
+  /* 空间不足时隐藏通道数说明 */
+  .axis {
+    display: none;
+  }
+
+  aside {
+    padding: 18px 14px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .meters {
+    gap: 16px;
+  }
+
+  .meters strong {
+    font-size: 20px;
+  }
+
+  .legend {
+    font-size: 11px;
+  }
+}
+
+/* ==================== 响应式：手机横屏 ==================== */
+@media (max-height: 520px) and (max-width: 1000px) and (orientation: landscape) {
+  :root {
+    --header-h: 50px;
+  }
+
+  header {
+    padding: 0 14px;
+  }
+
+  .brand {
+    font-size: 17px;
+  }
+
+  .brand-icon {
+    font-size: 22px;
+  }
+
+  /* 横屏恢复左右布局，避免舞台被压得过矮 */
+  main {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 290px;
+  }
+
+  .stage {
+    height: auto;
+    min-height: calc(100svh - var(--header-h));
+  }
+
+  .stage-title {
+    top: 14px;
+    left: 16px;
+  }
+
+  .eyebrow {
+    display: none;
+  }
+
+  h1 {
+    font-size: 16px;
+    margin: 0;
+  }
+
+  h1 span {
+    font-size: 10px;
+  }
+
+  .live {
+    top: 16px;
+    right: 16px;
+    left: auto;
+  }
+
+  .axis,
+  .scale {
+    display: none;
+  }
+
+  .desktop {
+    display: none;
+  }
+
+  .mobile {
+    display: inline;
+  }
+
+  aside {
+    border-left: 1px solid var(--line);
+    border-top: 0;
+    max-height: calc(100svh - var(--header-h));
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  .panel-title {
+    margin-bottom: 14px;
+  }
+
+  aside section {
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+  }
+}
