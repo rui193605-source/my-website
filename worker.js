@@ -1,3 +1,5 @@
+import { handleEchowallApi } from "./Project_2/Echowall_v2/echowall_api.js";
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -990,6 +992,20 @@ if (url.pathname === "/api/location") {
       request.method === "POST"
     ) {
       return await handleUpload(request);
+    }
+
+    // ==============================
+    // Echowall 旧链接兼容
+    // ==============================
+    if (url.pathname === "/Project_2/Echowall.html") {
+      return Response.redirect(`${url.origin}/Project_2/Echowall_v2/Echowall_v2.html`, 302);
+    }
+
+    // ==============================
+    // Echowall 评论 API
+    // ==============================
+    if (url.pathname === "/api/echowall" || url.pathname.startsWith("/api/echowall/")) {
+      return await handleEchowallApi(request, env);
     }
 
     // ==============================
