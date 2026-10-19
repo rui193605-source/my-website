@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#05070a">
+<meta name="description" content="Echowall 情绪留言墙。说说今天的事，给有共鸣的内容点个赞。">
+<title>Echowall · 情绪留言墙</title>
+<style>
+  :root{color-scheme:dark;--bg:#05070a;--panel:#0d1218;--panel2:#111820;--line:rgba(255,255,255,.095);--line2:rgba(255,255,255,.14);--text:#e8edf2;--muted:#8e9aa6;--dim:#65717d;--green:#6cff9b;--green-soft:rgba(108,255,155,.09);--red:#ff8193;--amber:#f7c873;--radius:18px}
+  *{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:88px}body{margin:0;min-height:100vh;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif}body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-2;opacity:.14;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,#000,transparent 90%)}body:after{content:"";position:fixed;width:620px;height:620px;top:-330px;right:-180px;border-radius:50%;background:radial-gradient(circle,rgba(108,255,155,.075),transparent 68%);pointer-events:none;z-index:-1}
+  button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:wait;opacity:.55}a{color:inherit}.topbar{position:sticky;top:0;z-index:30;min-height:66px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 max(4%,calc((100% - 1180px)/2));background:rgba(5,7,10,.86);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}.brand{font-size:16px;font-weight:900;letter-spacing:3px;white-space:nowrap}.brand .brand-accent{color:var(--green)}.brand-year{color:#68747f;font-size:11px;letter-spacing:1px;font-weight:500;margin-left:5px}.top-actions{display:flex;align-items:center;gap:9px}.connection-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:99px;padding:7px 10px;background:rgba(255,255,255,.025);color:#a9b4bd;font-size:11px;white-space:nowrap;cursor:pointer;transition:.18s}.connection-pill:hover{border-color:rgba(108,255,155,.34);color:var(--text)}.connection-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}.connection-pill.cloud .dot{background:var(--green);box-shadow:0 0 10px rgba(108,255,155,.55)}.admin-link,.back-link{border:1px solid var(--line);border-radius:99px;padding:8px 12px;text-decoration:none;background:rgba(255,255,255,.025);color:#aeb8c2;font-size:11px;white-space:nowrap;transition:.18s}.admin-link:hover,.back-link:hover{color:var(--green);border-color:rgba(108,255,155,.34)}.wrap{width:min(100% - 34px,940px);margin:0 auto}.hero{position:relative;padding:58px 0 32px}.eyebrow{display:inline-flex;align-items:center;gap:9px;color:var(--green);font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:2px}.eyebrow:before{content:"";width:22px;height:1px;background:var(--green)}h1{font-size:clamp(44px,8.3vw,78px);font-weight:900;line-height:.99;letter-spacing:-3.8px;margin:17px 0 17px}h1 .accent{color:var(--green)}.hero-desc{margin:0;max-width:620px;color:#a0aab4;font-size:15px;line-height:1.9}.hero-foot{display:flex;flex-wrap:wrap;gap:8px;margin-top:23px}.chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:99px;background:rgba(255,255,255,.025);color:#9aa6b1;font-size:10px}.chip b{font:10px ui-monospace,monospace;color:var(--green)}.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:34px;padding-bottom:70px}.panel{overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:linear-gradient(145deg,rgba(17,24,32,.96),rgba(10,14,19,.96));box-shadow:0 20px 80px rgba(0,0,0,.16)}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 22px 0}.panel-title{font-size:15px;font-weight:800;letter-spacing:.1px}.panel-sub{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.6}.panel-index{font:10px ui-monospace,monospace;color:#66727e;letter-spacing:1px;white-space:nowrap}.composer{padding:19px 22px 22px}.field-label{display:block;margin:0 0 7px;color:#abb6c0;font-size:11px}.field-row{display:flex;gap:12px;margin-bottom:15px}.nickname-wrap{width:min(100%,270px)}.nickname,.message,.report-details{width:100%;border:1px solid var(--line2);border-radius:10px;background:rgba(0,0,0,.23);color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s}.nickname{padding:11px 12px;font-size:12px}.message{display:block;min-height:132px;resize:vertical;padding:14px;line-height:1.85;font-size:13px}.nickname:focus,.message:focus,.report-details:focus{border-color:rgba(108,255,155,.55);box-shadow:0 0 0 3px rgba(108,255,155,.065)}.nickname::placeholder,.message::placeholder,.report-details::placeholder{color:#56616c}.compose-bottom{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:12px}.compose-hint{font-size:10px;line-height:1.7;color:#77838e;max-width:55%}.compose-actions{display:flex;align-items:center;gap:12px}.char-count{font:10px ui-monospace,monospace;color:var(--muted);white-space:nowrap}.primary-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;border:0;border-radius:10px;background:var(--green);color:#061009;font-size:11px;font-weight:850;white-space:nowrap;transition:transform .18s,box-shadow .18s,opacity .18s}.primary-btn:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(108,255,155,.16)}.notice{display:flex;align-items:flex-start;gap:10px;margin-top:16px;padding:11px 12px;border:1px solid rgba(108,255,155,.14);border-radius:11px;background:rgba(108,255,155,.035);color:#91a49a;font-size:10px;line-height:1.75}.notice .notice-icon{color:var(--green);font-weight:900}.notice b{color:var(--green);font-weight:750}.feed-section{min-width:0}.feed-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:0 0 17px}.feed-title{margin:0;font-size:25px;letter-spacing:-.9px}.feed-sub{margin-top:6px;font-size:11px;color:var(--muted);line-height:1.7}.feed-meta{text-align:right;font:10px/1.9 ui-monospace,monospace;color:#87939e;white-space:nowrap}.feed-meta strong{color:var(--green);font-size:16px}.feed-meta span{display:block;color:#52606b;font-size:9px;letter-spacing:1px}.feed-tools{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.tabs{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.025)}.tab{padding:8px 12px;border:0;border-radius:8px;background:transparent;color:#8e9aa6;font-size:11px;transition:.18s}.tab:hover{color:var(--text)}.tab.active{background:var(--green-soft);color:var(--green)}.feed-hint{font-size:10px;color:#697580}.feed-list{display:grid;gap:12px}.post{min-width:0;padding:18px 19px 14px;border:1px solid var(--line);border-radius:15px;background:rgba(13,18,24,.88);transition:border-color .2s,transform .2s;animation:rise .24s ease both}.post:hover{border-color:rgba(255,255,255,.16)}@keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}.post-top{display:flex;align-items:center;gap:10px}.avatar{display:grid;place-items:center;width:36px;height:36px;flex:0 0 36px;border:1px solid rgba(108,255,155,.16);border-radius:12px;background:rgba(108,255,155,.075);color:var(--green);font-weight:850;font-size:13px}.post-byline{flex:1;min-width:0}.post-author{font-size:12px;font-weight:800;overflow-wrap:anywhere}.post-time{margin-top:4px;color:#74808c;font-size:10px}.own-tag{display:inline-block;margin-left:7px;padding:3px 6px;border-radius:5px;background:var(--green-soft);color:var(--green);font-size:9px;font-weight:650;vertical-align:1px}.demo-tag{padding:4px 7px;border:1px solid var(--line);border-radius:6px;color:#8b97a3;font-size:9px;white-space:nowrap}.post-content{margin:16px 0 18px;color:#d5dce3;font-size:13px;line-height:1.95;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word}.post-divider{height:1px;background:rgba(255,255,255,.055)}.post-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding-top:11px}.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 9px;border:1px solid transparent;border-radius:8px;background:transparent;color:#8b97a2;font-size:10px;transition:.18s}.action-btn:hover{background:rgba(255,255,255,.045);color:var(--text)}.action-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.7;flex:0 0 auto}.action-btn:disabled{cursor:not-allowed;opacity:.62}.action-btn.liked{border-color:rgba(255,129,147,.17);background:rgba(255,129,147,.075);color:var(--red)}.action-btn .like-count{font:10px ui-monospace,monospace}.report-btn{margin-left:auto}.report-btn:hover{color:var(--amber);background:rgba(247,200,115,.07)}.delete-btn:hover{color:var(--red);background:rgba(255,129,147,.07)}.empty{padding:43px 18px;text-align:center;border:1px dashed rgba(255,255,255,.14);border-radius:15px;color:var(--muted)}.empty-mark{margin-bottom:11px;font-size:23px;color:var(--green)}.empty strong{display:block;margin-bottom:7px;color:#d0d8df;font-size:13px}.empty p{margin:0;font-size:11px;line-height:1.8}.community-note{display:flex;gap:12px;align-items:flex-start;margin-top:14px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}.community-note .note-mark{color:var(--green);font-size:16px}.community-note strong{display:block;margin-bottom:4px;font-size:11px}.community-note p{margin:0;color:#8c98a3;font-size:10px;line-height:1.75}.toast{position:fixed;left:50%;bottom:23px;z-index:100;max-width:calc(100% - 28px);padding:11px 15px;border:1px solid rgba(108,255,155,.2);border-radius:11px;background:#111820;color:#dce8df;box-shadow:0 12px 40px rgba(0,0,0,.4);font-size:11px;text-align:center;opacity:0;pointer-events:none;transform:translate(-50%,12px);transition:.22s}.toast.show{opacity:1;transform:translate(-50%,0)}footer{display:flex;justify-content:space-between;gap:14px;padding:24px max(4%,calc((100% - 1180px)/2)) 34px;border-top:1px solid rgba(255,255,255,.08);color:#64717d;font:10px ui-monospace,monospace}footer strong{color:#aab5be}
+  dialog{width:min(440px,calc(100% - 28px));max-height:min(88vh,760px);overflow:auto;padding:0;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:#0d1218;color:var(--text);box-shadow:0 28px 100px rgba(0,0,0,.6)}dialog::backdrop{background:rgba(0,0,0,.72);backdrop-filter:blur(5px)}.dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:20px 20px 0}.dialog-title{font-size:16px;font-weight:850}.dialog-desc{margin-top:6px;color:var(--muted);font-size:11px;line-height:1.7}.icon-close{display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);color:#9ca8b2;font-size:18px}.report-form{padding:18px 20px 20px}.report-reasons{display:grid;gap:8px;margin:0 0 15px;padding:0;border:0}.report-option{display:flex;align-items:center;gap:10px;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.02);color:#c1cad2;font-size:12px;cursor:pointer;transition:.15s}.report-option:has(input:checked){border-color:rgba(108,255,155,.35);background:rgba(108,255,155,.05)}.report-option input{accent-color:var(--green)}.report-details{display:block;min-height:80px;padding:11px;resize:vertical;font-size:12px;line-height:1.7}.report-help{margin:8px 0 16px;color:#7d8994;font-size:10px;line-height:1.7}.dialog-actions{display:flex;justify-content:flex-end;gap:8px}.secondary-btn{padding:10px 13px;border:1px solid var(--line2);border-radius:9px;background:rgba(255,255,255,.03);color:#aab5bf;font-size:11px}.secondary-btn:hover{color:#fff}.report-submit{min-width:92px}.smallprint{margin-top:12px;color:#697580;font-size:9px;line-height:1.7}
+  @media(max-width:650px){.topbar{min-height:60px;padding:0 14px}.brand{font-size:13px;letter-spacing:2px}.brand-year{font-size:9px;margin-left:2px}.top-actions{gap:6px}.connection-pill{padding:7px 8px;font-size:9px}.admin-link,.back-link{padding:7px 9px;font-size:9px}.wrap{width:min(100% - 26px,940px)}.hero{padding:43px 0 26px}h1{letter-spacing:-2.5px}.hero-desc{font-size:13px}.panel-head{padding:17px 15px 0}.composer{padding:16px 15px 17px}.field-row{display:block}.nickname-wrap{width:100%}.message{min-height:125px}.compose-bottom{align-items:flex-end}.compose-hint{max-width:42%;font-size:9px}.compose-actions{gap:8px}.primary-btn{padding:11px 12px;font-size:10px}.feed-head{align-items:flex-start}.feed-title{font-size:23px}.feed-meta{font-size:9px}.feed-tools{align-items:flex-start}.feed-hint{max-width:110px;text-align:right;line-height:1.6}.post{padding:15px 14px 12px}.post-content{font-size:12px}.post-actions{gap:3px}.action-btn{padding:7px 7px;font-size:9px}.report-btn{margin-left:auto}footer{flex-direction:column;padding:23px 15px 29px}}
+  @media(max-width:390px){.connection-pill{display:none}.hero-foot{gap:6px}.chip{font-size:9px;padding:6px 8px}.feed-tools{flex-direction:column;align-items:stretch}.feed-hint{max-width:none;text-align:left}.compose-hint{max-width:37%}.compose-actions{gap:6px}.char-count{font-size:9px}.primary-btn{padding:10px}.post{padding:13px 11px 11px}}
+  @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#top" aria-label="Echowall 首页">ECHO<span class="brand-accent">WALL</span><span class="brand-year">/ 2026</span></a>
+  <div class="top-actions">
+    <button class="connection-pill" id="connection-pill" type="button" title="点击重新连接云端 API"><i class="dot"></i><span id="connection-label">正在连接</span></button>
+    <button class="admin-link" id="admin-placeholder" type="button" title="管理员后台尚在规划中">管理后台 ↗</button>
+    <a class="back-link" href="../../index.html">← 返回</a>
+  </div>
+</header>
+<main class="wrap" id="top">
+  <section class="hero">
+    <div class="eyebrow">YOUR VOICE, YOUR SPACE</div>
+    <h1>有话直说。<br><span class="accent">别憋着。</span></h1>
+    <p class="hero-desc">开心的、糟心的、想不通的，都可以丢在这里。<br>不必写得漂亮，真实表达就够了。</p>
+    <div class="hero-foot"><span class="chip"><b>01</b> 随手发帖</span><span class="chip"><b>02</b> 点赞共鸣</span><span class="chip"><b>03</b> 理性举报</span><span class="chip"><b>04</b> 保留分寸</span></div>
+  </section>
+  <div class="layout">
+    <section class="panel" aria-labelledby="compose-title">
+      <div class="panel-head"><div><div class="panel-title" id="compose-title">发一条吐槽</div><div class="panel-sub">把此刻的想法留在这里</div></div><div class="panel-index">POST / 002</div></div>
+      <form class="composer" id="post-form">
+        <div class="field-row"><div class="nickname-wrap"><label class="field-label" for="nickname">怎么称呼你？（选填）</label><input class="nickname" id="nickname" maxlength="24" placeholder="路过的朋友" autocomplete="nickname"></div></div>
+        <label class="field-label" for="message">说点什么 <span style="color:#6b7782">· 最多 280 字</span></label>
+        <textarea class="message" id="message" required placeholder="今天遇到什么事了？有什么想说的？……"></textarea>
+        <div class="compose-bottom"><div class="compose-hint">请勿发布他人隐私、违法信息或针对个人的恶意攻击。</div><div class="compose-actions"><span class="char-count" id="char-count">0 / 280</span><button class="primary-btn" id="publish-btn" type="submit">发布吐槽 ↗</button></div></div>
+        <div class="notice" id="storage-notice"><span class="notice-icon">ⓘ</span><span><b id="notice-title">本地预览模式</b>：<span id="notice-text">当前未检测到云端接口，发帖、点赞和举报仅保存在这台浏览器。接入 Worker API 后即可写入 D1。</span></span></div>
+      </form>
+    </section>
+    <section class="feed-section" aria-labelledby="feed-title">
+      <div class="feed-head"><div><h2 class="feed-title" id="feed-title">大家在说</h2><div class="feed-sub">有些话说出来，就没那么堵了。</div></div><div class="feed-meta"><strong id="post-total">00</strong> POSTS<span>COMMUNITY WALL</span></div></div>
+      <div class="feed-tools"><div class="tabs" role="tablist" aria-label="帖子排序"><button class="tab active" type="button" data-sort="newest" role="tab" aria-selected="true">最新发布</button><button class="tab" type="button" data-sort="hot" role="tab" aria-selected="false">最多共鸣</button></div><div class="feed-hint" id="feed-hint">先听听大家怎么说。</div></div>
+      <div class="feed-list" id="feed-list" aria-live="polite"></div>
+      <div class="community-note"><span class="note-mark">✳</span><div><strong>让这里保持友善</strong><p>可以吐槽事情，但尽量不攻击具体的人。看到垃圾广告、骚扰、隐私泄露或其他违规内容，可以通过帖子下方的“举报”反馈。举报记录会等待管理员审核。</p></div></div>
+    </section>
+  </div>
+</main>
+<footer><div><strong>ECHOWALL</strong> // A little space to vent</div><div id="footer-mode">LOCAL PREVIEW · D1 API READY</div></footer>
+<dialog id="report-dialog" aria-labelledby="report-title">
+  <div class="dialog-head"><div><div class="dialog-title" id="report-title">举报这条内容</div><div class="dialog-desc">请选择最符合的原因，帮助管理员准确判断。</div></div><button class="icon-close" id="close-report" type="button" aria-label="关闭举报窗口">×</button></div>
+  <form class="report-form" id="report-form">
+    <fieldset class="report-reasons" aria-label="举报原因">
+      <label class="report-option"><input type="radio" name="report-reason" value="spam" required><span>垃圾广告 / 刷屏</span></label>
+      <label class="report-option"><input type="radio" name="report-reason" value="harassment"><span>骚扰、辱骂或针对性攻击</span></label>
+      <label class="report-option"><input type="radio" name="report-reason" value="privacy"><span>泄露个人隐私或个人信息</span></label>
+      <label class="report-option"><input type="radio" name="report-reason" value="illegal"><span>违法、危险或其他严重违规内容</span></label>
+      <label class="report-option"><input type="radio" name="report-reason" value="other"><span>其他原因</span></label>
+    </fieldset>
+    <label class="field-label" for="report-details">补充说明（选填，最多 200 字）</label>
+    <textarea class="report-details" id="report-details" placeholder="可以补充说明具体问题，方便审核。"></textarea>
+    <p class="report-help">请仅举报可能违反规则的内容，不要用举报代替表达不同意见。每个浏览器对同一条帖子只允许提交一次举报。</p>
+    <div class="dialog-actions"><button class="secondary-btn" id="cancel-report" type="button">取消</button><button class="primary-btn report-submit" id="report-submit" type="submit">提交举报</button></div>
+    <div class="smallprint">当前为社区举报入口；管理员审核后台尚未开放。</div>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  'use strict';
+  // Same-origin Worker API. The frontend never connects to D1 directly.
+  const API_BASE = '/api/echowall';
+  const STORAGE_KEY = 'echowall_posts_v1';
+  const REPORTS_KEY = 'echowall_reports_v1';
+  const VISITOR_KEY = 'echowall_visitor_v1';
+  const MAX_CHARS = 280;
+  const MAX_AUTHOR_CHARS = 24;
+  const MAX_DETAILS_CHARS = 200;
+  const MAX_LOCAL_POSTS = 200;
+  const MAX_LOCAL_REPORTS = 500;
+  const REQUEST_TIMEOUT = 8000;
+  const REPORT_REASONS = new Set(['spam','harassment','privacy','illegal','other']);
+  const samplePosts = [
+    {id:'demo-1',author:'星期五加载中',text:'有时候不是不想努力，是事情一件接一件，连喘口气的时间都没有。今天先到这里吧，明天再继续。',createdAt:Date.now()-1000*60*18,likes:12,liked:false,mine:false,reported:false,demo:true},
+    {id:'demo-2',author:'匿名树洞',text:'最烦的不是工作多，是需求一直变，最后还要问为什么没按最开始的计划完成。',createdAt:Date.now()-1000*60*60*3,likes:8,liked:false,mine:false,reported:false,demo:true},
+    {id:'demo-3',author:'今天也要吃饭',text:'记录一下：下班路上买到了喜欢吃的东西。日子不一定每天都顺利，但一点点小开心也值得记下来。',createdAt:Date.now()-1000*60*60*8,likes:5,liked:false,mine:false,reported:false,demo:true}
+  ];
+
+  const state = {
+    posts: [],
+    mode: 'checking',
+    sortMode: 'newest',
+    reportPostId: null,
+    pending: new Set(),
+    publishing: false,
+    reporting: false,
+    connecting: false,
+    lastCloudSync: 0
+  };
+  let toastTimer = null;
+  let listRequestSeq = 0;
+
+  const $ = id => document.getElementById(id);
+  const form = $('post-form'), nicknameInput = $('nickname'), messageInput = $('message'), charCount = $('char-count');
+  const feedList = $('feed-list'), postTotal = $('post-total'), toast = $('toast');
+  const reportDialog = $('report-dialog'), reportForm = $('report-form'), reportDetails = $('report-details');
+
+  function getVisitorId() {
+    try {
+      let id = localStorage.getItem(VISITOR_KEY);
+      if (!id) {
+        id = (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function')
+          ? crypto.randomUUID()
+          : `v-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+        localStorage.setItem(VISITOR_KEY, id);
+      }
+      return id;
+    } catch (_) { return `v-${Date.now()}-${Math.random().toString(36).slice(2)}`; }
+  }
+  const visitorId = getVisitorId();
+
+  function countChars(value) { return Array.from(String(value)).length; }
+  function clampChars(value, max) {
+    const chars = Array.from(String(value));
+    return chars.length > max ? chars.slice(0, max).join('') : chars.join('');
+  }
+  function safeGet(key) {
+    try { return localStorage.getItem(key); } catch (_) { return null; }
+  }
+  function safeSet(key, value) {
+    try { localStorage.setItem(key, value); return true; }
+    catch (error) { console.warn(`保存 ${key} 失败：`, error); return false; }
+  }
+  function normalizeTime(value) {
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof value === 'string' && /^\d+$/.test(value.trim())) return Number(value);
+    const parsed = Date.parse(value);
+    return Number.isFinite(parsed) ? parsed : Date.now();
+  }
+  function normalizePost(input) {
+    if (!input || typeof input !== 'object') return null;
+    const id = String(input.id || '').trim();
+    const text = String(input.text || '').trim();
+    if (!id || !text) return null;
+    return {
+      id,
+      author: clampChars(String(input.author || '路过的朋友').trim() || '路过的朋友', MAX_AUTHOR_CHARS),
+      text,
+      createdAt: normalizeTime(input.createdAt),
+      likes: Math.max(0, Number(input.likes) || 0),
+      liked: Boolean(input.liked),
+      mine: Boolean(input.mine),
+      reported: Boolean(input.reported),
+      demo: Boolean(input.demo)
+    };
+  }
+  function loadLocalReports() {
+    const raw = safeGet(REPORTS_KEY);
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(item => item && typeof item.postId === 'string') : [];
+    } catch (error) {
+      console.warn('读取本地举报记录失败：', error);
+      return [];
+    }
+  }
+  function saveLocalReports(reports) {
+    return safeSet(REPORTS_KEY, JSON.stringify(reports.slice(-MAX_LOCAL_REPORTS)));
+  }
+  function loadLocalPosts() {
+    const reports = loadLocalReports();
+    const raw = safeGet(STORAGE_KEY);
+    if (raw !== null) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          return parsed.map(normalizePost).filter(Boolean).map(post => ({
+            ...post,
+            reported: post.reported || reports.some(report => String(report.postId) === post.id && report.reporterId === visitorId)
+          }));
+        }
+      } catch (error) { console.warn('读取本地帖子失败：', error); }
+    }
+    return samplePosts.map(normalizePost).filter(Boolean);
+  }
+  function saveLocalPosts() {
+    return safeSet(STORAGE_KEY, JSON.stringify(state.posts.slice(0, MAX_LOCAL_POSTS)));
+  }
+  function buildHeaders(extra = {}) { return {'X-Echowall-Visitor': visitorId, ...extra}; }
+  async function apiFetch(path, options = {}) {
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT) : null;
+    try {
+      const response = await fetch(`${API_BASE}${path}`, {
+        ...options,
+        headers: buildHeaders(options.headers || {}),
+        cache: 'no-store',
+        ...(controller ? {signal: controller.signal} : {})
+      });
+      const type = response.headers.get('content-type') || '';
+      let data = null;
+      if (type.includes('application/json')) {
+        try { data = await response.json(); }
+        catch (_) { throw new Error('服务器返回了无法解析的数据。'); }
+      }
+      if (!response.ok || !data || data.success === false) {
+        const error = new Error((data && data.error) || `服务器请求失败（${response.status}）`);
+        error.status = response.status;
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      if (error.name === 'AbortError') throw new Error('请求超时，请检查网络后重试。');
+      throw error;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+  function setMode(nextMode) {
+    state.mode = nextMode;
+    const pill = $('connection-pill');
+    const label = $('connection-label');
+    const title = $('notice-title');
+    const text = $('notice-text');
+    const footer = $('footer-mode');
+    pill.classList.toggle('cloud', nextMode === 'cloud');
+    pill.title = nextMode === 'cloud' ? '点击同步最新云端帖子' : '点击重试连接云端 API';
+    if (nextMode === 'cloud') {
+      label.textContent = '云端 API 已连接'; title.textContent = '云端模式';
+      text.textContent = '页面正在通过同源 Worker API 读取和写入云端数据。请注意：是否真正写入 D1，取决于 Worker 是否已绑定数据库。';
+      footer.textContent = 'WORKER API · D1 BACKEND';
+    } else {
+      label.textContent = '本地预览'; title.textContent = '本地预览模式';
+      text.textContent = '当前未检测到可用的云端接口，发帖、点赞和举报仅保存在这台浏览器。接入 Worker API 并绑定 D1 后即可进行多人共享。';
+      footer.textContent = 'LOCAL PREVIEW · D1 API READY';
+    }
+  }
+  function escapeHTML(value) {
+    return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  function formatTime(value) {
+    const timestamp = normalizeTime(value);
+    const diff = Math.max(0, Date.now() - timestamp);
+    if (diff < 60_000) return '刚刚';
+    if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
+    if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+    const date = new Date(timestamp);
+    return `${date.getFullYear()}/${String(date.getMonth()+1).padStart(2,'0')}/${String(date.getDate()).padStart(2,'0')}`;
+  }
+  function showToast(message) {
+    toast.textContent = message; toast.classList.add('show'); clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+  }
+  function renderEmpty(mark, title, description) {
+    feedList.innerHTML = `<div class="empty"><div class="empty-mark">${mark}</div><strong>${title}</strong><p>${description}</p></div>`;
+  }
+  function heartIcon() { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>'; }
+  function flagIcon() { return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 1c5-4 9 4 14 0v10c-5 4-9-4-14 0"/></svg>'; }
+  function render() {
+    const visible = [...state.posts].sort((a,b) => state.sortMode === 'hot'
+      ? ((Number(b.likes)||0)-(Number(a.likes)||0) || normalizeTime(b.createdAt)-normalizeTime(a.createdAt))
+      : normalizeTime(b.createdAt)-normalizeTime(a.createdAt));
+    postTotal.textContent = String(state.posts.length).padStart(2,'0');
+    $('feed-hint').textContent = state.mode === 'cloud' ? '云端帖子对访客共享。' : '当前是本地预览，其他访客暂时看不到你的内容。';
+    if (!visible.length) {
+      renderEmpty('✳', '这里还很安静', '发出第一条帖子，开启这面留言墙。');
+      return;
+    }
+    feedList.innerHTML = visible.map(post => {
+      const author = String(post.author || '路过的朋友').trim() || '路过的朋友';
+      const initial = escapeHTML(Array.from(author)[0] || '友');
+      const liked = Boolean(post.liked);
+      const likes = Math.max(0, Number(post.likes) || 0);
+      const own = Boolean(post.mine);
+      const reported = Boolean(post.reported);
+      const busy = state.pending.has(String(post.id));
+      return `<article class="post" data-post-id="${escapeHTML(post.id)}">
+        <div class="post-top"><div class="avatar" aria-hidden="true">${initial}</div><div class="post-byline"><div class="post-author">${escapeHTML(author)}${own ? '<span class="own-tag">我的帖子</span>' : ''}</div><div class="post-time">${escapeHTML(formatTime(post.createdAt))}</div></div>${post.demo ? '<span class="demo-tag">示例</span>' : ''}</div>
+        <div class="post-content">${escapeHTML(post.text || '')}</div><div class="post-divider"></div>
+        <div class="post-actions"><button class="action-btn like-btn ${liked ? 'liked' : ''}" type="button" data-action="like" aria-pressed="${liked}" aria-label="${liked ? '取消点赞' : '点赞'}" ${busy ? 'disabled' : ''}>${heartIcon()}<span>${liked ? '已共鸣' : '有共鸣'}</span><span class="like-count">${likes}</span></button>
+        <button class="action-btn report-btn" type="button" data-action="report" aria-label="${reported ? '已举报' : '举报'}" ${busy || reported ? 'disabled' : ''}>${flagIcon()}<span>${reported ? '已举报' : '举报'}</span></button>
+        ${own ? `<button class="action-btn delete-btn" type="button" data-action="delete" ${busy ? 'disabled' : ''}>${busy ? '处理中…' : '删除帖子'}</button>` : ''}</div>
+      </article>`;
+    }).join('');
+  }
+  async function fetchCloudPosts() {
+    const seq = ++listRequestSeq;
+    const requestedSort = state.sortMode;
+    const data = await apiFetch(`/posts?sort=${encodeURIComponent(requestedSort)}`);
+    if (seq !== listRequestSeq) return false;
+    if (!Array.isArray(data.posts)) throw new Error('接口返回格式不正确。');
+    state.posts = data.posts.map(normalizePost).filter(Boolean);
+    state.lastCloudSync = Date.now();
+    render();
+    return true;
+  }
+  async function connectCloud({ initial = false } = {}) {
+    if (state.connecting) return false;
+    state.connecting = true;
+    const label = $('connection-label');
+    if (!initial && state.mode === 'cloud') label.textContent = '正在同步';
+    try {
+      const data = await apiFetch(`/posts?sort=${encodeURIComponent(state.sortMode)}`);
+      if (!Array.isArray(data.posts)) throw new Error('接口返回格式不正确。');
+      state.posts = data.posts.map(normalizePost).filter(Boolean);
+      state.lastCloudSync = Date.now();
+      setMode('cloud');
+      render();
+      return true;
+    } catch (error) {
+      console.info('Echowall API unavailable.', error);
+      if (!initial) showToast(`云端同步失败：${error.message || '请稍后重试。'}`);
+      return false;
+    } finally {
+      state.connecting = false;
+      if (state.mode === 'cloud') label.textContent = '云端 API 已连接';
+    }
+  }
+  function updateTabs() {
+    document.querySelectorAll('.tab').forEach(tab => {
+      const active = tab.dataset.sort === state.sortMode;
+      tab.classList.toggle('active', active); tab.setAttribute('aria-selected', String(active));
+    });
+  }
+  function updateCharCount() {
+    const count = countChars(messageInput.value);
+    charCount.textContent = `${count} / ${MAX_CHARS}`;
+    charCount.style.color = count > MAX_CHARS ? 'var(--red)' : count >= MAX_CHARS ? 'var(--amber)' : 'var(--muted)';
+  }
+  messageInput.addEventListener('input', updateCharCount);
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (state.publishing) return;
+    const text = messageInput.value.trim();
+    const chars = countChars(text);
+    if (!text) { showToast('先写点内容再发布吧。'); messageInput.focus(); return; }
+    if (chars > MAX_CHARS) { showToast(`内容不能超过 ${MAX_CHARS} 字。`); messageInput.focus(); return; }
+    const author = clampChars(nicknameInput.value.trim(), MAX_AUTHOR_CHARS) || '路过的朋友';
+    state.publishing = true;
+    const button = $('publish-btn'); button.disabled = true; button.textContent = '正在发布…';
+    try {
+      let created = null;
+      if (state.mode === 'cloud') {
+        const data = await apiFetch('/posts', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({author,text})});
+        created = normalizePost(data.post);
+      } else {
+        created = normalizePost({
+          id:`post-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+          author,text,createdAt:Date.now(),likes:0,liked:false,mine:true,reported:false,demo:false
+        });
+      }
+      if (!created) throw new Error('服务器返回的帖子数据不完整。');
+      state.posts = [created, ...state.posts.filter(post => post.id !== created.id)].slice(0, MAX_LOCAL_POSTS);
+      const saved = state.mode === 'local' ? saveLocalPosts() : true;
+      messageInput.value = ''; updateCharCount();
+      state.sortMode = 'newest'; updateTabs(); render();
+      if (state.mode === 'cloud') showToast('发布成功，已提交至云端。');
+      else showToast(saved ? '发布成功，仅保存在当前浏览器。' : '发布成功，但浏览器未能保存，刷新后会丢失。');
+      $('feed-title').scrollIntoView({behavior:'smooth',block:'start'});
+    } catch (error) {
+      console.error(error);
+      showToast(`发布失败：${error.message || '请稍后重试。'}`);
+    }
+    finally { state.publishing = false; button.disabled = false; button.textContent = '发布吐槽 ↗'; }
+  });
+  feedList.addEventListener('click', async event => {
+    const button = event.target.closest('button[data-action]');
+    if (!button || button.disabled) return;
+    const article = button.closest('[data-post-id]');
+    if (!article) return;
+    const id = article.dataset.postId;
+    if (state.pending.has(id)) return;
+    const post = state.posts.find(item => String(item.id) === id);
+    if (!post) { render(); return; }
+    const action = button.dataset.action;
+
+    if (action === 'report') { openReport(post.id); return; }
+
+    if (action === 'delete') {
+      if (!post.mine) return;
+      if (!window.confirm('确定删除这条帖子吗？此操作无法撤销。')) return;
+      state.pending.add(id); render();
+      try {
+        if (state.mode === 'cloud') await apiFetch(`/posts/${encodeURIComponent(id)}`, {method:'DELETE'});
+        state.posts = state.posts.filter(item => String(item.id) !== id);
+        const saved = state.mode === 'local' ? saveLocalPosts() : true;
+        if (state.mode === 'cloud') showToast('帖子已删除。');
+        else showToast(saved ? '帖子已从当前浏览器删除。' : '帖子已删除，但浏览器未能保存更改。');
+      } catch (error) {
+        if (error.status === 404) {
+          state.posts = state.posts.filter(item => String(item.id) !== id);
+          showToast('这条帖子已不存在，已从列表移除。');
+        } else {
+          showToast(`删除失败：${error.message || '请稍后重试。'}`);
+        }
+      } finally { state.pending.delete(id); render(); }
+      return;
+    }
+
+    if (action === 'like') {
+      const desired = !Boolean(post.liked);
+      let saved = true;
+      state.pending.add(id); render();
+      try {
+        if (state.mode === 'cloud') {
+          const data = await apiFetch(`/posts/${encodeURIComponent(id)}/like`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({liked:desired})});
+          const target = state.posts.find(item => String(item.id) === id);
+          if (target) {
+            target.liked = Boolean(data.liked);
+            target.likes = Math.max(0, Number(data.likes) || 0);
+          }
+        } else {
+          post.liked = desired;
+          post.likes = Math.max(0, (Number(post.likes) || 0) + (desired ? 1 : -1));
+          saved = saveLocalPosts();
+        }
+        if (!saved) showToast('操作已生效，但浏览器未能保存，刷新后会恢复。');
+        else showToast(desired ? '收到，给这条内容点了个赞。' : '已取消点赞。');
+      } catch (error) {
+        if (error.status === 404) {
+          state.posts = state.posts.filter(item => String(item.id) !== id);
+          showToast('这条帖子已不存在，已从列表移除。');
+        } else {
+          showToast(`操作失败：${error.message || '请稍后重试。'}`);
+        }
+      } finally { state.pending.delete(id); render(); }
+    }
+  });
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', async () => {
+    const nextSort = tab.dataset.sort === 'hot' ? 'hot' : 'newest';
+    if (nextSort === state.sortMode) return;
+    state.sortMode = nextSort; updateTabs();
+    if (state.mode === 'cloud') {
+      $('feed-hint').textContent = '正在同步…';
+      try { await fetchCloudPosts(); }
+      catch (error) {
+        $('feed-hint').textContent = '同步失败，显示的是之前的列表。';
+        showToast(`加载失败：${error.message || '请稍后重试。'}`);
+      }
+    } else render();
+  }));
+
+  function openReport(postId) {
+    const post = state.posts.find(item => String(item.id) === String(postId));
+    if (!post || post.reported || state.reporting) return;
+    state.reportPostId = String(postId);
+    reportForm.reset(); reportDetails.value = '';
+    if (typeof reportDialog.showModal === 'function') {
+      if (!reportDialog.open) reportDialog.showModal();
+    } else {
+      state.reportPostId = null;
+      showToast('当前浏览器不支持举报弹窗，请更新浏览器后重试。');
+    }
+  }
+  function closeReport() { if (reportDialog.open) reportDialog.close(); state.reportPostId = null; }
+  function markReported(postId) {
+    const target = state.posts.find(item => String(item.id) === String(postId));
+    if (target) { target.reported = true; render(); }
+  }
+  $('close-report').addEventListener('click', closeReport);
+  $('cancel-report').addEventListener('click', closeReport);
+  reportDialog.addEventListener('click', event => { if (event.target === reportDialog) closeReport(); });
+  reportDialog.addEventListener('close', () => { state.reportPostId = null; });
+  reportForm.addEventListener('submit', async event => {
+    event.preventDefault();
+    const postId = state.reportPostId;
+    if (!postId || state.reporting) return;
+    const selected = reportForm.querySelector('input[name="report-reason"]:checked');
+    if (!selected || !REPORT_REASONS.has(selected.value)) { showToast('请选择举报原因。'); return; }
+    const detailsText = reportDetails.value.trim();
+    if (countChars(detailsText) > MAX_DETAILS_CHARS) { showToast(`举报说明不能超过 ${MAX_DETAILS_CHARS} 字。`); return; }
+    const details = detailsText;
+    state.reporting = true;
+    const submit = $('report-submit'); submit.disabled = true; submit.textContent = '正在提交…';
+    try {
+      if (state.mode === 'cloud') {
+        await apiFetch(`/posts/${encodeURIComponent(postId)}/reports`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason:selected.value,details})});
+      } else {
+        const reports = loadLocalReports();
+        if (reports.some(report => String(report.postId) === postId && report.reporterId === visitorId)) {
+          markReported(postId); closeReport();
+          showToast('你已经举报过这条内容。');
+          return;
+        }
+        reports.push({id:`report-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,postId,reason:selected.value,details,reporterId:visitorId,createdAt:Date.now(),status:'pending'});
+        if (!saveLocalReports(reports)) throw new Error('浏览器阻止了本地存储，举报未能保存。');
+      }
+      markReported(postId); closeReport();
+      showToast(state.mode === 'cloud' ? '举报已提交，等待管理员审核。' : '举报已记录在本地预览中，尚未发送给管理员。');
+    } catch (error) {
+      if (error.status === 409) {
+        markReported(postId); closeReport();
+        showToast('你已经举报过这条内容。');
+      } else {
+        showToast(`举报提交失败：${error.message || '请稍后重试。'}`);
+      }
+    } finally { state.reporting = false; submit.disabled = false; submit.textContent = '提交举报'; }
+  });
+  $('admin-placeholder').addEventListener('click', () => showToast('管理员后台仍在规划中；云端模式下的举报会先保存到 D1。'));
+  $('connection-pill').addEventListener('click', async () => {
+    if (state.connecting) return;
+    const wasLocal = state.mode !== 'cloud';
+    const ok = await connectCloud();
+    if (ok) showToast(wasLocal ? '已连接云端 API。' : '已同步最新云端帖子。');
+  });
+
+  window.addEventListener('storage', event => {
+    if (state.mode !== 'local') return;
+    if (event.key !== STORAGE_KEY && event.key !== REPORTS_KEY) return;
+    state.posts = loadLocalPosts();
+    render();
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden || state.mode !== 'cloud' || state.connecting || state.pending.size) return;
+    if (Date.now() - state.lastCloudSync < 45_000) return;
+    fetchCloudPosts().catch(error => console.info('后台同步失败：', error));
+  });
+  window.addEventListener('online', () => {
+    if (state.mode !== 'cloud' || state.connecting) return;
+    fetchCloudPosts().catch(() => {});
+  });
+
+  async function init() {
+    setMode('local');
+    $('connection-label').textContent = '正在连接';
+    renderEmpty('…', '正在连接', '正在检查云端 API 是否可用。');
+    const connected = await connectCloud({ initial: true });
+    if (!connected) {
+      state.posts = loadLocalPosts();
+      setMode('local');
+      render();
+    }
+  }
+  updateTabs();
+  updateCharCount();
+  init();
+})();
+</script>
+</body>
+</html>
