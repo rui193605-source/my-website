@@ -21,7 +21,7 @@
   <a class="brand" href="#top" aria-label="Echowall 首页">ECHO<span class="brand-accent">WALL</span><span class="brand-year">/ 2026</span></a>
   <div class="top-actions">
     <button class="connection-pill" id="connection-pill" type="button" title="点击重新连接云端 API"><i class="dot"></i><span id="connection-label">正在连接</span></button>
-    <button class="admin-link" id="admin-placeholder" type="button" title="管理员后台尚在规划中">管理后台 ↗</button>
+    <a class="admin-link" href="./admin.html" title="进入管理员后台">管理后台 ↗</a>
     <a class="back-link" href="../../index.html">← 返回</a>
   </div>
 </header>
@@ -38,7 +38,7 @@
       <form class="composer" id="post-form">
         <div class="field-row"><div class="nickname-wrap"><label class="field-label" for="nickname">怎么称呼你？（选填）</label><input class="nickname" id="nickname" maxlength="24" placeholder="路过的朋友" autocomplete="nickname"></div></div>
         <label class="field-label" for="message">说点什么 <span style="color:#6b7782">· 最多 280 字</span></label>
-        <textarea class="message" id="message" required placeholder="今天遇到什么事了？有什么想说的？……"></textarea>
+        <textarea class="message" id="message" required maxlength="280" placeholder="今天遇到什么事了？有什么想说的？……"></textarea>
         <div class="compose-bottom"><div class="compose-hint">请勿发布他人隐私、违法信息或针对个人的恶意攻击。</div><div class="compose-actions"><span class="char-count" id="char-count">0 / 280</span><button class="primary-btn" id="publish-btn" type="submit">发布吐槽 ↗</button></div></div>
         <div class="notice" id="storage-notice"><span class="notice-icon">ⓘ</span><span><b id="notice-title">本地预览模式</b>：<span id="notice-text">当前未检测到云端接口，发帖、点赞和举报仅保存在这台浏览器。接入 Worker API 后即可写入 D1。</span></span></div>
       </form>
@@ -63,10 +63,10 @@
       <label class="report-option"><input type="radio" name="report-reason" value="other"><span>其他原因</span></label>
     </fieldset>
     <label class="field-label" for="report-details">补充说明（选填，最多 200 字）</label>
-    <textarea class="report-details" id="report-details" placeholder="可以补充说明具体问题，方便审核。"></textarea>
+    <textarea class="report-details" id="report-details" maxlength="200" placeholder="可以补充说明具体问题，方便审核。"></textarea>
     <p class="report-help">请仅举报可能违反规则的内容，不要用举报代替表达不同意见。每个浏览器对同一条帖子只允许提交一次举报。</p>
     <div class="dialog-actions"><button class="secondary-btn" id="cancel-report" type="button">取消</button><button class="primary-btn report-submit" id="report-submit" type="submit">提交举报</button></div>
-    <div class="smallprint">当前为社区举报入口；管理员审核后台尚未开放。</div>
+    <div class="smallprint">举报提交后会进入管理员审核队列，处理结果不会公开显示。</div>
   </form>
 </dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -194,12 +194,13 @@
   }
   function buildHeaders(extra = {}) { return {'X-Echowall-Visitor': visitorId, ...extra}; }
   async function apiFetch(path, options = {}) {
+    const { timeout = REQUEST_TIMEOUT, ...fetchOptions } = options;
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
-    const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT) : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeout) : null;
     try {
       const response = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: buildHeaders(options.headers || {}),
+        ...fetchOptions,
+        headers: buildHeaders(fetchOptions.headers || {}),
         cache: 'no-store',
         ...(controller ? {signal: controller.signal} : {})
       });
@@ -217,6 +218,7 @@
       return data;
     } catch (error) {
       if (error.name === 'AbortError') throw new Error('请求超时，请检查网络后重试。');
+      if (error instanceof TypeError) throw new Error('网络连接失败，请检查网络后重试。');
       throw error;
     } finally {
       if (timer) clearTimeout(timer);
@@ -289,10 +291,10 @@
       </article>`;
     }).join('');
   }
+  function cloudSortParam() { return state.sortMode === 'hot' ? 'hot' : 'latest'; }
   async function fetchCloudPosts() {
     const seq = ++listRequestSeq;
-    const requestedSort = state.sortMode;
-    const data = await apiFetch(`/posts?sort=${encodeURIComponent(requestedSort)}`);
+    const data = await apiFetch(`/posts?sort=${cloudSortParam()}`);
     if (seq !== listRequestSeq) return false;
     if (!Array.isArray(data.posts)) throw new Error('接口返回格式不正确。');
     state.posts = data.posts.map(normalizePost).filter(Boolean);
@@ -303,10 +305,12 @@
   async function connectCloud({ initial = false } = {}) {
     if (state.connecting) return false;
     state.connecting = true;
+    const seq = ++listRequestSeq;
     const label = $('connection-label');
     if (!initial && state.mode === 'cloud') label.textContent = '正在同步';
     try {
-      const data = await apiFetch(`/posts?sort=${encodeURIComponent(state.sortMode)}`);
+      const data = await apiFetch(`/posts?sort=${cloudSortParam()}`, { timeout: initial ? 3500 : REQUEST_TIMEOUT });
+      if (seq !== listRequestSeq) return state.mode === 'cloud';
       if (!Array.isArray(data.posts)) throw new Error('接口返回格式不正确。');
       state.posts = data.posts.map(normalizePost).filter(Boolean);
       state.lastCloudSync = Date.now();
@@ -497,12 +501,16 @@
       if (error.status === 409) {
         markReported(postId); closeReport();
         showToast('你已经举报过这条内容。');
+      } else if (error.status === 404) {
+        closeReport();
+        state.posts = state.posts.filter(item => String(item.id) !== postId);
+        render();
+        showToast('这条帖子已不存在，已从列表移除。');
       } else {
         showToast(`举报提交失败：${error.message || '请稍后重试。'}`);
       }
     } finally { state.reporting = false; submit.disabled = false; submit.textContent = '提交举报'; }
   });
-  $('admin-placeholder').addEventListener('click', () => showToast('管理员后台仍在规划中；云端模式下的举报会先保存到 D1。'));
   $('connection-pill').addEventListener('click', async () => {
     if (state.connecting) return;
     const wasLocal = state.mode !== 'cloud';
@@ -525,6 +533,12 @@
     if (state.mode !== 'cloud' || state.connecting) return;
     fetchCloudPosts().catch(() => {});
   });
+  // 云端模式下定时轻量同步，让管理后台的隐藏/删除操作能及时反映到留言墙。
+  setInterval(() => {
+    if (document.hidden || state.mode !== 'cloud' || state.connecting || state.pending.size) return;
+    if (Date.now() - state.lastCloudSync < 55_000) return;
+    fetchCloudPosts().catch(() => {});
+  }, 60_000);
 
   async function init() {
     setMode('local');

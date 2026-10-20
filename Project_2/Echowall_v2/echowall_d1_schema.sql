@@ -56,5 +56,8 @@ CREATE INDEX IF NOT EXISTS idx_echowall_reports_status_created
 CREATE INDEX IF NOT EXISTS idx_echowall_reports_post
   ON echowall_reports(post_id);
 
+CREATE INDEX IF NOT EXISTS idx_echowall_reports_post_status
+  ON echowall_reports(post_id, status);
+
 CREATE INDEX IF NOT EXISTS idx_echowall_reports_reporter
   ON echowall_reports(reporter_key, created_at DESC);

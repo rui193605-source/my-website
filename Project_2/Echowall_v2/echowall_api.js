@@ -146,18 +146,20 @@ async function toggleLike(request, env, postId) {
   if (parsed.error) return fail(parsed.error, 400);
   if (typeof parsed.value.liked !== "boolean") return fail("liked 必须是布尔值。", 400);
 
+  const statements = [];
   if (parsed.value.liked) {
-    await env.DB.prepare(
+    statements.push(env.DB.prepare(
       "INSERT OR IGNORE INTO echowall_likes (post_id, visitor_key, created_at) VALUES (?, ?, ?)"
-    ).bind(postId, visitor, Date.now()).run();
+    ).bind(postId, visitor, Date.now()));
   } else {
-    await env.DB.prepare("DELETE FROM echowall_likes WHERE post_id = ? AND visitor_key = ?").bind(postId, visitor).run();
+    statements.push(env.DB.prepare("DELETE FROM echowall_likes WHERE post_id = ? AND visitor_key = ?").bind(postId, visitor));
   }
   // Recount from the source table rather than incrementing blindly. This keeps
   // the displayed count robust against repeated clicks or retried requests.
-  await env.DB.prepare(
+  statements.push(env.DB.prepare(
     "UPDATE echowall_posts SET likes_count = (SELECT COUNT(*) FROM echowall_likes WHERE post_id = ?) WHERE id = ?"
-  ).bind(postId, postId).run();
+  ).bind(postId, postId));
+  await env.DB.batch(statements);
   const result = await env.DB.prepare(
     "SELECT likes_count AS likes, EXISTS(SELECT 1 FROM echowall_likes WHERE post_id = ? AND visitor_key = ?) AS liked FROM echowall_posts WHERE id = ?"
   ).bind(postId, visitor, postId).first();
