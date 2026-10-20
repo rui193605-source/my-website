@@ -1,6 +1,7 @@
 /**
- * Echowall admin API. Requires env.DB, env.ECHOWALL_ADMIN_PASSWORD,
- * and env.ECHOWALL_ADMIN_SESSION_SECRET (both secrets configured in Cloudflare).
+ * Echowall admin API. Requires env.DB and the Cloudflare Secret `administrator`
+ * (the administrator password). A session signing key is derived from it.
+ * Legacy env.ECHOWALL_ADMIN_PASSWORD / ECHOWALL_ADMIN_SESSION_SECRET still work.
  * Session: signed HMAC cookie, HttpOnly + Secure + SameSite=Strict, 8-hour expiry.
  */
 const BASE = "/api/echowall/admin";
@@ -101,9 +102,20 @@ function safeEqualsString(a, b) {
       return diff === 0;
     });
 }
+function configuredAdminPassword(env) {
+  return env.administrator || env.ECHOWALL_ADMIN_PASSWORD || null;
+}
+async function configuredSessionSecret(env) {
+  if (env.administrator) {
+    const digest = await crypto.subtle.digest("SHA-256", encoder.encode(`echowall-session-v1:${env.administrator}`));
+    return bytesToB64Url(new Uint8Array(digest));
+  }
+  return env.ECHOWALL_ADMIN_SESSION_SECRET || null;
+}
 async function authenticate(request, env) {
-  if (!env.ECHOWALL_ADMIN_SESSION_SECRET) return null;
-  return verifyToken(getCookie(request, COOKIE), env.ECHOWALL_ADMIN_SESSION_SECRET);
+  const secret = await configuredSessionSecret(env);
+  if (!secret) return null;
+  return verifyToken(getCookie(request, COOKIE), secret);
 }
 function isSameOrigin(request, url) {
   // All browser mutations require an Origin header matching this site's origin.
@@ -140,8 +152,10 @@ function escapeLike(value) {
 async function login(request, env, url) {
   if (request.method !== "POST") return methodNotAllowed("POST");
   if (!isSameOrigin(request, url)) return fail("来源校验失败，请从本站管理页面操作。", 403);
-  if (!env.ECHOWALL_ADMIN_PASSWORD || !env.ECHOWALL_ADMIN_SESSION_SECRET) {
-    return fail("管理员 Secret 尚未配置。请配置 ECHOWALL_ADMIN_PASSWORD 和 ECHOWALL_ADMIN_SESSION_SECRET。", 503);
+  const adminPassword = configuredAdminPassword(env);
+  const sessionSecret = await configuredSessionSecret(env);
+  if (!adminPassword || !sessionSecret) {
+    return fail("管理员 Secret 尚未配置。请配置 administrator。", 503);
   }
   const key = clientKey(request);
   if (loginAttemptCount(key) >= LOGIN_MAX_FAILURES) {
@@ -153,14 +167,14 @@ async function login(request, env, url) {
   if (parsed.error) return fail(parsed.error, 400);
   const password = typeof parsed.value.password === "string" ? parsed.value.password : "";
   const validLength = password.length >= 1 && password.length <= 512;
-  const matched = validLength && await safeEqualsString(password, env.ECHOWALL_ADMIN_PASSWORD);
+  const matched = validLength && await safeEqualsString(password, adminPassword);
   if (!matched) {
     recordLoginFailure(key);
     return fail("密码不正确。", 401);
   }
   loginFailures.delete(key);
   const now = Math.floor(Date.now() / 1000);
-  const token = await signPayload({ role: "admin", iat: now, exp: now + SESSION_TTL_SECONDS }, env.ECHOWALL_ADMIN_SESSION_SECRET);
+  const token = await signPayload({ role: "admin", iat: now, exp: now + SESSION_TTL_SECONDS }, sessionSecret);
   return json({ success: true, authenticated: true, expiresAt: (now + SESSION_TTL_SECONDS) * 1000 }, 200, { "set-cookie": sessionCookie(token) });
 }
 async function listReports(env, url) {

@@ -106,15 +106,14 @@ if (url.pathname === "/api/echowall" || url.pathname.startsWith("/api/echowall/"
 
 ### 6. 配置管理后台
 
-管理后台需要两个 Cloudflare Secret：
+管理后台只需要一个 Cloudflare Secret：
 
 ```bash
-npx wrangler secret put ECHOWALL_ADMIN_PASSWORD
-npx wrangler secret put ECHOWALL_ADMIN_SESSION_SECRET
+npx wrangler secret put administrator
 ```
 
-- `ECHOWALL_ADMIN_PASSWORD`：管理员登录密码。
-- `ECHOWALL_ADMIN_SESSION_SECRET`：用于签名 8 小时会话 Cookie 的随机长字符串，不要和密码相同。
+- `administrator`：管理员登录密码。Worker 会基于它派生 8 小时会话 Cookie 的签名密钥；修改该 Secret 会使旧会话立即失效。
+- 若仍保留旧版 `ECHOWALL_ADMIN_PASSWORD` / `ECHOWALL_ADMIN_SESSION_SECRET`，代码会继续兼容；两者都存在时优先使用 `administrator`。
 
 配置后重新部署，访问 `/Project_2/Echowall_v2/admin.html` 登录。管理后台与留言墙同源，因此会话 Cookie 可以正常写入并随请求发送。直接双击打开本地 HTML 文件无法登录，也不会写入 D1。
 
@@ -149,7 +148,7 @@ npx wrangler secret put ECHOWALL_ADMIN_SESSION_SECRET
 
 ## 当前原型的安全边界
 
-本版通过浏览器 localStorage 生成一个匿名访客 ID，Worker 用它区分点赞、判断“我的帖子”和限制同一个访客重复举报。这是无账号原型的轻量方案，不是可靠的身份验证；访客可以清理或伪造本地 ID。正式公开给更多用户使用之前，建议补上 Cloudflare Turnstile、持久化速率限制和异常请求防护。管理后台已使用密码登录与签名会话，但管理员密码和会话密钥必须只配置在 Cloudflare Secret 中，绝不能写入前端 HTML。
+本版通过浏览器 localStorage 生成一个匿名访客 ID，Worker 用它区分点赞、判断“我的帖子”和限制同一个访客重复举报。这是无账号原型的轻量方案，不是可靠的身份验证；访客可以清理或伪造本地 ID。正式公开给更多用户使用之前，建议补上 Cloudflare Turnstile、持久化速率限制和异常请求防护。管理后台已使用密码登录与签名会话，但管理员密码必须只配置在 Cloudflare Secret `administrator` 中，绝不能写入前端 HTML。
 
 ## 设计参考
 
