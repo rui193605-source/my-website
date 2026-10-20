@@ -1,4 +1,5 @@
 import { handleEchowallApi } from "./Project_2/Echowall_v2/echowall_api.js";
+import { handleEchowallAdminApi } from "./Project_2/Echowall_v2/echowall_admin_api.js";
 
 export default {
   async fetch(request, env, ctx) {
@@ -1002,9 +1003,12 @@ if (url.pathname === "/api/location") {
     }
 
     // ==============================
-    // Echowall 评论 API
+    // Echowall 评论 / 管理 API
     // ==============================
     if (url.pathname === "/api/echowall" || url.pathname.startsWith("/api/echowall/")) {
+      // 管理 API 先处理；非 /admin 路径返回 null，再交给公开 API。
+      const adminResponse = await handleEchowallAdminApi(request, env);
+      if (adminResponse) return adminResponse;
       return await handleEchowallApi(request, env);
     }
 
@@ -1227,7 +1231,7 @@ function corsHeaders() {
       "*",
 
     "Access-Control-Allow-Methods":
-      "GET, POST, OPTIONS",
+      "GET, POST, PATCH, DELETE, OPTIONS",
 
     "Access-Control-Allow-Headers":
       "*",
