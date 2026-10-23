@@ -5,7 +5,8 @@
  *
  * Expected D1 binding: env.DB
  * Routes: /api/echowall/posts, /api/echowall/posts/:id/like,
- *         /api/echowall/posts/:id/reports, DELETE /api/echowall/posts/:id
+ *         /api/echowall/posts/:id/reports
+ * Post deletion is admin-only and handled by echowall_admin_api.js.
  */
 const BASE_PATH = "/api/echowall";
 const VALID_REPORT_REASONS = new Set(["spam", "harassment", "privacy", "illegal", "other"]);
