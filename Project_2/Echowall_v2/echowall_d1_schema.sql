@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS echowall_reports (
   reviewed_at INTEGER,
   reviewed_by TEXT,
   UNIQUE (post_id, reporter_key),
-  FOREIGN KEY (post_id) REFERENCES echowall_posts(id)
+  FOREIGN KEY (post_id) REFERENCES echowall_posts(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_echowall_reports_status_created

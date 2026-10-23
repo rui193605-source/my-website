@@ -12,7 +12,7 @@ const encoder = new TextEncoder();
 const REPORT_STATUSES = new Set(["pending", "reviewed", "dismissed"]);
 const REPORT_FILTERS = new Set(["pending", "reviewed", "dismissed", "all"]);
 const POST_FILTERS = new Set(["visible", "hidden", "deleted", "all"]);
-const POST_ACTIONS = { hide: "hidden", delete: "deleted", restore: "visible" };
+const POST_ACTIONS = { hide: "hidden", restore: "visible" };
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_MAX_FAILURES = 8;
 // Best-effort per-isolate throttle. Durable rate limiting belongs in D1/KV.
@@ -232,10 +232,29 @@ async function reviewReport(request, env, reportId) {
     .bind(status, note, status === "pending" ? null : Date.now(), status === "pending" ? null : "admin", reportId).run();
   return json({ success: true });
 }
+async function deletePost(env, postId) {
+  const existing = await env.DB.prepare("SELECT id, status FROM echowall_posts WHERE id = ?").bind(postId).first();
+  if (!existing) return fail("帖子不存在。", 404);
+  // 硬删除：先清理依赖记录，避免外键约束阻止删除帖子。
+  const results = await env.DB.batch([
+    env.DB.prepare("DELETE FROM echowall_reports WHERE post_id = ?").bind(postId),
+    env.DB.prepare("DELETE FROM echowall_likes WHERE post_id = ?").bind(postId),
+    env.DB.prepare("DELETE FROM echowall_posts WHERE id = ?").bind(postId),
+  ]);
+  return json({
+    success: true,
+    id: postId,
+    deleted: true,
+    previousStatus: existing.status,
+    removedReports: Number(results[0]?.meta?.changes || 0),
+    removedLikes: Number(results[1]?.meta?.changes || 0),
+  });
+}
 async function changePost(request, env, postId) {
   const parsed = await readJson(request);
   if (parsed.error) return fail(parsed.error, 400);
   const action = parsed.value.action;
+  if (action === "delete") return await deletePost(env, postId);
   const nextStatus = POST_ACTIONS[action];
   if (!nextStatus) return fail("不支持的帖子操作。", 400);
   const existing = await env.DB.prepare("SELECT id, status FROM echowall_posts WHERE id = ?").bind(postId).first();
@@ -243,12 +262,11 @@ async function changePost(request, env, postId) {
   const statements = [
     env.DB.prepare("UPDATE echowall_posts SET status = ? WHERE id = ?").bind(nextStatus, postId),
   ];
-  // Hiding or deleting a post resolves its pending reports so the queue stays actionable.
-  if (nextStatus !== "visible") {
-    const note = nextStatus === "hidden" ? "管理员已隐藏该帖子。" : "管理员已删除该帖子。";
+  // Hiding a post resolves its pending reports so the queue stays actionable.
+  if (nextStatus === "hidden") {
     statements.push(env.DB.prepare(
       "UPDATE echowall_reports SET status = 'reviewed', admin_note = ?, reviewed_at = ?, reviewed_by = 'admin' WHERE post_id = ? AND status = 'pending'"
-    ).bind(note, Date.now(), postId));
+    ).bind("管理员已隐藏该帖子。", Date.now(), postId));
   }
   const results = await env.DB.batch(statements);
   const resolvedReports = statements.length > 1 ? Number(results[1]?.meta?.changes || 0) : 0;

@@ -192,16 +192,6 @@ async function createReport(request, env, postId) {
   return json({ success: true, reportId: id, status: "pending" }, 201);
 }
 
-async function deleteOwnPost(request, env, postId) {
-  const visitor = validVisitor(request);
-  if (!visitor) return fail("缺少或无效的访客标识。", 400);
-  const result = await env.DB.prepare(
-    "UPDATE echowall_posts SET status = 'deleted' WHERE id = ? AND author_key = ? AND status = 'visible'"
-  ).bind(postId, visitor).run();
-  if (Number(result?.meta?.changes || 0) < 1) return fail("找不到帖子或没有删除权限。", 404);
-  return json({ success: true });
-}
-
 export async function handleEchowallApi(request, env) {
   const url = new URL(request.url);
   if (!(url.pathname === BASE_PATH || url.pathname.startsWith(`${BASE_PATH}/`))) return null;
@@ -232,10 +222,9 @@ export async function handleEchowallApi(request, env) {
 
     const postMatch = url.pathname.match(/^\/api\/echowall\/posts\/([^/]+)$/);
     if (postMatch) {
-      if (request.method !== "DELETE") return methodNotAllowed("DELETE");
-      const postId = postIdFromSegment(postMatch[1]);
-      if (!postId) return fail("帖子 ID 无效。", 400);
-      return await deleteOwnPost(request, env, postId);
+      // 帖子删除仅限管理员通过管理后台执行；公开 API 不再接受访客删除。
+      if (request.method === "DELETE") return fail("删除帖子仅限管理员操作。", 403);
+      return fail("Echowall API 路由不存在。", 404);
     }
 
     return fail("Echowall API 路由不存在。", 404);

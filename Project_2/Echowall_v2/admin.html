@@ -29,7 +29,7 @@
       <div class="top-actions"><span class="pill"><span class="dot"></span>已连接管理 API</span><a class="btn" href="./Echowall_v2.html">← 留言墙</a><button id="logoutBtn" class="btn">退出登录</button></div>
     </header>
     <section class="intro"><div><h2>内容审核台</h2><p>在这里处理举报、隐藏不当内容，并恢复误操作的帖子。</p></div><button id="refreshBtn" class="btn">↻ 刷新数据</button></section>
-    <div class="notice">删除采用数据库软删除，帖子不会从数据库物理移除；管理员可在“已删除”筛选中恢复。请谨慎处理举报及隐私内容。</div>
+    <div class="notice">删除为管理员专属的永久删除：帖子及其点赞、举报记录会从数据库物理移除，无法恢复。请谨慎处理举报及隐私内容。</div>
     <section class="stats">
       <div class="stat"><div class="stat-label">待处理举报</div><div id="pendingStat" class="stat-value green">—</div></div>
       <div class="stat"><div class="stat-label">已处理举报</div><div id="reviewedStat" class="stat-value">—</div></div>
@@ -41,7 +41,7 @@
       <div id="reportsList" class="cards"><div class="empty"><span class="spinner"></span> 正在读取举报记录…</div></div>
     </section>
     <section id="postsPanel" class="hidden">
-      <div class="toolbar"><select id="postFilter" class="field" aria-label="帖子状态"><option value="visible">公开中</option><option value="hidden">已隐藏</option><option value="deleted">已删除</option><option value="all">全部状态</option></select><input id="postSearch" class="field search" placeholder="搜索作者、内容或帖子 ID" maxlength="100"><button id="searchBtn" class="btn">搜索</button><div class="spacer"></div><span id="postCount" class="muted"></span></div>
+      <div class="toolbar"><select id="postFilter" class="field" aria-label="帖子状态"><option value="visible">公开中</option><option value="hidden">已隐藏</option><option value="deleted">历史软删除</option><option value="all">全部状态</option></select><input id="postSearch" class="field search" placeholder="搜索作者、内容或帖子 ID" maxlength="100"><button id="searchBtn" class="btn">搜索</button><div class="spacer"></div><span id="postCount" class="muted"></span></div>
       <div id="postsList" class="cards"><div class="empty"><span class="spinner"></span> 正在读取帖子…</div></div>
     </section>
     <div class="footer">ECHOWALL ADMIN · PRIVATE CONTROL AREA · SESSION EXPIRES AFTER 8 HOURS</div>
@@ -104,11 +104,12 @@
   function reportCard(r) {
     const postStatus = r.postStatus || "deleted";
     const isPending = r.status === "pending";
-    return `<article class="item"><div class="item-head"><div><div class="item-title">${esc(reasonLabels[r.reason] || r.reason)} <span class="badge ${esc(r.status)}">${esc(statusLabels[r.status] || r.status)}</span></div><div class="item-meta">举报时间：${esc(date(r.createdAt))} · 举报 ID：${esc(r.id)}</div></div><span class="badge ${esc(postStatus)}">${esc(statusLabels[postStatus] || postStatus)}</span></div><div class="report-detail"><strong>被举报帖子 · ${esc(r.postAuthor || "未知作者")} · ${esc(date(r.postCreatedAt))}</strong><p>${esc(r.postContent || "该帖子可能已不存在，或内容为空。")}</p></div>${r.details ? `<div class="report-detail"><strong>举报人补充说明</strong><p>${esc(r.details)}</p></div>` : ""}${r.adminNote ? `<div class="report-detail"><strong>管理员备注</strong><p>${esc(r.adminNote)}</p></div>` : ""}<div class="item-actions"><button class="btn small warning" data-post-action="hide" data-id="${esc(r.postId)}" ${!r.postId || postStatus !== "visible" ? "disabled" : ""}>隐藏帖子</button><button class="btn small danger" data-post-action="delete" data-id="${esc(r.postId)}" ${!r.postId || postStatus === "deleted" ? "disabled" : ""}>删除帖子</button><div class="spacer"></div>${isPending ? `<button class="btn small" data-report-action="dismissed" data-id="${esc(r.id)}">忽略举报</button><button class="btn small primary" data-report-action="reviewed" data-id="${esc(r.id)}">标记已处理</button>` : `<button class="btn small" data-report-action="pending" data-id="${esc(r.id)}">重新放回待处理</button>`}</div></article>`;
+    return `<article class="item"><div class="item-head"><div><div class="item-title">${esc(reasonLabels[r.reason] || r.reason)} <span class="badge ${esc(r.status)}">${esc(statusLabels[r.status] || r.status)}</span></div><div class="item-meta">举报时间：${esc(date(r.createdAt))} · 举报 ID：${esc(r.id)}</div></div><span class="badge ${esc(postStatus)}">${esc(statusLabels[postStatus] || postStatus)}</span></div><div class="report-detail"><strong>被举报帖子 · ${esc(r.postAuthor || "未知作者")} · ${esc(date(r.postCreatedAt))}</strong><p>${esc(r.postContent || "该帖子可能已不存在，或内容为空。")}</p></div>${r.details ? `<div class="report-detail"><strong>举报人补充说明</strong><p>${esc(r.details)}</p></div>` : ""}${r.adminNote ? `<div class="report-detail"><strong>管理员备注</strong><p>${esc(r.adminNote)}</p></div>` : ""}<div class="item-actions"><button class="btn small warning" data-post-action="hide" data-id="${esc(r.postId)}" ${!r.postId || postStatus !== "visible" ? "disabled" : ""}>隐藏帖子</button><button class="btn small danger" data-post-action="delete" data-id="${esc(r.postId)}" ${!r.postId ? "disabled" : ""}>永久删除</button><div class="spacer"></div>${isPending ? `<button class="btn small" data-report-action="dismissed" data-id="${esc(r.id)}">忽略举报</button><button class="btn small primary" data-report-action="reviewed" data-id="${esc(r.id)}">标记已处理</button>` : `<button class="btn small" data-report-action="pending" data-id="${esc(r.id)}">重新放回待处理</button>`}</div></article>`;
   }
   function postCard(p) {
     const status = p.status || "visible";
-    const actionButtons = status === "visible" ? `<button class="btn small warning" data-post-action="hide" data-id="${esc(p.id)}">隐藏帖子</button><button class="btn small danger" data-post-action="delete" data-id="${esc(p.id)}">删除帖子</button>` : status === "hidden" ? `<button class="btn small primary" data-post-action="restore" data-id="${esc(p.id)}">恢复公开</button><button class="btn small danger" data-post-action="delete" data-id="${esc(p.id)}">删除帖子</button>` : `<button class="btn small primary" data-post-action="restore" data-id="${esc(p.id)}">恢复公开</button>`;
+    const deleteButton = `<button class="btn small danger" data-post-action="delete" data-id="${esc(p.id)}">永久删除</button>`;
+    const actionButtons = status === "visible" ? `<button class="btn small warning" data-post-action="hide" data-id="${esc(p.id)}">隐藏帖子</button>${deleteButton}` : status === "hidden" ? `<button class="btn small primary" data-post-action="restore" data-id="${esc(p.id)}">恢复公开</button>${deleteButton}` : deleteButton;
     return `<article class="item"><div class="item-head"><div><div class="item-title">${esc(p.author || "路过的朋友")} <span class="badge ${esc(status)}">${esc(statusLabels[status] || status)}</span></div><div class="item-meta">${esc(date(p.createdAt))} · ID：${esc(p.id)} · ♥ ${esc(p.likes || 0)} · 待处理举报 ${esc(p.pendingReports || 0)}</div></div></div><div class="content">${esc(p.content)}</div><div class="item-actions">${actionButtons}<div class="spacer"></div><button class="btn small" data-copy-id="${esc(p.id)}">复制帖子 ID</button></div></article>`;
   }
   async function loadReports() {
@@ -178,13 +179,13 @@
       return;
     }
     if (postButton) {
-      const action = postButton.dataset.postAction; const labels = {hide:"隐藏",delete:"删除",restore:"恢复公开"};
-      const warning = action === "delete" ? "帖子会被软删除（可从已删除列表恢复），确定继续吗？" : `${labels[action]}这条帖子？`;
+      const action = postButton.dataset.postAction; const labels = {hide:"隐藏",delete:"永久删除",restore:"恢复公开"};
+      const warning = action === "delete" ? "帖子会被永久删除（帖子、点赞与举报记录都将从数据库移除，无法恢复），确定继续吗？" : `${labels[action]}这条帖子？`;
       if (!window.confirm(warning)) return;
       postButton.disabled = true;
       try {
         const result = await api(`/posts/${encodeURIComponent(postButton.dataset.id)}`, {method:"POST", body:JSON.stringify({action})});
-        const extra = result.resolvedReports ? `，同时处理 ${result.resolvedReports} 条举报` : "";
+        const extra = result.removedReports ? `，同时清除 ${result.removedReports} 条举报记录` : "";
         showToast(`帖子已${labels[action]}${extra}`);
         if (activeTab === "reports") await loadReports(); else await loadPosts();
       } catch (err) { showToast(err.message); postButton.disabled = false; }

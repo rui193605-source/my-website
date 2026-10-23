@@ -286,8 +286,7 @@
         <div class="post-top"><div class="avatar" aria-hidden="true">${initial}</div><div class="post-byline"><div class="post-author">${escapeHTML(author)}${own ? '<span class="own-tag">我的帖子</span>' : ''}</div><div class="post-time">${escapeHTML(formatTime(post.createdAt))}</div></div>${post.demo ? '<span class="demo-tag">示例</span>' : ''}</div>
         <div class="post-content">${escapeHTML(post.text || '')}</div><div class="post-divider"></div>
         <div class="post-actions"><button class="action-btn like-btn ${liked ? 'liked' : ''}" type="button" data-action="like" aria-pressed="${liked}" aria-label="${liked ? '取消点赞' : '点赞'}" ${busy ? 'disabled' : ''}>${heartIcon()}<span>${liked ? '已共鸣' : '有共鸣'}</span><span class="like-count">${likes}</span></button>
-        <button class="action-btn report-btn" type="button" data-action="report" aria-label="${reported ? '已举报' : '举报'}" ${busy || reported ? 'disabled' : ''}>${flagIcon()}<span>${reported ? '已举报' : '举报'}</span></button>
-        ${own ? `<button class="action-btn delete-btn" type="button" data-action="delete" ${busy ? 'disabled' : ''}>${busy ? '处理中…' : '删除帖子'}</button>` : ''}</div>
+        <button class="action-btn report-btn" type="button" data-action="report" aria-label="${reported ? '已举报' : '举报'}" ${busy || reported ? 'disabled' : ''}>${flagIcon()}<span>${reported ? '已举报' : '举报'}</span></button></div>
       </article>`;
     }).join('');
   }
@@ -385,27 +384,6 @@
     const action = button.dataset.action;
 
     if (action === 'report') { openReport(post.id); return; }
-
-    if (action === 'delete') {
-      if (!post.mine) return;
-      if (!window.confirm('确定删除这条帖子吗？此操作无法撤销。')) return;
-      state.pending.add(id); render();
-      try {
-        if (state.mode === 'cloud') await apiFetch(`/posts/${encodeURIComponent(id)}`, {method:'DELETE'});
-        state.posts = state.posts.filter(item => String(item.id) !== id);
-        const saved = state.mode === 'local' ? saveLocalPosts() : true;
-        if (state.mode === 'cloud') showToast('帖子已删除。');
-        else showToast(saved ? '帖子已从当前浏览器删除。' : '帖子已删除，但浏览器未能保存更改。');
-      } catch (error) {
-        if (error.status === 404) {
-          state.posts = state.posts.filter(item => String(item.id) !== id);
-          showToast('这条帖子已不存在，已从列表移除。');
-        } else {
-          showToast(`删除失败：${error.message || '请稍后重试。'}`);
-        }
-      } finally { state.pending.delete(id); render(); }
-      return;
-    }
 
     if (action === 'like') {
       const desired = !Boolean(post.liked);

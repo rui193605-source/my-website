@@ -2,9 +2,9 @@
 
 ## 本版完成内容
 
-- 保留发帖、点赞/取消点赞、最新/最热排序、删除自己发布的帖子。
+- 保留发帖、点赞/取消点赞、最新/最热排序；删除帖子仅限管理员，普通访客只能发帖、点赞和举报。
 - 增加每条帖子下方的举报按钮。举报使用弹窗，包含垃圾广告、骚扰/辱骂、隐私泄露、违法/危险内容、其他原因，以及可选补充说明。
-- 增加可直接使用的管理后台：管理员密码登录、举报队列、帖子搜索，以及隐藏 / 软删除 / 恢复帖子。
+- 增加可直接使用的管理后台：管理员密码登录、举报队列、帖子搜索，以及隐藏 / 永久删除（硬删除）/ 恢复帖子。永久删除会同时移除该帖的点赞与举报记录，不可恢复。
 - 调整卡片层级、间距、按钮热区、空状态、连接状态和手机端布局。
 - 未连接 API 时自动进入本地预览，支持浏览器本地保存；连接 API 后切换为云端请求，不会在写入失败时悄悄改存到本地。
 - 提供 D1 表结构和可合并到现有 Worker 的路由模块。数据表均带 `echowall_` 前缀，避免与网站其他功能的表名冲突。
@@ -119,20 +119,24 @@ npx wrangler secret put administrator
 
 ## API 路由约定
 
+### 公开 API
+
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
 | GET | `/api/echowall/posts?sort=latest` | 获取最新帖子 |
 | GET | `/api/echowall/posts?sort=hot` | 获取热门帖子 |
-| POST | `/api/echowall/posts` | 发布帖子 |
+| POST | `/api/echowall/posts` | 发布帖子（需 `X-Echowall-Visitor`） |
 | POST | `/api/echowall/posts/:id/like` | 设置当前访客的点赞状态 `{ "liked": true/false }` |
 | POST | `/api/echowall/posts/:id/reports` | 提交举报 `{ "reason": "spam", "details": "..." }` |
-| DELETE | `/api/echowall/posts/:id` | 删除当前访客自己发布的帖子 |
+| DELETE | `/api/echowall/posts/:id` | 已禁用，返回 403；删除仅限管理员 |
 
 列表接口的每条帖子会同时返回 `liked`、`mine`、`reported`，前端据此同步点赞状态、显示“我的帖子”和禁用已举报按钮。已匹配路径但方法不支持时返回 405。
 
-举报记录在 `echowall_reports` 表中初始状态为 `pending`。管理后台可以按状态筛选并处理举报；隐藏或删除被举报帖子时，该帖子的待处理举报会自动标记为已处理。
+普通访客不能删除帖子：`DELETE /api/echowall/posts/:id` 会返回 403。删除操作只能由管理员在管理后台执行。
 
-管理 API：
+举报记录在 `echowall_reports` 表中初始状态为 `pending`。管理后台可以按状态筛选并处理举报；隐藏被举报帖子时，该帖子的待处理举报会自动标记为已处理。
+
+### 管理 API
 
 | 方法 | 路径 | 用途 |
 | --- | --- | --- |
@@ -142,9 +146,11 @@ npx wrangler secret put administrator
 | GET | `/api/echowall/admin/reports?status=...` | 举报队列与统计 |
 | PATCH | `/api/echowall/admin/reports/:id` | 更新举报状态与备注 |
 | GET | `/api/echowall/admin/posts?status=...&q=...` | 管理帖子列表 |
-| POST | `/api/echowall/admin/posts/:id` | 隐藏 / 删除 / 恢复帖子 |
+| POST | `/api/echowall/admin/posts/:id` | `action=hide/restore/delete`；`delete` 为硬删除 |
 
 管理 API 的写操作要求同源 `Origin`，会话 Cookie 为 `HttpOnly + Secure + SameSite=Strict`，有效期 8 小时；登录失败次数在同一 Worker 实例内有限流。
+
+硬删除会从 `echowall_posts` 中物理移除帖子，并同步删除该帖的点赞与举报记录，无法恢复。旧版本留下的 `deleted` 状态帖子仍可在后台“历史软删除”筛选中找到并永久删除。
 
 ## 当前原型的安全边界
 
